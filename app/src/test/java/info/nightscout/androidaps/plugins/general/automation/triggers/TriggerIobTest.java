@@ -19,6 +19,7 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.IobTotal;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
+import info.nightscout.androidaps.plugins.general.automation.elements.Comparator;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
 
@@ -37,26 +38,26 @@ public class TriggerIobTest {
     public void shouldRunTest() {
         PowerMockito.when(iobCobCalculatorPlugin.calculateFromTreatmentsAndTempsSynchronized(anyLong(), any(Profile.class))).thenReturn(generateIobRecordData());
 
-        TriggerIob t = new TriggerIob().threshold(1.1d).comparator(Trigger.Comparator.IS_EQUAL);
+        TriggerIob t = new TriggerIob().threshold(1.1d).comparator(Comparator.IS_EQUAL);
         Assert.assertFalse(t.shouldRun());
-        t = new TriggerIob().threshold(1d).comparator(Trigger.Comparator.IS_EQUAL);
+        t = new TriggerIob().threshold(1d).comparator(Comparator.IS_EQUAL);
         Assert.assertTrue(t.shouldRun());
-        t = new TriggerIob().threshold(0.8d).comparator(Trigger.Comparator.IS_GREATER);
+        t = new TriggerIob().threshold(0.8d).comparator(Comparator.IS_GREATER);
         Assert.assertTrue(t.shouldRun());
-        t = new TriggerIob().threshold(0.8d).comparator(Trigger.Comparator.IS_EQUAL_OR_GREATER);
+        t = new TriggerIob().threshold(0.8d).comparator(Comparator.IS_EQUAL_OR_GREATER);
         Assert.assertTrue(t.shouldRun());
-        t = new TriggerIob().threshold(0.9d).comparator(Trigger.Comparator.IS_EQUAL_OR_GREATER);
+        t = new TriggerIob().threshold(0.9d).comparator(Comparator.IS_EQUAL_OR_GREATER);
         Assert.assertTrue(t.shouldRun());
-        t = new TriggerIob().threshold(1.2d).comparator(Trigger.Comparator.IS_EQUAL_OR_LESSER);
+        t = new TriggerIob().threshold(1.2d).comparator(Comparator.IS_EQUAL_OR_LESSER);
         Assert.assertTrue(t.shouldRun());
-        t = new TriggerIob().threshold(1.1d).comparator(Trigger.Comparator.IS_EQUAL);
+        t = new TriggerIob().threshold(1.1d).comparator(Comparator.IS_EQUAL);
         Assert.assertFalse(t.shouldRun());
-        t = new TriggerIob().threshold(1d).comparator(Trigger.Comparator.IS_EQUAL_OR_LESSER);
+        t = new TriggerIob().threshold(1d).comparator(Comparator.IS_EQUAL_OR_LESSER);
         Assert.assertTrue(t.shouldRun());
-        t = new TriggerIob().threshold(0.9d).comparator(Trigger.Comparator.IS_EQUAL_OR_LESSER);
+        t = new TriggerIob().threshold(0.9d).comparator(Comparator.IS_EQUAL_OR_LESSER);
         Assert.assertFalse(t.shouldRun());
 
-        t = new TriggerIob().threshold(1d).comparator(Trigger.Comparator.IS_EQUAL).lastRun(now - 1);
+        t = new TriggerIob().threshold(1d).comparator(Comparator.IS_EQUAL).lastRun(now - 1);
         Assert.assertFalse(t.shouldRun());
 
     }
@@ -76,15 +77,15 @@ public class TriggerIobTest {
 
     @Test
     public void copyConstructorTest() {
-        TriggerIob t = new TriggerIob().threshold(213).comparator(Trigger.Comparator.IS_EQUAL_OR_LESSER);
+        TriggerIob t = new TriggerIob().threshold(213).comparator(Comparator.IS_EQUAL_OR_LESSER);
         TriggerIob t1 = (TriggerIob) t.duplicate();
         Assert.assertEquals(213d, t.getThreshold(), 0.01d);
-        Assert.assertEquals(Trigger.Comparator.IS_EQUAL_OR_LESSER, t.getComparator());
+        Assert.assertEquals(Comparator.IS_EQUAL_OR_LESSER, t.getComparator());
     }
 
     @Test
     public void executeTest() {
-        TriggerIob t = new TriggerIob().threshold(213).comparator(Trigger.Comparator.IS_EQUAL_OR_LESSER);
+        TriggerIob t = new TriggerIob().threshold(213).comparator(Comparator.IS_EQUAL_OR_LESSER);
         t.executed(1);
         Assert.assertEquals(1l, t.getLastRun());
     }
@@ -93,16 +94,16 @@ public class TriggerIobTest {
 
     @Test
     public void toJSONTest() {
-        TriggerIob t = new TriggerIob().threshold(4.1d).comparator(Trigger.Comparator.IS_EQUAL);
+        TriggerIob t = new TriggerIob().threshold(4.1d).comparator(Comparator.IS_EQUAL);
         Assert.assertEquals(bgJson, t.toJSON());
     }
 
     @Test
     public void fromJSONTest() throws JSONException {
-        TriggerIob t = new TriggerIob().threshold(4.1d).comparator(Trigger.Comparator.IS_EQUAL);
+        TriggerIob t = new TriggerIob().threshold(4.1d).comparator(Comparator.IS_EQUAL);
 
         TriggerIob t2 = (TriggerIob) Trigger.instantiate(new JSONObject(t.toJSON()));
-        Assert.assertEquals(Trigger.Comparator.IS_EQUAL, t2.getComparator());
+        Assert.assertEquals(Comparator.IS_EQUAL, t2.getComparator());
         Assert.assertEquals(4.1d, t2.getThreshold(), 0.01d);
     }
 

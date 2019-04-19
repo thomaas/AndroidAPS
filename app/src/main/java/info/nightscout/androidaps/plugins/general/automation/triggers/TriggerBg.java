@@ -28,6 +28,7 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
+import info.nightscout.androidaps.plugins.general.automation.elements.Comparator;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatus;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.JsonHelper;
@@ -38,7 +39,7 @@ public class TriggerBg extends Trigger {
     private static Logger log = LoggerFactory.getLogger(L.AUTOMATION);
 
     private double threshold;
-    private Comparator comparator = Comparator.IS_EQUAL;
+    private Comparator comparator = new Comparator();
     private String units = ProfileFunctions.getInstance().getProfileUnits();
     private long lastRun;
 
@@ -99,7 +100,7 @@ public class TriggerBg extends Trigger {
         if (lastRun > DateUtil.now() - T.mins(5).msecs())
             return false;
 
-        if (glucoseStatus == null && comparator.equals(Comparator.IS_NOT_AVAILABLE)) {
+        if (glucoseStatus == null && comparator.equals(Comparator.Compare.IS_NOT_AVAILABLE)) {
             if (L.isEnabled(L.AUTOMATION))
                 log.debug("Ready for execution: " + friendlyDescription());
             return true;
@@ -107,7 +108,7 @@ public class TriggerBg extends Trigger {
         if (glucoseStatus == null)
             return false;
 
-        boolean doRun = comparator.check(glucoseStatus.glucose, Profile.toMgdl(threshold, units));
+        boolean doRun = comparator.getValue().check(glucoseStatus.glucose, Profile.toMgdl(threshold, units));
         if (doRun) {
             if (L.isEnabled(L.AUTOMATION))
                 log.debug("Ready for execution: " + friendlyDescription());
@@ -139,7 +140,7 @@ public class TriggerBg extends Trigger {
             JSONObject d = new JSONObject(data);
             threshold = JsonHelper.safeGetDouble(d, "threshold");
             lastRun = JsonHelper.safeGetLong(d, "lastRun");
-            comparator = Comparator.valueOf(JsonHelper.safeGetString(d, "comparator"));
+            comparator.setValue(Comparator.Compare.valueOf(JsonHelper.safeGetString(d, "comparator")));
             units = JsonHelper.safeGetString(d, "units");
         } catch (JSONException e) {
             e.printStackTrace();
@@ -154,10 +155,10 @@ public class TriggerBg extends Trigger {
 
     @Override
     public String friendlyDescription() {
-        if (comparator.equals(Comparator.IS_NOT_AVAILABLE))
+        if (comparator.equals(Comparator.Compare.IS_NOT_AVAILABLE))
             return MainApp.gs(R.string.glucoseisnotavailable);
         else {
-            return MainApp.gs(units.equals(Constants.MGDL) ? R.string.glucosecomparedmgdl : R.string.glucosecomparedmmol, MainApp.gs(comparator.getStringRes()), threshold, units);
+            return MainApp.gs(units.equals(Constants.MGDL) ? R.string.glucosecomparedmgdl : R.string.glucosecomparedmmol, MainApp.gs(comparator.getValue().getStringRes()), threshold, units);
         }
     }
 
@@ -202,7 +203,7 @@ public class TriggerBg extends Trigger {
 
         // spinner for comparator
         Spinner spinner = new Spinner(context);
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, Comparator.labels());
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, Comparator.Compare.labels());
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spinnerArrayAdapter);
         LinearLayout.LayoutParams spinnerParams = new LinearLayout.LayoutParams(
@@ -214,14 +215,14 @@ public class TriggerBg extends Trigger {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                comparator = Comparator.values()[position];
+                comparator.setValue(Comparator.Compare.values()[position]);
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
-        spinner.setSelection(comparator.ordinal());
+        spinner.setSelection(comparator.getValue().ordinal());
         root.addView(spinner);
 
         // horizontal layout

@@ -22,6 +22,7 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.db.BgReading;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
+import info.nightscout.androidaps.plugins.general.automation.elements.Comparator;
 import info.nightscout.androidaps.plugins.general.nsclient.data.NSSgv;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
@@ -38,32 +39,32 @@ public class TriggerBgTest {
     public void shouldRunTest() {
         when(IobCobCalculatorPlugin.getPlugin().getBgReadings()).thenReturn(generateOneCurrentRecordBgData());
 
-        TriggerBg t = new TriggerBg().units(Constants.MMOL).threshold(4.1d).comparator(Trigger.Comparator.IS_EQUAL);
+        TriggerBg t = new TriggerBg().units(Constants.MMOL).threshold(4.1d).comparator(Comparator.IS_EQUAL);
         Assert.assertFalse(t.shouldRun());
-        t = new TriggerBg().units(Constants.MGDL).threshold(214).comparator(Trigger.Comparator.IS_EQUAL);
+        t = new TriggerBg().units(Constants.MGDL).threshold(214).comparator(Comparator.IS_EQUAL);
         Assert.assertTrue(t.shouldRun());
-        t = new TriggerBg().units(Constants.MGDL).threshold(214).comparator(Trigger.Comparator.IS_EQUAL_OR_GREATER);
+        t = new TriggerBg().units(Constants.MGDL).threshold(214).comparator(Comparator.IS_EQUAL_OR_GREATER);
         Assert.assertTrue(t.shouldRun());
-        t = new TriggerBg().units(Constants.MGDL).threshold(214).comparator(Trigger.Comparator.IS_EQUAL_OR_LESSER);
+        t = new TriggerBg().units(Constants.MGDL).threshold(214).comparator(Comparator.IS_EQUAL_OR_LESSER);
         Assert.assertTrue(t.shouldRun());
-        t = new TriggerBg().units(Constants.MGDL).threshold(215).comparator(Trigger.Comparator.IS_EQUAL);
+        t = new TriggerBg().units(Constants.MGDL).threshold(215).comparator(Comparator.IS_EQUAL);
         Assert.assertFalse(t.shouldRun());
-        t = new TriggerBg().units(Constants.MGDL).threshold(215).comparator(Trigger.Comparator.IS_EQUAL_OR_LESSER);
+        t = new TriggerBg().units(Constants.MGDL).threshold(215).comparator(Comparator.IS_EQUAL_OR_LESSER);
         Assert.assertTrue(t.shouldRun());
-        t = new TriggerBg().units(Constants.MGDL).threshold(215).comparator(Trigger.Comparator.IS_EQUAL_OR_GREATER);
+        t = new TriggerBg().units(Constants.MGDL).threshold(215).comparator(Comparator.IS_EQUAL_OR_GREATER);
         Assert.assertFalse(t.shouldRun());
-        t = new TriggerBg().units(Constants.MGDL).threshold(213).comparator(Trigger.Comparator.IS_EQUAL_OR_GREATER);
+        t = new TriggerBg().units(Constants.MGDL).threshold(213).comparator(Comparator.IS_EQUAL_OR_GREATER);
         Assert.assertTrue(t.shouldRun());
-        t = new TriggerBg().units(Constants.MGDL).threshold(213).comparator(Trigger.Comparator.IS_EQUAL_OR_LESSER);
+        t = new TriggerBg().units(Constants.MGDL).threshold(213).comparator(Comparator.IS_EQUAL_OR_LESSER);
         Assert.assertFalse(t.shouldRun());
 
         when(IobCobCalculatorPlugin.getPlugin().getBgReadings()).thenReturn(new ArrayList<>());
-        t = new TriggerBg().units(Constants.MGDL).threshold(213).comparator(Trigger.Comparator.IS_EQUAL_OR_LESSER);
+        t = new TriggerBg().units(Constants.MGDL).threshold(213).comparator(Comparator.IS_EQUAL_OR_LESSER);
         Assert.assertFalse(t.shouldRun());
-        t = new TriggerBg().comparator(Trigger.Comparator.IS_NOT_AVAILABLE);
+        t = new TriggerBg().comparator(Comparator.IS_NOT_AVAILABLE);
         Assert.assertTrue(t.shouldRun());
 
-        t = new TriggerBg().units(Constants.MGDL).threshold(214).comparator(Trigger.Comparator.IS_EQUAL).lastRun(now - 1);
+        t = new TriggerBg().units(Constants.MGDL).threshold(214).comparator(Comparator.IS_EQUAL).lastRun(now - 1);
         Assert.assertFalse(t.shouldRun());
 
     }
@@ -83,16 +84,16 @@ public class TriggerBgTest {
 
     @Test
     public void copyConstructorTest() {
-        TriggerBg t = new TriggerBg().units(Constants.MGDL).threshold(213).comparator(Trigger.Comparator.IS_EQUAL_OR_LESSER);
+        TriggerBg t = new TriggerBg().units(Constants.MGDL).threshold(213).comparator(Comparator.IS_EQUAL_OR_LESSER);
         TriggerBg t1 = (TriggerBg) t.duplicate();
         Assert.assertEquals(213d, t.getThreshold(), 0.01d);
         Assert.assertEquals(Constants.MGDL, t.getUnits());
-        Assert.assertEquals(Trigger.Comparator.IS_EQUAL_OR_LESSER, t.getComparator());
+        Assert.assertEquals(Comparator.IS_EQUAL_OR_LESSER, t.getComparator());
     }
 
     @Test
     public void executeTest() {
-        TriggerBg t = new TriggerBg().units(Constants.MGDL).threshold(213).comparator(Trigger.Comparator.IS_EQUAL_OR_LESSER);
+        TriggerBg t = new TriggerBg().units(Constants.MGDL).threshold(213).comparator(Comparator.IS_EQUAL_OR_LESSER);
         t.executed(1);
         Assert.assertEquals(1l, t.getLastRun());
     }
@@ -101,16 +102,16 @@ public class TriggerBgTest {
 
     @Test
     public void toJSONTest() {
-        TriggerBg t = new TriggerBg().units(Constants.MMOL).threshold(4.1d).comparator(Trigger.Comparator.IS_EQUAL);
+        TriggerBg t = new TriggerBg().units(Constants.MMOL).threshold(4.1d).comparator(Comparator.IS_EQUAL);
         Assert.assertEquals(bgJson, t.toJSON());
     }
 
     @Test
     public void fromJSONTest() throws JSONException {
-        TriggerBg t = new TriggerBg().units(Constants.MMOL).threshold(4.1d).comparator(Trigger.Comparator.IS_EQUAL);
+        TriggerBg t = new TriggerBg().units(Constants.MMOL).threshold(4.1d).comparator(Comparator.IS_EQUAL);
 
         TriggerBg t2 = (TriggerBg) Trigger.instantiate(new JSONObject(t.toJSON()));
-        Assert.assertEquals(Trigger.Comparator.IS_EQUAL, t2.getComparator());
+        Assert.assertEquals(Comparator.IS_EQUAL, t2.getComparator());
         Assert.assertEquals(4.1d, t2.getThreshold(), 0.01d);
         Assert.assertEquals(Constants.MMOL, t2.getUnits());
     }

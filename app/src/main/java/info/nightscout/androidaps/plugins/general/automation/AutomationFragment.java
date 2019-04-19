@@ -285,6 +285,7 @@ public class AutomationFragment extends SubscriberFragment {
 
                 // trigger layout
                 mRootLayout.addView(trigger.createView(mContext, mFragmentManager));
+                trigger.generateDialog(mRootLayout);
 
                 // buttons
                 createButtons(trigger);

@@ -2,10 +2,12 @@ package info.nightscout.androidaps.plugins.general.automation.triggers;
 
 import android.support.v4.app.FragmentManager;
 import android.content.Context;
-import android.support.annotation.StringRes;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.common.base.Optional;
@@ -13,70 +15,10 @@ import com.google.common.base.Optional;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import info.nightscout.androidaps.MainApp;
-import info.nightscout.androidaps.R;
+import info.nightscout.androidaps.plugins.general.automation.elements.Comparator;
 
 public abstract class Trigger {
-
-    public enum Comparator {
-        IS_LESSER,
-        IS_EQUAL_OR_LESSER,
-        IS_EQUAL,
-        IS_EQUAL_OR_GREATER,
-        IS_GREATER,
-        IS_NOT_AVAILABLE;
-
-        public @StringRes int getStringRes() {
-            switch (this) {
-                case IS_LESSER:
-                    return R.string.islesser;
-                case IS_EQUAL_OR_LESSER:
-                    return R.string.isequalorlesser;
-                case IS_EQUAL:
-                    return R.string.isequal;
-                case IS_EQUAL_OR_GREATER:
-                    return R.string.isequalorgreater;
-                case IS_GREATER:
-                    return R.string.isgreater;
-                case IS_NOT_AVAILABLE:
-                    return R.string.isnotavailable;
-                default:
-                    return R.string.unknown;
-            }
-        }
-
-        public <T extends Comparable> boolean check(T obj1, T obj2) {
-            if (obj1 == null || obj2 == null)
-                return this.equals(Comparator.IS_NOT_AVAILABLE);
-
-            int comparison = obj1.compareTo(obj2);
-            switch (this) {
-                case IS_LESSER:
-                    return comparison < 0;
-                case IS_EQUAL_OR_LESSER:
-                    return comparison <= 0;
-                case IS_EQUAL:
-                    return comparison == 0;
-                case IS_EQUAL_OR_GREATER:
-                    return comparison >= 0;
-                case IS_GREATER:
-                    return comparison > 0;
-                default:
-                    return false;
-            }
-        }
-
-        public static List<String> labels() {
-            List<String> list = new ArrayList<>();
-            for(Comparator c : values()) {
-                list.add(MainApp.gs(c.getStringRes()));
-            }
-            return list;
-        }
-    }
 
     protected TriggerConnector connector = null;
 
@@ -123,6 +65,12 @@ public abstract class Trigger {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void generateDialog(LinearLayout root) {
+        TextView title = new TextView(root.getContext());
+        title.setText(friendlyName());
+        root.addView(title);
     }
 
     public View createView(Context context, FragmentManager fragmentManager) {
