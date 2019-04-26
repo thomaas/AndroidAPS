@@ -52,19 +52,25 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
             bgReading.value = glucose;
             bgReading.date = timestamp;
             bgReading.raw = 0;
+            bgReading.direction = "NONE";
+
             BgReading bgReadingBefore = MainApp.getDbHelper().getBgReadingBefore(timestamp);
-            long timeDifference = timestamp - bgReadingBefore.date;
-            if (timeDifference <= 20 * 60 * 1000) {
-                double slope = (glucose - bgReadingBefore.value) / (double) (timeDifference / (60 * 1000));
-                if (slope <= -3.5) bgReading.direction = "DoubleDown";
-                else if (slope <= -2) bgReading.direction = "SingleDown";
-                else if (slope <= -1) bgReading.direction = "FortyFiveDown";
-                else if (slope <= 1) bgReading.direction = "Flat";
-                else if (slope <= 2) bgReading.direction = "FortyFiveUp";
-                else if (slope <= 3.5) bgReading.direction = "SingleUp";
-                else bgReading.direction = "DoubleUp";
-            } else bgReading.direction = "NONE";
+            if (bgReadingBefore != null) {
+                long timeDifference = timestamp - bgReadingBefore.date;
+                if (timeDifference <= 20 * 60 * 1000) {
+                    double slope = (glucose - bgReadingBefore.value) / (double) (timeDifference / (60 * 1000));
+                    if (slope <= -3.5) bgReading.direction = "DoubleDown";
+                    else if (slope <= -2) bgReading.direction = "SingleDown";
+                    else if (slope <= -1) bgReading.direction = "FortyFiveDown";
+                    else if (slope <= 1) bgReading.direction = "Flat";
+                    else if (slope <= 2) bgReading.direction = "FortyFiveUp";
+                    else if (slope <= 3.5) bgReading.direction = "SingleUp";
+                    else bgReading.direction = "DoubleUp";
+                }
+            }
+
             MainApp.getDbHelper().createIfNotExists(bgReading, "Libre2");
+
             if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false))
                 NSUpload.uploadBg(bgReading, "AndroidAPS-Libre2");
 
