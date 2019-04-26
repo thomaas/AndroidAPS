@@ -508,6 +508,18 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         return new ArrayList<BgReading>();
     }
 
+    public BgReading getBgReadingBefore(long millis) {
+        try {
+            return getDaoBgReadings().queryBuilder()
+                    .orderBy("date", false)
+                    .where().lt("date", millis)
+                    .queryForFirst();
+        } catch (SQLException e) {
+            log.error("Unhandled exception", e);
+        }
+        return null;
+    }
+
     // -------------------  TDD handling -----------------------
     public void createOrUpdateTDD(TDD tdd) {
         try {

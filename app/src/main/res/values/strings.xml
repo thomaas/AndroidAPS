@@ -1335,6 +1335,11 @@
     <string name="very_old_version">very old version</string>
     <string name="new_version_warning">New version for at least %1$d days available! Fallback to LGS after 60 days, loop will be disabled after 90 days</string>
 
+    <string name="libre2_app">Libre 2 App (patched)</string>
+    <string name="libre2_short">L2</string>
+    <string name="libre2_description">Receive BG values from the patched LibreLink app.</string>
+
+
     <plurals name="objective_days">
         <item quantity="one">%1$d day</item>
         <item quantity="other">%1$d days</item>

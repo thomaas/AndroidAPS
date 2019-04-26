@@ -29,6 +29,7 @@ import info.nightscout.androidaps.plugins.source.SourceDexcomG5Plugin;
 import info.nightscout.androidaps.plugins.source.SourceDexcomG6Plugin;
 import info.nightscout.androidaps.plugins.source.SourceEversensePlugin;
 import info.nightscout.androidaps.plugins.source.SourceGlimpPlugin;
+import info.nightscout.androidaps.plugins.source.SourceLibre2Plugin;
 import info.nightscout.androidaps.plugins.source.SourceMM640gPlugin;
 import info.nightscout.androidaps.plugins.source.SourceNSClientPlugin;
 import info.nightscout.androidaps.plugins.source.SourcePoctechPlugin;
@@ -81,6 +82,8 @@ public class DataService extends IntentService {
             SourceTomatoPlugin.getPlugin().handleNewData(intent);
         } else if (Intents.EVERSENSE_BG.equals(action)) {
             SourceEversensePlugin.getPlugin().handleNewData(intent);
+        } else if (Intents.LIBRE2_BG.equals(action)) {
+            SourceLibre2Plugin.getPlugin().handleNewData(intent);
         } else if (Intents.ACTION_NEW_SGV.equals(action)) {
             SourceNSClientPlugin.getPlugin().handleNewData(intent);
         } else if (Intents.ACTION_NEW_PROFILE.equals(action)) {
@@ -105,7 +108,7 @@ public class DataService extends IntentService {
                         Intents.ACTION_REMOVED_TREATMENT.equals(action) ||
                         Intents.ACTION_NEW_CAL.equals(action) ||
                         Intents.ACTION_NEW_MBG.equals(action))
-                ) {
+        ) {
             handleNewDataFromNSClient(intent);
         } else if (Telephony.Sms.Intents.SMS_RECEIVED_ACTION.equals(action)) {
             SmsCommunicatorPlugin.getPlugin().handleNewData(intent);
