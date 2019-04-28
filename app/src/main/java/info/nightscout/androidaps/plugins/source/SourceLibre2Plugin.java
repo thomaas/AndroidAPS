@@ -5,6 +5,12 @@ import android.content.Intent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.db.BgReading;
@@ -31,6 +37,7 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
         super(new PluginDescription()
                 .mainType(PluginType.BGSOURCE)
                 .fragmentClass(BGSourceFragment.class.getName())
+                .preferencesId(R.xml.pref_bgsource_libre2)
                 .pluginName(R.string.libre2_app)
                 .shortName(R.string.libre2_short)
                 .description(R.string.libre2_description));
@@ -48,17 +55,29 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
             double glucose = intent.getDoubleExtra("glucose", 0);
             long timestamp = intent.getLongExtra("timestamp", 0);
             log.debug("Received BG reading from LibreLink: glucose=" + glucose + " timestamp=" + timestamp);
+
+            Libre2RawValue currentRawValue = new Libre2RawValue();
+            currentRawValue.timestamp = timestamp;
+            currentRawValue.glucose = glucose;
+
+            List<Libre2RawValue> previousRawValues = MainApp.getDbHelper().getLibre2RawValuesBetween(timestamp - 330000, timestamp);
+            MainApp.getDbHelper().createOrUpdate(currentRawValue);
+            previousRawValues.add(currentRawValue);
+            double average = 0;
+            for (Libre2RawValue value : previousRawValues) average += value.glucose;
+            average /= (double) previousRawValues.size();
+
             BgReading bgReading = new BgReading();
-            bgReading.value = glucose;
+            bgReading.value = average;
             bgReading.date = timestamp;
-            bgReading.raw = 0;
+            bgReading.raw = glucose;
             bgReading.direction = "NONE";
 
             BgReading bgReadingBefore = MainApp.getDbHelper().getBgReadingBefore(timestamp);
             if (bgReadingBefore != null) {
                 long timeDifference = timestamp - bgReadingBefore.date;
                 if (timeDifference <= 20 * 60 * 1000) {
-                    double slope = (glucose - bgReadingBefore.value) / (double) (timeDifference / (60 * 1000));
+                    double slope = (average - bgReadingBefore.value) / (double) (timeDifference / 60000);
                     if (slope <= -3.5) bgReading.direction = "DoubleDown";
                     else if (slope <= -2) bgReading.direction = "SingleDown";
                     else if (slope <= -1) bgReading.direction = "FortyFiveDown";

@@ -54,6 +54,7 @@ import info.nightscout.androidaps.plugins.pump.insight.database.InsightBolusID;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightHistoryOffset;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightPumpID;
 import info.nightscout.androidaps.plugins.pump.virtual.VirtualPumpPlugin;
+import info.nightscout.androidaps.plugins.source.Libre2RawValue;
 import info.nightscout.androidaps.utils.JsonHelper;
 import info.nightscout.androidaps.utils.PercentageSplitter;
 import info.nightscout.androidaps.utils.ToastUtils;
@@ -82,8 +83,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     public static final String DATABASE_INSIGHT_HISTORY_OFFSETS = "InsightHistoryOffsets";
     public static final String DATABASE_INSIGHT_BOLUS_IDS = "InsightBolusIDs";
     public static final String DATABASE_INSIGHT_PUMP_IDS = "InsightPumpIDs";
+    public static final String DATABASE_LIBRE2_RAW_Values = "Libre2RawValue";
 
-    private static final int DATABASE_VERSION = 11;
+    private static final int DATABASE_VERSION = 12;
 
     public static Long earliestDataChange = null;
 
@@ -131,6 +133,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             TableUtils.createTableIfNotExists(connectionSource, InsightHistoryOffset.class);
             TableUtils.createTableIfNotExists(connectionSource, InsightBolusID.class);
             TableUtils.createTableIfNotExists(connectionSource, InsightPumpID.class);
+            TableUtils.createTableIfNotExists(connectionSource, Libre2RawValue.class);
             database.execSQL("INSERT INTO sqlite_sequence (name, seq) SELECT \"" + DATABASE_INSIGHT_BOLUS_IDS + "\", " + System.currentTimeMillis() + " " +
                     "WHERE NOT EXISTS (SELECT 1 FROM sqlite_sequence WHERE name = \"" + DATABASE_INSIGHT_BOLUS_IDS + "\")");
             database.execSQL("INSERT INTO sqlite_sequence (name, seq) SELECT \"" + DATABASE_INSIGHT_PUMP_IDS + "\", " + System.currentTimeMillis() + " " +
@@ -169,6 +172,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             } else if (oldVersion < 11) {
                 database.execSQL("UPDATE sqlite_sequence SET seq = " + System.currentTimeMillis() + " WHERE name = \"" + DATABASE_INSIGHT_BOLUS_IDS + "\"");
                 database.execSQL("UPDATE sqlite_sequence SET seq = " + System.currentTimeMillis() + " WHERE name = \"" + DATABASE_INSIGHT_PUMP_IDS + "\"");
+            } else if (oldVersion < 12) {
+                TableUtils.createTableIfNotExists(connectionSource, Libre2RawValue.class);
             }
         } catch (SQLException e) {
             log.error("Can't drop databases", e);
@@ -357,6 +362,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     private Dao<InsightHistoryOffset, String> getDaoInsightHistoryOffset() throws SQLException {
         return getDao(InsightHistoryOffset.class);
+    }
+
+    private Dao<Libre2RawValue, Long> getDaoLibre2RawValue() throws SQLException {
+        return getDao(Libre2RawValue.class);
     }
 
     public static long roundDateToSec(long date) {
@@ -1758,6 +1767,29 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
                     .and().in("eventType", "PumpStopped", "PumpPaused")
                     .and().lt("timestamp", before)
                     .queryForFirst();
+        } catch (SQLException e) {
+            log.error("Unhandled exception", e);
+        }
+        return null;
+    }
+
+    // ---------------- Libre 2 handling ---------------
+
+    public void createOrUpdate(Libre2RawValue libre2RawValue) {
+        try {
+            getDaoLibre2RawValue().createOrUpdate(libre2RawValue);
+        } catch (SQLException e) {
+            log.error("Unhandled exception", e);
+        }
+    }
+
+    public List<Libre2RawValue> getLibre2RawValuesBetween(long start, long end) {
+        try {
+            return getDaoLibre2RawValue().queryBuilder()
+                    .orderBy("timestamp", true)
+                    .where().lt("timestamp", end)
+                    .and().ge("timestamp", start)
+                    .query();
         } catch (SQLException e) {
             log.error("Unhandled exception", e);
         }
