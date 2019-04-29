@@ -79,6 +79,11 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
 
     private static BgReading determineBGReading(List<Libre2RawValue> rawValues) {
         Collections.sort(rawValues, (o1, o2) -> Long.compare(o1.timestamp, o2.timestamp));
+        Libre2RawValue last = rawValues.get(rawValues.size() - 1);
+
+        BgReading bgReading = new BgReading();
+        bgReading.raw = last.glucose;
+        bgReading.date = last.timestamp;
 
         long oldestTimestamp = rawValues.get(0).timestamp;
         double sumX = 0;
@@ -87,23 +92,23 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
             sumX += (double) (value.timestamp - oldestTimestamp) / 60000D;
             sumY += value.glucose;
         }
-        double averageTimestamp = sumX / rawValues.size();
         double averageGlucose = sumY / rawValues.size();
-        double a = 0;
-        double b = 0;
-        for (Libre2RawValue value : rawValues) {
-            a += ((double) (value.timestamp - oldestTimestamp) / 60000D - averageTimestamp) * (value.glucose - averageGlucose);
-            b += Math.pow((double) (value.timestamp - oldestTimestamp) / 60000D - averageTimestamp, 2);
+
+        bgReading.value = Math.round(averageGlucose);
+
+        if (rawValues.size() > 1) {
+            double averageTimestamp = sumX / rawValues.size();
+            double a = 0;
+            double b = 0;
+            for (Libre2RawValue value : rawValues) {
+                a += ((double) (value.timestamp - oldestTimestamp) / 60000D - averageTimestamp) * (value.glucose - averageGlucose);
+                b += Math.pow((double) (value.timestamp - oldestTimestamp) / 60000D - averageTimestamp, 2);
+            }
+            double slope = a / b;
+            bgReading.direction = determineTrendArrow(slope);
+        } else {
+            bgReading.direction = "NONE";
         }
-        double slope = a / b;
-
-        Libre2RawValue last = rawValues.get(rawValues.size() - 1);
-
-        BgReading bgReading = new BgReading();
-        bgReading.value = averageGlucose;
-        bgReading.raw = last.glucose;
-        bgReading.date = last.timestamp;
-        bgReading.direction = rawValues.size() > 1 ? determineTrendArrow(slope) : "NONE";
         return bgReading;
     }
 
