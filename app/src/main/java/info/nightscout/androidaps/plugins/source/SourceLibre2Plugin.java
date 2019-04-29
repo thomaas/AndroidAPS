@@ -63,30 +63,7 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
             List<Libre2RawValue> previousRawValues = MainApp.getDbHelper().getLibre2RawValuesBetween(timestamp - 330000, timestamp);
             MainApp.getDbHelper().createOrUpdate(currentRawValue);
             previousRawValues.add(currentRawValue);
-            double average = 0;
-            for (Libre2RawValue value : previousRawValues) average += value.glucose;
-            average /= (double) previousRawValues.size();
-
-            BgReading bgReading = new BgReading();
-            bgReading.value = average;
-            bgReading.date = timestamp;
-            bgReading.raw = glucose;
-            bgReading.direction = "NONE";
-
-            BgReading bgReadingBefore = MainApp.getDbHelper().getBgReadingBefore(timestamp);
-            if (bgReadingBefore != null) {
-                long timeDifference = timestamp - bgReadingBefore.date;
-                if (timeDifference <= 20 * 60 * 1000) {
-                    double slope = (average - bgReadingBefore.value) / (double) (timeDifference / 60000);
-                    if (slope <= -3.5) bgReading.direction = "DoubleDown";
-                    else if (slope <= -2) bgReading.direction = "SingleDown";
-                    else if (slope <= -1) bgReading.direction = "FortyFiveDown";
-                    else if (slope <= 1) bgReading.direction = "Flat";
-                    else if (slope <= 2) bgReading.direction = "FortyFiveUp";
-                    else if (slope <= 3.5) bgReading.direction = "SingleUp";
-                    else bgReading.direction = "DoubleUp";
-                }
-            }
+            BgReading bgReading = determineBGReading(previousRawValues);
 
             MainApp.getDbHelper().createIfNotExists(bgReading, "Libre2");
 
@@ -98,5 +75,45 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
         } else {
             log.error("Received faulty intent from LibreLink.");
         }
+    }
+
+    private static BgReading determineBGReading(List<Libre2RawValue> rawValues) {
+        Collections.sort(rawValues, (o1, o2) -> Long.compare(o1.timestamp, o2.timestamp));
+
+        long oldestTimestamp = rawValues.get(0).timestamp;
+        double sumX = 0;
+        double sumY = 0;
+        for (Libre2RawValue value : rawValues) {
+            sumX += (double) (value.timestamp - oldestTimestamp) / 60000D;
+            sumY += value.glucose;
+        }
+        double averageTimestamp = sumX / rawValues.size();
+        double averageGlucose = sumY / rawValues.size();
+        double a = 0;
+        double b = 0;
+        for (Libre2RawValue value : rawValues) {
+            a += ((double) (value.timestamp - oldestTimestamp) / 60000D - averageTimestamp) * (value.glucose - averageGlucose);
+            b += Math.pow((double) (value.timestamp - oldestTimestamp) / 60000D - averageTimestamp, 2);
+        }
+        double slope = a / b;
+
+        Libre2RawValue last = rawValues.get(rawValues.size() - 1);
+
+        BgReading bgReading = new BgReading();
+        bgReading.value = averageGlucose;
+        bgReading.raw = last.glucose;
+        bgReading.date = last.timestamp;
+        bgReading.direction = rawValues.size() > 1 ? determineTrendArrow(slope) : "NONE";
+        return bgReading;
+    }
+
+    private static String determineTrendArrow(double slope) {
+        if (slope <= -3.5) return "DoubleDown";
+        else if (slope <= -2) return "SingleDown";
+        else if (slope <= -1) return "FortyFiveDown";
+        else if (slope <= 1) return "Flat";
+        else if (slope <= 2) return "FortyFiveUp";
+        else if (slope <= 3.5) return "SingleUp";
+        else return "DoubleUp";
     }
 }
