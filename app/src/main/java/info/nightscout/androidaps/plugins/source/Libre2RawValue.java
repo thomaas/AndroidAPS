@@ -12,6 +12,9 @@ public class Libre2RawValue {
     public long id;
 
     @DatabaseField
+    public String serial;
+
+    @DatabaseField
     public long timestamp;
 
     @DatabaseField

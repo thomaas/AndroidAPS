@@ -54,13 +54,15 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
         if (intent.hasExtra("glucose") && intent.hasExtra("timestamp")) {
             double glucose = intent.getDoubleExtra("glucose", 0);
             long timestamp = intent.getLongExtra("timestamp", 0);
-            log.debug("Received BG reading from LibreLink: glucose=" + glucose + " timestamp=" + timestamp);
+            String serial = intent.getBundleExtra("bleManager").getString("sensorSerial");
+            log.debug("Received BG reading from LibreLink: glucose=" + glucose + " timestamp=" + timestamp + " serial=" + serial);
 
             Libre2RawValue currentRawValue = new Libre2RawValue();
             currentRawValue.timestamp = timestamp;
             currentRawValue.glucose = glucose;
+            currentRawValue.serial = serial;
 
-            List<Libre2RawValue> previousRawValues = MainApp.getDbHelper().getLibre2RawValuesBetween(timestamp - 330000, timestamp);
+            List<Libre2RawValue> previousRawValues = MainApp.getDbHelper().getLibre2RawValuesBetween(serial, timestamp - 330000, timestamp);
             MainApp.getDbHelper().createOrUpdate(currentRawValue);
             previousRawValues.add(currentRawValue);
             BgReading bgReading = determineBGReading(previousRawValues);

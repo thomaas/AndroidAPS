@@ -94,7 +94,7 @@
                 <!-- Receiver from Tomato -->
                 <action android:name="com.fanqies.tomatofn.BgEstimate"/>
                 <!-- Receiver from LibreLink -->
-                <action android:name="com.librelink.app.AndroidAPSIntegration.BROADCAST" />
+                <action android:name="com.librelink.app.AndroidAPSIntegration.GLUCOSE_READING" />
             </intent-filter>
         </receiver>
 

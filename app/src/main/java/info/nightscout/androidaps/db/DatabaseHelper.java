@@ -1783,12 +1783,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         }
     }
 
-    public List<Libre2RawValue> getLibre2RawValuesBetween(long start, long end) {
+    public List<Libre2RawValue> getLibre2RawValuesBetween(String serial, long start, long end) {
         try {
             return getDaoLibre2RawValue().queryBuilder()
                     .orderBy("timestamp", true)
                     .where().lt("timestamp", end)
                     .and().ge("timestamp", start)
+                    .and().eq("serial", serial)
                     .query();
         } catch (SQLException e) {
             log.error("Unhandled exception", e);
