@@ -95,6 +95,7 @@
                 <action android:name="com.fanqies.tomatofn.BgEstimate"/>
                 <!-- Receiver from LibreLink -->
                 <action android:name="com.librelink.app.AndroidAPSIntegration.GLUCOSE_READING" />
+                <action android:name="com.librelink.app.AndroidAPSIntegration.SENSOR_ACTIVATE" />
             </intent-filter>
         </receiver>
 

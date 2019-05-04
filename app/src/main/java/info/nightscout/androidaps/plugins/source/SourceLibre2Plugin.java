@@ -1,7 +1,10 @@
 package info.nightscout.androidaps.plugins.source;
 
 import android.content.Intent;
+import android.os.Bundle;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,12 +17,15 @@ import java.util.List;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.db.BgReading;
+import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.interfaces.BgSourceInterface;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginDescription;
 import info.nightscout.androidaps.interfaces.PluginType;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
+import info.nightscout.androidaps.services.Intents;
+import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.SP;
 
 public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface {
@@ -51,10 +57,16 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
     @Override
     public void handleNewData(Intent intent) {
         if (!isEnabled(PluginType.BGSOURCE)) return;
-        if (intent.hasExtra("glucose") && intent.hasExtra("timestamp")) {
+        if (Intents.LIBRE2_ACTIVATION.equals(intent.getAction())) saveSensorStartTime(intent.getBundleExtra("sensor"));
+        if (Intents.LIBRE2_BG.equals(intent)) {
+            Bundle sas = intent.getBundleExtra("sas");
+            if (sas != null) saveSensorStartTime(sas.getBundle("currentSensor"));
+            if (!intent.hasExtra("glucose") || !intent.hasExtra("timestamp") || !intent.hasExtra("bleManager")) return;
             double glucose = intent.getDoubleExtra("glucose", 0);
             long timestamp = intent.getLongExtra("timestamp", 0);
+            Bundle bleManager = intent.getBundleExtra("bleManager");
             String serial = intent.getBundleExtra("bleManager").getString("sensorSerial");
+            if (serial == null) return;
             log.debug("Received BG reading from LibreLink: glucose=" + glucose + " timestamp=" + timestamp + " serial=" + serial);
 
             Libre2RawValue currentRawValue = new Libre2RawValue();
@@ -76,6 +88,23 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
                 NSUpload.sendToXdrip(bgReading);
         } else {
             log.error("Received faulty intent from LibreLink.");
+        }
+    }
+
+    private static void saveSensorStartTime(Bundle sensor) {
+        if (sensor != null && sensor.containsKey("sensorStartTime")) {
+            long sensorStartTime = sensor.getLong("sensorStartTime");
+            if (MainApp.getDbHelper().getCareportalEventFromTimestamp(sensorStartTime) == null) {
+                try {
+                    JSONObject data = new JSONObject();
+                    data.put("enteredBy", "AndroidAPS-Libre2");
+                    data.put("created_at", DateUtil.toISOString(sensorStartTime));
+                    data.put("eventType", CareportalEvent.SENSORCHANGE);
+                    NSUpload.uploadCareportalEntryToNS(data);
+                } catch (JSONException e) {
+                    log.error("Exception in Libre 2 plugin", e);
+                }
+            }
         }
     }
 

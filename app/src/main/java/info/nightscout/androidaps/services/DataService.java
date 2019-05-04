@@ -82,7 +82,7 @@ public class DataService extends IntentService {
             SourceTomatoPlugin.getPlugin().handleNewData(intent);
         } else if (Intents.EVERSENSE_BG.equals(action)) {
             SourceEversensePlugin.getPlugin().handleNewData(intent);
-        } else if (Intents.LIBRE2_BG.equals(action)) {
+        } else if (Intents.LIBRE2_BG.equals(action) || Intents.LIBRE2_ACTIVATION.equals(action)) {
             SourceLibre2Plugin.getPlugin().handleNewData(intent);
         } else if (Intents.ACTION_NEW_SGV.equals(action)) {
             SourceNSClientPlugin.getPlugin().handleNewData(intent);

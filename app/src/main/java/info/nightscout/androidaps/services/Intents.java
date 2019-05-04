@@ -53,6 +53,7 @@ public interface Intents {
     String DEXCOMG6_BG = "com.dexcom.cgm.AndroidAPSEVGCallback.BROADCAST";
     String EVERSENSE_BG = "com.senseonics.AndroidAPSEventSubscriber.BROADCAST";
     String LIBRE2_BG = "com.librelink.app.AndroidAPSIntegration.GLUCOSE_READING";
+    String LIBRE2_ACTIVATION = "com.librelink.app.AndroidAPSIntegration.SENSOR_NFC_ACTIVATE_EXCEPTION";
 
     String POCTECH_BG = "com.china.poctech.data";
     String TOMATO_BG = "com.fanqies.tomatofn.BgEstimate";
