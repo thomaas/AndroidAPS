@@ -8,11 +8,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
@@ -29,6 +27,9 @@ import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.SP;
 
 public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface {
+
+    private static long SMOOTHING_DURATION = TimeUnit.MINUTES.toMillis(7);
+    private static long TREND_DURATION = TimeUnit.MINUTES.toMillis(10);
 
     private static Logger log = LoggerFactory.getLogger(L.BGSOURCE);
 
@@ -57,7 +58,8 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
     @Override
     public void handleNewData(Intent intent) {
         if (!isEnabled(PluginType.BGSOURCE)) return;
-        if (Intents.LIBRE2_ACTIVATION.equals(intent.getAction())) saveSensorStartTime(intent.getBundleExtra("sensor"));
+        if (Intents.LIBRE2_ACTIVATION.equals(intent.getAction()))
+            saveSensorStartTime(intent.getBundleExtra("sensor"));
         if (Intents.LIBRE2_BG.equals(intent.getAction())) {
             Bundle sas = intent.getBundleExtra("sas");
             if (sas != null) saveSensorStartTime(sas.getBundle("currentSensor"));
@@ -79,10 +81,17 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
             currentRawValue.glucose = glucose;
             currentRawValue.serial = serial;
 
-            List<Libre2RawValue> previousRawValues = MainApp.getDbHelper().getLibre2RawValuesBetween(serial, timestamp - 330000, timestamp);
+            List<Libre2RawValue> smoothingValues = MainApp.getDbHelper().getLibre2RawValuesBetween(serial, timestamp - SMOOTHING_DURATION, timestamp);
+            List<Libre2RawValue> trendValues = MainApp.getDbHelper().getLibre2RawValuesBetween(serial, timestamp - TREND_DURATION, timestamp);
+            smoothingValues.add(currentRawValue);
+            trendValues.add(currentRawValue);
             MainApp.getDbHelper().createOrUpdate(currentRawValue);
-            previousRawValues.add(currentRawValue);
-            BgReading bgReading = determineBGReading(previousRawValues);
+
+            BgReading bgReading = new BgReading();
+            bgReading.raw = currentRawValue.glucose;
+            bgReading.date = currentRawValue.timestamp;
+            bgReading.value = calculateAverageValue(smoothingValues);
+            bgReading.direction = calculateTrend(trendValues);
 
             MainApp.getDbHelper().createIfNotExists(bgReading, "Libre2");
 
@@ -111,39 +120,35 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
         }
     }
 
-    private static BgReading determineBGReading(List<Libre2RawValue> rawValues) {
-        Collections.sort(rawValues, (o1, o2) -> Long.compare(o1.timestamp, o2.timestamp));
-        Libre2RawValue last = rawValues.get(rawValues.size() - 1);
+    private static double calculateAverageValue(List<Libre2RawValue> rawValues) {
+        double sum = 0;
+        for (Libre2RawValue rawValue : rawValues) {
+            sum += rawValue.glucose;
+        }
+        return Math.round(sum / (double) rawValues.size());
+    }
 
-        BgReading bgReading = new BgReading();
-        bgReading.raw = last.glucose;
-        bgReading.date = last.timestamp;
+    private static String calculateTrend(List<Libre2RawValue> rawValues) {
+        if (rawValues.size() <= 1) return "NONE";
+        Collections.sort(rawValues, (o1, o2) -> Long.compare(o1.timestamp, o2.timestamp));
 
         long oldestTimestamp = rawValues.get(0).timestamp;
         double sumX = 0;
         double sumY = 0;
         for (Libre2RawValue value : rawValues) {
-            sumX += (double) (value.timestamp - oldestTimestamp) / 60000D;
+            sumX += (double) (value.timestamp - oldestTimestamp) / (double) TimeUnit.MINUTES.toMillis(1);
             sumY += value.glucose;
         }
         double averageGlucose = sumY / rawValues.size();
-
-        bgReading.value = Math.round(averageGlucose);
-
-        if (rawValues.size() > 1) {
-            double averageTimestamp = sumX / rawValues.size();
-            double a = 0;
-            double b = 0;
-            for (Libre2RawValue value : rawValues) {
-                a += ((double) (value.timestamp - oldestTimestamp) / 60000D - averageTimestamp) * (value.glucose - averageGlucose);
-                b += Math.pow((double) (value.timestamp - oldestTimestamp) / 60000D - averageTimestamp, 2);
-            }
-            double slope = a / b;
-            bgReading.direction = determineTrendArrow(slope);
-        } else {
-            bgReading.direction = "NONE";
+        double averageTimestamp = sumX / rawValues.size();
+        double a = 0;
+        double b = 0;
+        for (Libre2RawValue value : rawValues) {
+            a += ((double) (value.timestamp - oldestTimestamp) / (double) TimeUnit.MINUTES.toMillis(1) - averageTimestamp) * (value.glucose - averageGlucose);
+            b += Math.pow((double) (value.timestamp - oldestTimestamp) / (double) TimeUnit.MINUTES.toMillis(1) - averageTimestamp, 2);
         }
-        return bgReading;
+        double slope = a / b;
+        return determineTrendArrow(slope);
     }
 
     private static String determineTrendArrow(double slope) {
