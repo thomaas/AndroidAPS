@@ -58,15 +58,20 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
     public void handleNewData(Intent intent) {
         if (!isEnabled(PluginType.BGSOURCE)) return;
         if (Intents.LIBRE2_ACTIVATION.equals(intent.getAction())) saveSensorStartTime(intent.getBundleExtra("sensor"));
-        if (Intents.LIBRE2_BG.equals(intent)) {
+        if (Intents.LIBRE2_BG.equals(intent.getAction())) {
             Bundle sas = intent.getBundleExtra("sas");
             if (sas != null) saveSensorStartTime(sas.getBundle("currentSensor"));
-            if (!intent.hasExtra("glucose") || !intent.hasExtra("timestamp") || !intent.hasExtra("bleManager")) return;
+            if (!intent.hasExtra("glucose") || !intent.hasExtra("timestamp") || !intent.hasExtra("bleManager")) {
+                log.error("Received faulty intent from LibreLink.");
+                return;
+            }
             double glucose = intent.getDoubleExtra("glucose", 0);
             long timestamp = intent.getLongExtra("timestamp", 0);
-            Bundle bleManager = intent.getBundleExtra("bleManager");
             String serial = intent.getBundleExtra("bleManager").getString("sensorSerial");
-            if (serial == null) return;
+            if (serial == null) {
+                log.error("Received faulty intent from LibreLink.");
+                return;
+            }
             log.debug("Received BG reading from LibreLink: glucose=" + glucose + " timestamp=" + timestamp + " serial=" + serial);
 
             Libre2RawValue currentRawValue = new Libre2RawValue();
@@ -86,8 +91,6 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
 
             if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false))
                 NSUpload.sendToXdrip(bgReading);
-        } else {
-            log.error("Received faulty intent from LibreLink.");
         }
     }
 
