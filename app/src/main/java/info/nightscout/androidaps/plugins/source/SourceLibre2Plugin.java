@@ -28,7 +28,7 @@ import info.nightscout.androidaps.utils.SP;
 
 public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface {
 
-    private static long SMOOTHING_DURATION = TimeUnit.MINUTES.toMillis(7);
+    private static long SMOOTHING_DURATION = TimeUnit.MINUTES.toMillis(5);
     private static long TREND_DURATION = TimeUnit.MINUTES.toMillis(10);
 
     private static Logger log = LoggerFactory.getLogger(L.BGSOURCE);
