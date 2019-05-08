@@ -74,7 +74,7 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
 
     private static void processValues(List<Libre2RawValue> values) {
         for (Libre2RawValue value : values) {
-            List<Libre2RawValue>  smoothingValues= new ArrayList<>();
+            List<Libre2RawValue> smoothingValues = new ArrayList<>();
             List<Libre2RawValue> trendValues = new ArrayList<>();
             for (Libre2RawValue value2 : values) {
                 if (Math.abs(value.timestamp - value2.timestamp) <= SMOOTHING_DURATION)
