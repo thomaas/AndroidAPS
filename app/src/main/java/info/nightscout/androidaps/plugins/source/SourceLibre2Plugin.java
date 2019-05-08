@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -61,46 +62,61 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
         if (Intents.LIBRE2_ACTIVATION.equals(intent.getAction()))
             saveSensorStartTime(intent.getBundleExtra("sensor"));
         if (Intents.LIBRE2_BG.equals(intent.getAction())) {
-            Bundle sas = intent.getBundleExtra("sas");
-            if (sas != null) saveSensorStartTime(sas.getBundle("currentSensor"));
-            if (!intent.hasExtra("glucose") || !intent.hasExtra("timestamp") || !intent.hasExtra("bleManager")) {
-                log.error("Received faulty intent from LibreLink.");
-                return;
-            }
-            double glucose = intent.getDoubleExtra("glucose", 0);
-            long timestamp = intent.getLongExtra("timestamp", 0);
-            String serial = intent.getBundleExtra("bleManager").getString("sensorSerial");
-            if (serial == null) {
-                log.error("Received faulty intent from LibreLink.");
-                return;
-            }
-            log.debug("Received BG reading from LibreLink: glucose=" + glucose + " timestamp=" + timestamp + " serial=" + serial);
-
-            Libre2RawValue currentRawValue = new Libre2RawValue();
-            currentRawValue.timestamp = timestamp;
-            currentRawValue.glucose = glucose;
-            currentRawValue.serial = serial;
-
-            List<Libre2RawValue> smoothingValues = MainApp.getDbHelper().getLibre2RawValuesBetween(serial, timestamp - SMOOTHING_DURATION, timestamp);
-            List<Libre2RawValue> trendValues = MainApp.getDbHelper().getLibre2RawValuesBetween(serial, timestamp - TREND_DURATION, timestamp);
-            smoothingValues.add(currentRawValue);
-            trendValues.add(currentRawValue);
+            Libre2RawValue currentRawValue = processIntent(intent);
+            if (currentRawValue == null) return;
             MainApp.getDbHelper().createOrUpdate(currentRawValue);
+            List<Libre2RawValue> values = MainApp.getDbHelper().getLibre2RawValuesBetween(currentRawValue.serial,
+                    currentRawValue.timestamp - 2 * SMOOTHING_DURATION - TREND_DURATION, currentRawValue.timestamp);
+            values.add(currentRawValue);
+            processValues(values);
+        }
+    }
 
+    private static void processValues(List<Libre2RawValue> values) {
+        for (Libre2RawValue value : values) {
+            List<Libre2RawValue>  smoothingValues= new ArrayList<>();
+            List<Libre2RawValue> trendValues = new ArrayList<>();
+            for (Libre2RawValue value2 : values) {
+                if (Math.abs(value.timestamp - value2.timestamp) <= SMOOTHING_DURATION)
+                    smoothingValues.add(value2);
+                if (value.timestamp - value2.timestamp <= TREND_DURATION)
+                    trendValues.add(value2);
+            }
             BgReading bgReading = new BgReading();
-            bgReading.raw = currentRawValue.glucose;
-            bgReading.date = currentRawValue.timestamp;
+            bgReading.date = value.timestamp;
+            bgReading.raw = value.glucose;
             bgReading.value = calculateAverageValue(smoothingValues);
             bgReading.direction = calculateTrend(trendValues);
-
-            MainApp.getDbHelper().createIfNotExists(bgReading, "Libre2");
-
-            if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false))
-                NSUpload.uploadBg(bgReading, "AndroidAPS-Libre2");
-
-            if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false))
-                NSUpload.sendToXdrip(bgReading);
+            if (MainApp.getDbHelper().createIfNotExists(bgReading, "Libre2")) {
+                if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false))
+                    NSUpload.uploadBg(bgReading, "AndroidAPS-Libre2");
+                if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false))
+                    NSUpload.sendToXdrip(bgReading);
+            }
         }
+    }
+
+    private static Libre2RawValue processIntent(Intent intent) {
+        Bundle sas = intent.getBundleExtra("sas");
+        if (sas != null) saveSensorStartTime(sas.getBundle("currentSensor"));
+        if (!intent.hasExtra("glucose") || !intent.hasExtra("timestamp") || !intent.hasExtra("bleManager")) {
+            log.error("Received faulty intent from LibreLink.");
+            return null;
+        }
+        double glucose = intent.getDoubleExtra("glucose", 0);
+        long timestamp = intent.getLongExtra("timestamp", 0);
+        String serial = intent.getBundleExtra("bleManager").getString("sensorSerial");
+        if (serial == null) {
+            log.error("Received faulty intent from LibreLink.");
+            return null;
+        }
+        log.debug("Received BG reading from LibreLink: glucose=" + glucose + " timestamp=" + timestamp + " serial=" + serial);
+
+        Libre2RawValue rawValue = new Libre2RawValue();
+        rawValue.timestamp = timestamp;
+        rawValue.glucose = glucose;
+        rawValue.serial = serial;
+        return rawValue;
     }
 
     private static void saveSensorStartTime(Bundle sensor) {
