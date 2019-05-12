@@ -172,7 +172,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             } else if (oldVersion < 11) {
                 database.execSQL("UPDATE sqlite_sequence SET seq = " + System.currentTimeMillis() + " WHERE name = \"" + DATABASE_INSIGHT_BOLUS_IDS + "\"");
                 database.execSQL("UPDATE sqlite_sequence SET seq = " + System.currentTimeMillis() + " WHERE name = \"" + DATABASE_INSIGHT_PUMP_IDS + "\"");
-            } else if (oldVersion < 12) {
+            }
+            if (oldVersion < 12) {
                 TableUtils.createTableIfNotExists(connectionSource, Libre2RawValue.class);
             }
         } catch (SQLException e) {
