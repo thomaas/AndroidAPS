@@ -8,7 +8,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -64,36 +63,31 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
         if (Intents.LIBRE2_BG.equals(intent.getAction())) {
             Libre2RawValue currentRawValue = processIntent(intent);
             if (currentRawValue == null) return;
+            BgReading lastBG = MainApp.getDbHelper().getBgReadingBefore(currentRawValue.timestamp);
+            if (lastBG == null || currentRawValue.timestamp - lastBG.date > TimeUnit.SECONDS.toMillis(270)) {
+                List<Libre2RawValue> smoothingValues = MainApp.getDbHelper().getLibre2RawValuesBetween(currentRawValue.serial,
+                        currentRawValue.timestamp - SMOOTHING_DURATION, currentRawValue.timestamp);
+                List<Libre2RawValue> trendValues = MainApp.getDbHelper().getLibre2RawValuesBetween(currentRawValue.serial,
+                        currentRawValue.timestamp - TREND_DURATION, currentRawValue.timestamp);
+                smoothingValues.add(currentRawValue);
+                trendValues.add(currentRawValue);
+                processValues(currentRawValue, smoothingValues, trendValues);
+            }
             MainApp.getDbHelper().createOrUpdate(currentRawValue);
-            List<Libre2RawValue> values = MainApp.getDbHelper().getLibre2RawValuesBetween(currentRawValue.serial,
-                    currentRawValue.timestamp - 2 * SMOOTHING_DURATION - TREND_DURATION, currentRawValue.timestamp);
-            values.add(currentRawValue);
-            processValues(values);
         }
     }
 
-    private static void processValues(List<Libre2RawValue> values) {
-        for (Libre2RawValue value : values) {
-            List<Libre2RawValue> smoothingValues = new ArrayList<>();
-            List<Libre2RawValue> trendValues = new ArrayList<>();
-            for (Libre2RawValue value2 : values) {
-                if (Math.abs(value.timestamp - value2.timestamp) <= SMOOTHING_DURATION)
-                    smoothingValues.add(value2);
-                if (value.timestamp - value2.timestamp <= TREND_DURATION)
-                    trendValues.add(value2);
-            }
-            BgReading bgReading = new BgReading();
-            bgReading.date = value.timestamp;
-            bgReading.raw = value.glucose;
-            bgReading.value = calculateAverageValue(smoothingValues);
-            bgReading.direction = calculateTrend(trendValues);
-            if (MainApp.getDbHelper().createIfNotExists(bgReading, "Libre2")) {
-                if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false))
-                    NSUpload.uploadBg(bgReading, "AndroidAPS-Libre2");
-                if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false))
-                    NSUpload.sendToXdrip(bgReading);
-            }
-        }
+    private static void processValues(Libre2RawValue currentValue, List<Libre2RawValue> smoothingValues, List<Libre2RawValue> trendValues) {
+        BgReading bgReading = new BgReading();
+        bgReading.date = currentValue.timestamp;
+        bgReading.raw = currentValue.glucose;
+        bgReading.value = calculateAverageValue(smoothingValues);
+        bgReading.direction = calculateTrend(trendValues);
+        MainApp.getDbHelper().createIfNotExists(bgReading, "Libre2");
+        if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false))
+            NSUpload.uploadBg(bgReading, "AndroidAPS-Libre2");
+        if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false))
+            NSUpload.sendToXdrip(bgReading);
     }
 
     private static Libre2RawValue processIntent(Intent intent) {
