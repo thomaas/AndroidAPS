@@ -28,7 +28,7 @@ import info.nightscout.androidaps.utils.SP;
 
 public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface {
 
-    private static long SMOOTHING_DURATION = TimeUnit.MINUTES.toMillis(5);
+    private static long SMOOTHING_DURATION = TimeUnit.MINUTES.toMillis(20);
     private static long TREND_DURATION = TimeUnit.MINUTES.toMillis(10);
 
     private static Logger log = LoggerFactory.getLogger(L.BGSOURCE);
@@ -65,10 +65,8 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
             if (currentRawValue == null) return;
             BgReading lastBG = MainApp.getDbHelper().getBgReadingBefore(currentRawValue.timestamp);
             if (lastBG == null || currentRawValue.timestamp - lastBG.date > TimeUnit.SECONDS.toMillis(270)) {
-                List<Libre2RawValue> smoothingValues = MainApp.getDbHelper().getLibre2RawValuesBetween(currentRawValue.serial,
-                        currentRawValue.timestamp - SMOOTHING_DURATION, currentRawValue.timestamp);
-                List<Libre2RawValue> trendValues = MainApp.getDbHelper().getLibre2RawValuesBetween(currentRawValue.serial,
-                        currentRawValue.timestamp - TREND_DURATION, currentRawValue.timestamp);
+                List<Libre2RawValue> smoothingValues = getValuesSince(currentRawValue, SMOOTHING_DURATION);
+                List<Libre2RawValue> trendValues = getValuesSince(currentRawValue, TREND_DURATION);
                 smoothingValues.add(currentRawValue);
                 trendValues.add(currentRawValue);
                 processValues(currentRawValue, smoothingValues, trendValues);
@@ -77,11 +75,16 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
         }
     }
 
+    private List<Libre2RawValue> getValuesSince(Libre2RawValue currentRawValue, long smoothingDuration) {
+        return MainApp.getDbHelper().getLibre2RawValuesBetween(currentRawValue.serial,
+                currentRawValue.timestamp - smoothingDuration, currentRawValue.timestamp);
+    }
+
     private static void processValues(Libre2RawValue currentValue, List<Libre2RawValue> smoothingValues, List<Libre2RawValue> trendValues) {
         BgReading bgReading = new BgReading();
         bgReading.date = currentValue.timestamp;
         bgReading.raw = currentValue.glucose;
-        bgReading.value = calculateAverageValue(smoothingValues);
+        bgReading.value = calculateWeightedAverage(smoothingValues, currentValue.timestamp);
         bgReading.direction = calculateTrend(trendValues);
         MainApp.getDbHelper().createIfNotExists(bgReading, "Libre2");
         if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false))
@@ -130,12 +133,15 @@ public class SourceLibre2Plugin extends PluginBase implements BgSourceInterface 
         }
     }
 
-    private static double calculateAverageValue(List<Libre2RawValue> rawValues) {
+    private static double calculateWeightedAverage(List<Libre2RawValue> rawValues, long now) {
         double sum = 0;
+        double weightSum = 0;
         for (Libre2RawValue rawValue : rawValues) {
-            sum += rawValue.glucose;
+            double weight = 1 - ((now-rawValue.timestamp)/ (double) SMOOTHING_DURATION);
+            sum += rawValue.glucose * weight;
+            weightSum += weight;
         }
-        return Math.round(sum / (double) rawValues.size());
+        return Math.round(sum / weightSum);
     }
 
     private static String calculateTrend(List<Libre2RawValue> rawValues) {
