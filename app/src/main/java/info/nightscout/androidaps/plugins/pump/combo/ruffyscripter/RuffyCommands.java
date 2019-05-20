@@ -1,5 +1,7 @@
 package info.nightscout.androidaps.plugins.pump.combo.ruffyscripter;
 
+import java.util.UUID;
+
 import info.nightscout.androidaps.plugins.pump.combo.ruffyscripter.history.PumpHistoryRequest;
 
 public interface RuffyCommands {
@@ -19,6 +21,8 @@ public interface RuffyCommands {
 
     /** Indicate if the pump is ready to receive commands. */
     boolean isPumpAvailable();
+
+    UUID getUUID();
 
     /** Indicate of the pump is busy processing a command. */
     boolean isPumpBusy();

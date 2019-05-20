@@ -15,6 +15,6 @@ interface IRTHandler {
     void rtClearDisplay();
     void rtUpdateDisplay(in byte[] quarter, int which);
 
-    void rtDisplayHandleMenu(in Menu menu);
+    void rtDisplayHandleMenu(in Menu menu, in String mac);
     void rtDisplayHandleNoMenu();
 }

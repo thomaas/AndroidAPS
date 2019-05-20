@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import info.nightscout.androidaps.plugins.pump.combo.ruffyscripter.commands.ReadQuickInfoCommand;
 import info.nightscout.androidaps.plugins.pump.combo.ruffyscripter.history.PumpHistoryRequest;
@@ -51,6 +52,7 @@ public class RuffyScripter implements RuffyCommands {
 
     @Nullable
     private volatile Menu currentMenu;
+    private volatile String currentMac;
     private volatile long menuLastUpdated = 0;
     private volatile boolean unparsableMenuEncountered;
 
@@ -98,10 +100,11 @@ public class RuffyScripter implements RuffyCommands {
         }
 
         @Override
-        public void rtDisplayHandleMenu(Menu menu) {
+        public void rtDisplayHandleMenu(Menu menu, String mac) {
+            //FIXME do something with the mac
             // method is called every ~500ms
             log.debug("rtDisplayHandleMenu: " + menu);
-
+            currentMac = mac;
             currentMenu = menu;
             menuLastUpdated = System.currentTimeMillis();
 
@@ -166,6 +169,13 @@ public class RuffyScripter implements RuffyCommands {
     @Override
     public boolean isPumpAvailable() {
         return started;
+    }
+
+    @Override
+    public UUID getUUID() {
+        String mac = currentMac;
+        if (mac == null) return null;
+        return UUID.nameUUIDFromBytes(currentMac.getBytes());
     }
 
     @Override
