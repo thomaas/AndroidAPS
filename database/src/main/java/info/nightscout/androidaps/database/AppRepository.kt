@@ -8,45 +8,44 @@ import io.reactivex.Completable
 
 class AppRepository(context: Context) {
 
-    private val database : AppDatabase = Room.databaseBuilder(context, AppDatabase::class.java, "AndroidAPS.db").build()
+    private val database: AppDatabase = Room.databaseBuilder(context, AppDatabase::class.java, "AndroidAPS.db").build()
 
-    fun insertGlucoseValues(vararg glucoseValues: GlucoseValue) : Completable {
-        glucoseValues.prepareForInsert()
-        return database.glucoseValueDao().insert(*glucoseValues)
-    }
+    fun insertGlucoseValues(vararg glucoseValues: GlucoseValue) = insert(glucoseValues, database.glucoseValueDao()::insert)
 
-    fun updateGlucoseValues(vararg glucoseValues: GlucoseValue) : Completable {
-        glucoseValues.prepareForUpdate()
-        return Completable.create {
-            database.runInTransaction {
-                glucoseValues.forEach {
-                    val current = database.glucoseValueDao().findById(it.id)
-                    it.id = 0
-                    it.version = current.version + 1
-                    database.glucoseValueDao().insertNow(it)
-                    current.referenceID = it.id
-                    database.glucoseValueDao().updateNow(current)
-                }
-            }
-        }
-    }
+    fun updateGlucoseValues(vararg glucoseValues: GlucoseValue) =
+            update(glucoseValues, {database.glucoseValueDao().insertNow(it)}, {database.glucoseValueDao().updateNow(it)},
+                    {database.glucoseValueDao().findByIdNow(it)})
 
-    private fun Array<out DBEntry>.prepareForInsert() {
-        forEach {
+    private fun <T : DBEntry> insert(entries: Array<T>, insertQuery: (Array<out T>) -> Completable): Completable {
+        entries.forEach {
             if (it.id != 0L) throw IllegalArgumentException("ID must be 0.")
             if (it.version != 0) throw IllegalArgumentException("Version must be 0.")
             if (it.referenceID != 0L) throw IllegalArgumentException("Reference ID must be 0.")
         }
-        val lastModified = System.currentTimeMillis()
-        forEach { it.lastModified = lastModified }
+        return Completable.create {
+            val lastModified = System.currentTimeMillis()
+            entries.forEach { it.lastModified = lastModified }
+        }.mergeWith(insertQuery(entries))
     }
 
-    private fun Array<out DBEntry>.prepareForUpdate() {
-        forEach {
+    private fun <T : DBEntry> update(entries: Array<out T>, insertQuery: (T) -> Unit, updateQuery: (T) -> Unit, findQuery: (Long) -> T) : Completable {
+        entries.forEach {
             if (it.id == 0L) throw IllegalArgumentException("ID must not be 0.")
             if (it.referenceID != 0L) throw IllegalArgumentException("Reference ID must be 0")
         }
-        val lastModified = System.currentTimeMillis()
-        forEach { it.lastModified = lastModified }
+        return Completable.create {
+            database.runInTransaction {
+                val lastModified = System.currentTimeMillis()
+                entries.forEach { it.lastModified = lastModified }
+                entries.forEach {
+                    val current = findQuery(it.id)
+                    it.id = 0
+                    it.version = current.version + 1
+                    insertQuery(it)
+                    current.referenceID = it.id
+                    updateQuery(current)
+                }
+            }
+        }
     }
 }

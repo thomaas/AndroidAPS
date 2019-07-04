@@ -21,10 +21,7 @@ abstract class GlucoseValueDao {
     @Update
     abstract fun updateNow(vararg glucoseValues : GlucoseValue)
 
-    @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE timestamp = :timestamp AND valid = 1 AND referenceID = 0 LIMIT 1")
-    abstract fun findValidByTimestamp(timestamp: Long) : Maybe<GlucoseValue>
-
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE id = :id")
-    abstract fun findById(id: Long) : GlucoseValue
+    abstract fun findByIdNow(id: Long) : GlucoseValue
 
 }
