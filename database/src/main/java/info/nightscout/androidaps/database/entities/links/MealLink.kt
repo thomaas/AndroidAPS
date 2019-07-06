@@ -40,12 +40,16 @@ data class MealLink(
         override var version: Int = 0,
         override var lastModified: Long = -1,
         override var valid: Boolean = true,
-        override var referenceID: Long = 0,
+        override var referenceID: Long? = null,
         @Embedded
-        override var interfaceIDs: InterfaceIDs = InterfaceIDs(),
-        var bolusID: Long = 0,
-        var carbsID: Long = 0,
-        var bolusCalcResultID: Long = 0,
-        var superbolusTempBasalID: Long = 0,
-        var noteID: Long = 0
-) : DBEntry
+        override var interfaceIDs2: InterfaceIDs? = null,
+        var bolusID: Long? = null,
+        var carbsID: Long? = null,
+        var bolusCalcResultID: Long? = null,
+        var superbolusTempBasalID: Long? = null,
+        var noteID: Long? = null
+) : DBEntry {
+    override val foreignKeysValid: Boolean
+        get() = super.foreignKeysValid && bolusID != 0L && carbsID != 0L &&
+                bolusCalcResultID != 0L && superbolusTempBasalID != 0L && noteID != 0L
+}

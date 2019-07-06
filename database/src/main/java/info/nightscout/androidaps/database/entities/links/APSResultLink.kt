@@ -33,10 +33,13 @@ data class APSResultLink(
         override var version: Int = 0,
         override var lastModified: Long = -1,
         override var valid: Boolean = true,
-        override var referenceID: Long = 0,
+        override var referenceID: Long? = null,
         @Embedded
-        override var interfaceIDs: InterfaceIDs = InterfaceIDs(),
-        var apsResultID: Long = 0,
-        var smbID: Long = 0,
-        var tbrID: Long= 0
-) : DBEntry
+        override var interfaceIDs2: InterfaceIDs? = null,
+        var apsResultID: Long,
+        var smbID: Long? = null,
+        var tbrID: Long? = null
+) : DBEntry {
+    override val foreignKeysValid: Boolean
+        get() = super.foreignKeysValid && apsResultID != 0L && smbID != 0L && tbrID != 0L
+}

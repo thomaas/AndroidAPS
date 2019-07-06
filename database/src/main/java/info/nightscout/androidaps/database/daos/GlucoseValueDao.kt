@@ -8,18 +8,9 @@ import io.reactivex.Maybe
 import io.reactivex.Single
 
 @Dao
-abstract class GlucoseValueDao {
-
-    @Insert
-    abstract fun insert(vararg glucoseValues : GlucoseValue) : Completable
-
-    @Insert
-    abstract fun insertNow(vararg glucoseValues: GlucoseValue)
-
-    @Update
-    abstract fun updateNow(vararg glucoseValues : GlucoseValue)
+abstract class GlucoseValueDao : BaseDao<GlucoseValue>() {
 
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE id = :id")
-    abstract fun findByIdNow(id: Long) : GlucoseValue
+    abstract override fun findById(id: Long): GlucoseValue
 
 }

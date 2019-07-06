@@ -13,6 +13,6 @@ import info.nightscout.androidaps.database.entities.*
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract fun glucoseValueDao() : GlucoseValueDao
+    abstract val glucoseValueDao : GlucoseValueDao
 
 }
