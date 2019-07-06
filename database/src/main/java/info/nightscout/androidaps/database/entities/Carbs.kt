@@ -1,9 +1,6 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_CARBS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.interfaces.DBEntry
@@ -13,7 +10,8 @@ import info.nightscout.androidaps.database.interfaces.DBEntryWithTimeAndDuration
         foreignKeys = [ForeignKey(
                 entity = Carbs::class,
                 parentColumns = ["id"],
-                childColumns = ["referenceID"])])
+                childColumns = ["referenceID"])],
+        indices = [Index("referenceID"), Index("timestamp")])
 data class Carbs(
         @PrimaryKey(autoGenerate = true)
         override var id: Long = 0,

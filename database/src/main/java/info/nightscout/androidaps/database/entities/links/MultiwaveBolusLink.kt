@@ -1,9 +1,6 @@
 package info.nightscout.androidaps.database.entities.links
 
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_MULTIWAVE_BOLUS_LINKS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.Bolus
@@ -22,7 +19,9 @@ import info.nightscout.androidaps.database.interfaces.DBEntry
 
                 entity = MultiwaveBolusLink::class,
                 parentColumns = ["id"],
-                childColumns = ["referenceID"])])
+                childColumns = ["referenceID"])],
+        indices = [Index("referenceID"), Index("bolusID"),
+                Index("extendedBolusID")])
 data class MultiwaveBolusLink(
         @PrimaryKey(autoGenerate = true)
         override var id: Long = 0,

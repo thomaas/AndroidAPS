@@ -6,9 +6,15 @@ import info.nightscout.androidaps.database.entities.GlucoseValue
 import info.nightscout.androidaps.database.interfaces.DBEntry
 import io.reactivex.Completable
 
-class AppRepository(context: Context) {
+object AppRepository {
 
-    private val database: AppDatabase = Room.databaseBuilder(context, AppDatabase::class.java, "AndroidAPS.db").build()
+    const val DB_FILE = "AndroidAPS.db"
+
+    private lateinit var database: AppDatabase;
+
+    fun initialize(context: Context) {
+        database = Room.databaseBuilder(context, AppDatabase::class.java, DB_FILE).build()
+    }
 
     fun insertGlucoseValues(vararg glucoseValues: GlucoseValue) = insert(glucoseValues, database.glucoseValueDao()::insert)
 

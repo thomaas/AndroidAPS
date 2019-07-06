@@ -1,9 +1,6 @@
 package info.nightscout.androidaps.database.entities.links
 
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_APS_RESULT_LINKS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.APSResult
@@ -27,7 +24,9 @@ import info.nightscout.androidaps.database.interfaces.DBEntry
 
                 entity = APSResultLink::class,
                 parentColumns = arrayOf("id"),
-                childColumns = arrayOf("referenceID"))])
+                childColumns = arrayOf("referenceID"))],
+        indices = [Index("referenceID"), Index("apsResultID"),
+                Index("smbID"), Index("tbrID")])
 data class APSResultLink(
         @PrimaryKey(autoGenerate = true)
         override var id: Long = 0,

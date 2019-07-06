@@ -37,6 +37,4 @@ dependencies {
     implementation "androidx.room:room-rxjava2:$room_version"
 
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
-
-    implementation "org.json:json:20180813"
 }

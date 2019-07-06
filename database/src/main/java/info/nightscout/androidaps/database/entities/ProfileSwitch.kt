@@ -1,9 +1,6 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 import info.nightscout.androidaps.database.Block
 import info.nightscout.androidaps.database.TABLE_PROFILE_SWITCHES
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
@@ -14,7 +11,8 @@ import info.nightscout.androidaps.database.interfaces.DBEntryWithTimeAndDuration
         foreignKeys = [ForeignKey(
                 entity = ProfileSwitch::class,
                 parentColumns = ["id"],
-                childColumns = ["referenceID"])])
+                childColumns = ["referenceID"])],
+        indices = [Index("referenceID"), Index("timestamp")])
 data class ProfileSwitch(
         @PrimaryKey(autoGenerate = true)
         override var id: Long = 0,

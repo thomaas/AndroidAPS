@@ -1,15 +1,13 @@
 package info.nightscout.androidaps.database.daos
 
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_GLUCOSE_VALUES
 import info.nightscout.androidaps.database.entities.GlucoseValue
 import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
 
+@Dao
 abstract class GlucoseValueDao {
 
     @Insert
