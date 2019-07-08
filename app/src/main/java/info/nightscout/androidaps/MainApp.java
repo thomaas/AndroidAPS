@@ -190,7 +190,7 @@ public class MainApp extends Application {
             if (Config.SAFETY) pluginsList.add(VersionCheckerPlugin.INSTANCE);
             if (Config.SAFETY) pluginsList.add(StorageConstraintPlugin.getPlugin());
             if (Config.APS) pluginsList.add(ObjectivesPlugin.getPlugin());
-            pluginsList.add(SourceXdripPlugin.getPlugin());
+            pluginsList.add(SourceXdripPlugin.INSTANCE);
             pluginsList.add(SourceNSClientPlugin.getPlugin());
             pluginsList.add(SourceMM640gPlugin.getPlugin());
             pluginsList.add(SourceGlimpPlugin.getPlugin());

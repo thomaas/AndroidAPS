@@ -26,8 +26,4 @@ object AppRepository {
                     }
                 }
     }
-
-    fun insertNewEntry(entry: GlucoseValue) = database.glucoseValueDao.insertNewEntry(entry)
-
-    fun updateExistingEntry(entry: GlucoseValue) = database.glucoseValueDao.updateExistingEntry(entry)
 }

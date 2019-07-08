@@ -16,15 +16,16 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.events.EventNsFood;
 import info.nightscout.androidaps.events.EventNsTreatment;
+import info.nightscout.androidaps.logging.BundleLogger;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.general.nsclient.data.NSDeviceStatus;
 import info.nightscout.androidaps.plugins.general.nsclient.data.NSMbg;
 import info.nightscout.androidaps.plugins.general.nsclient.data.NSSettingsStatus;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
+import info.nightscout.androidaps.plugins.general.smsCommunicator.SmsCommunicatorPlugin;
 import info.nightscout.androidaps.plugins.profile.ns.NSProfilePlugin;
 import info.nightscout.androidaps.plugins.pump.danaR.activities.DanaRNSHistorySync;
-import info.nightscout.androidaps.plugins.general.smsCommunicator.SmsCommunicatorPlugin;
 import info.nightscout.androidaps.plugins.source.SourceDexcomPlugin;
 import info.nightscout.androidaps.plugins.source.SourceEversensePlugin;
 import info.nightscout.androidaps.plugins.source.SourceGlimpPlugin;
@@ -34,7 +35,6 @@ import info.nightscout.androidaps.plugins.source.SourcePoctechPlugin;
 import info.nightscout.androidaps.plugins.source.SourceTomatoPlugin;
 import info.nightscout.androidaps.plugins.source.SourceXdripPlugin;
 import info.nightscout.androidaps.receivers.DataReceiver;
-import info.nightscout.androidaps.logging.BundleLogger;
 import info.nightscout.androidaps.utils.JsonHelper;
 import info.nightscout.androidaps.utils.SP;
 
@@ -63,7 +63,7 @@ public class DataService extends IntentService {
 
         final String action = intent.getAction();
         if (Intents.ACTION_NEW_BG_ESTIMATE.equals(action)) {
-            SourceXdripPlugin.getPlugin().handleNewData(intent);
+            SourceXdripPlugin.INSTANCE.handleNewData(intent);
         } else if (Intents.NS_EMULATOR.equals(action)) {
             SourceMM640gPlugin.getPlugin().handleNewData(intent);
         } else if (Intents.GLIMP_BG.equals(action)) {

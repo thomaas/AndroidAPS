@@ -3,7 +3,6 @@ package info.nightscout.androidaps.plugins.general.overview;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.NotificationManager;
-import androidx.arch.core.util.Function;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -12,14 +11,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.recyclerview.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
@@ -33,6 +24,16 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.arch.core.util.Function;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.jjoe64.graphview.GraphView;
 import com.squareup.otto.Subscribe;
@@ -654,7 +655,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
 
     @Override
     public void onClick(View v) {
-        boolean xdrip = SourceXdripPlugin.getPlugin().isEnabled(PluginType.BGSOURCE);
+        boolean xdrip = SourceXdripPlugin.INSTANCE.isEnabled(PluginType.BGSOURCE);
         boolean dexcom = SourceDexcomPlugin.INSTANCE.isEnabled(PluginType.BGSOURCE);
         String units = ProfileFunctions.getInstance().getProfileUnits();
 
@@ -1090,7 +1091,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
         }
 
         // **** Calibration & CGM buttons ****
-        boolean xDripIsBgSource = MainApp.getSpecificPlugin(SourceXdripPlugin.class) != null && MainApp.getSpecificPlugin(SourceXdripPlugin.class).isEnabled(PluginType.BGSOURCE);
+        boolean xDripIsBgSource = SourceXdripPlugin.INSTANCE.isEnabled(PluginType.BGSOURCE);
         boolean dexcomIsSource = SourceDexcomPlugin.INSTANCE.isEnabled(PluginType.BGSOURCE);
         boolean bgAvailable = DatabaseHelper.actualBg() != null;
         if (calibrationButton != null) {

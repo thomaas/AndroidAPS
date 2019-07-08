@@ -42,7 +42,7 @@ data class GlucoseValue(
 
     enum class TrendArrow {
         NONE,
-        TRIPPLE_UP,
+        TRIPLE_UP,
         DOUBLE_UP,
         SINGLE_UP,
         FORTY_FIVE_UP,
