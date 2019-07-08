@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.annotation.NonNull
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_GLUCOSE_VALUES
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
@@ -29,7 +28,17 @@ data class GlucoseValue(
         var trendArrow: TrendArrow,
         var noise: Double?,
         var sourceSensor: SourceSensor
-) : DBEntry, DBEntryWithTime {
+) : DBEntry<GlucoseValue>, DBEntryWithTime {
+
+    override fun contentEqualsTo(other: GlucoseValue): Boolean {
+        return timestamp == other.timestamp &&
+                utcOffset == other.utcOffset &&
+                raw == other.raw &&
+                value == other.value &&
+                trendArrow == other.trendArrow &&
+                noise == other.noise &&
+                sourceSensor == other.sourceSensor
+    }
 
     enum class TrendArrow {
         NONE,

@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.annotation.NonNull
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_APS_RESULTS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
@@ -24,4 +23,4 @@ data class APSResult(
         override var interfaceIDs2: InterfaceIDs? = null,
         override var timestamp: Long,
         override var utcOffset: Long
-) : DBEntry, DBEntryWithTime
+) : DBEntry<APSResult>, DBEntryWithTime

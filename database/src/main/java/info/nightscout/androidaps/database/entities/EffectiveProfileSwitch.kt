@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.annotation.NonNull
 import androidx.room.*
 import info.nightscout.androidaps.database.Block
 import info.nightscout.androidaps.database.TABLE_EFFECTIVE_PROFILE_SWITCHES
@@ -27,4 +26,4 @@ data class EffectiveProfileSwitch(
         override var utcOffset: Long,
         override var duration: Long,
         var basalBlocks: List<Block>
-) : DBEntry, DBEntryWithTimeAndDuration
+) : DBEntry<EffectiveProfileSwitch>, DBEntryWithTimeAndDuration

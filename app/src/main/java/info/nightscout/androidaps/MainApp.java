@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.os.SystemClock;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.PluralsRes;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -24,6 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import info.nightscout.androidaps.data.ConstraintChecker;
+import info.nightscout.androidaps.database.AppRepository;
 import info.nightscout.androidaps.db.DatabaseHelper;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginType;
@@ -118,6 +120,7 @@ public class MainApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        AppRepository.INSTANCE.initialize(this);
         log.debug("onCreate");
         sInstance = this;
         sResources = getResources();

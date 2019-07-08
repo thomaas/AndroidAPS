@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.annotation.NonNull
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_TEMPORARY_TARGETS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
@@ -27,7 +26,7 @@ data class TemporaryTarget(
         var reason: Reason,
         var target: Double,
         override var duration: Long
-) : DBEntry, DBEntryWithTimeAndDuration {
+) : DBEntry<TemporaryTarget>, DBEntryWithTimeAndDuration {
     enum class Reason {
         CUSTOM,
         HYPOGLYCEMIA,

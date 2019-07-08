@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.annotation.NonNull
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_TEMPORARY_BASALS
 import info.nightscout.androidaps.database.embedments.InsulinConfiguration
@@ -32,7 +31,7 @@ data class TemporaryBasal(
         override var duration: Long,
         @Embedded
         override var insulinConfiguration: InsulinConfiguration
-) : DBEntry, DBEntryWithTimeAndDuration, DBEntryWithInsulinConfig {
+) : DBEntry<TemporaryBasal>, DBEntryWithTimeAndDuration, DBEntryWithInsulinConfig {
     enum class Type {
         NORMAL,
         EMULATED_PUMP_SUSPEND,

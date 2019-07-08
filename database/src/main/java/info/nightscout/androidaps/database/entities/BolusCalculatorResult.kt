@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.annotation.NonNull
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_BOLUS_CALCULATOR_RESULTS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
@@ -44,4 +43,4 @@ data class BolusCalculatorResult(
         var carbsInsulin: Double,
         var otherCorrection: Double,
         var totalInsulin: Double
-) : DBEntry, DBEntryWithTime
+) : DBEntry<BolusCalculatorResult>, DBEntryWithTime

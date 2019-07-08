@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.annotation.NonNull
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_BOLUSES
 import info.nightscout.androidaps.database.embedments.InsulinConfiguration
@@ -31,7 +30,7 @@ data class Bolus(
         var basalInsulin: Boolean,
         @Embedded
         override var insulinConfiguration: InsulinConfiguration
-) : DBEntry, DBEntryWithTime, DBEntryWithInsulinConfig {
+) : DBEntry<Bolus>, DBEntryWithTime, DBEntryWithInsulinConfig {
     enum class Type {
         NORMAL,
         SMB,

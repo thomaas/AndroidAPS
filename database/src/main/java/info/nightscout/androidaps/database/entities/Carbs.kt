@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.annotation.NonNull
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_CARBS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
@@ -26,4 +25,4 @@ data class Carbs(
         override var utcOffset: Long,
         override var duration: Long,
         var amount: Double
-) : DBEntry, DBEntryWithTimeAndDuration
+) : DBEntry<Carbs>, DBEntryWithTimeAndDuration

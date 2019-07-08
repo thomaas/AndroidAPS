@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.annotation.NonNull
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_THERAPY_EVENTS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
@@ -28,7 +27,7 @@ data class TherapyEvent(
         var type: Type,
         var note: String?,
         var amount: Double?
-) : DBEntry, DBEntryWithTimeAndDuration {
+) : DBEntry<TherapyEvent>, DBEntryWithTimeAndDuration {
     enum class Type {
         CANNULA_CHANGED,
         TUBE_CHANGED,

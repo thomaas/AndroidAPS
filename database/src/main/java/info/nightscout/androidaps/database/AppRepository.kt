@@ -1,13 +1,9 @@
 package info.nightscout.androidaps.database
 
 import android.content.Context
-import android.util.Log
 import androidx.room.Room
 import info.nightscout.androidaps.database.entities.GlucoseValue
-import io.reactivex.CompletableObserver
-import io.reactivex.SingleObserver
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.Single
 
 object AppRepository {
 
@@ -18,4 +14,20 @@ object AppRepository {
     fun initialize(context: Context) {
         database = Room.databaseBuilder(context, AppDatabase::class.java, DB_FILE).build()
     }
+
+    fun createOrUpdateBasedOnTimestamp(glucoseValue: GlucoseValue): Single<Boolean> {
+        return database.glucoseValueDao.findByTimestamp(glucoseValue.timestamp)
+                .materialize()
+                .flatMap {
+                    when {
+                        it.value == null -> database.glucoseValueDao.insertNewEntry(glucoseValue).flatMap { Single.just(true) }
+                        it.value!!.contentEqualsTo(glucoseValue) -> Single.just(false)
+                        else -> database.glucoseValueDao.updateExistingEntry(glucoseValue.copy(id = it.value!!.id)).flatMap { Single.just(false) }
+                    }
+                }
+    }
+
+    fun insertNewEntry(entry: GlucoseValue) = database.glucoseValueDao.insertNewEntry(entry)
+
+    fun updateExistingEntry(entry: GlucoseValue) = database.glucoseValueDao.updateExistingEntry(entry)
 }

@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.annotation.NonNull
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_TOTAL_DAILY_DOSE
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
@@ -27,4 +26,4 @@ data class TotalDailyDose(
         var basalAmount: Double?,
         var totalAmount: Double?,
         var bolusAmount: Double?
-) : DBEntry, DBEntryWithTime
+) : DBEntry<TotalDailyDose>, DBEntryWithTime

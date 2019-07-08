@@ -1,10 +1,10 @@
 package info.nightscout.androidaps.database.entities.links
 
 import androidx.room.*
-import info.nightscout.androidaps.database.embedments.InterfaceIDs
-import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.TABLE_MEAL_LINKS
+import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.*
+import info.nightscout.androidaps.database.interfaces.DBEntry
 
 @Entity(tableName = TABLE_MEAL_LINKS,
         foreignKeys = [ForeignKey(
@@ -48,7 +48,7 @@ data class MealLink(
         var bolusCalcResultID: Long? = null,
         var superbolusTempBasalID: Long? = null,
         var noteID: Long? = null
-) : DBEntry {
+) : DBEntry<MealLink> {
     override val foreignKeysValid: Boolean
         get() = super.foreignKeysValid && bolusID != 0L && carbsID != 0L &&
                 bolusCalcResultID != 0L && superbolusTempBasalID != 0L && noteID != 0L

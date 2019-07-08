@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.entities
 
-import androidx.annotation.NonNull
 import androidx.room.*
 import info.nightscout.androidaps.database.Block
 import info.nightscout.androidaps.database.TABLE_PROFILE_SWITCHES
@@ -34,7 +33,7 @@ data class ProfileSwitch(
         var timeshift: Int,
         var percentage: Int,
         override var duration: Long
-) : DBEntry, DBEntryWithTimeAndDuration {
+) : DBEntry<ProfileSwitch>, DBEntryWithTimeAndDuration {
     enum class GlucoseUnit {
         MGDL,
         MMOL
