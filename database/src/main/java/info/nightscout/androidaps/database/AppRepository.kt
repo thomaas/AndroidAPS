@@ -20,9 +20,9 @@ object AppRepository {
                 .materialize()
                 .flatMap {
                     when {
-                        it.value == null -> database.glucoseValueDao.insertNewEntry(glucoseValue).flatMap { Single.just(true) }
+                        it.value == null -> database.glucoseValueDao.insertNewEntry(glucoseValue).map { true }
                         it.value!!.contentEqualsTo(glucoseValue) -> Single.just(false)
-                        else -> database.glucoseValueDao.updateExistingEntry(glucoseValue.copy(id = it.value!!.id)).flatMap { Single.just(false) }
+                        else -> database.glucoseValueDao.updateExistingEntry(glucoseValue.copy(id = it.value!!.id)).map { true }
                     }
                 }
     }
