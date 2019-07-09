@@ -199,7 +199,7 @@ public class MainApp extends Application {
             pluginsList.add(SourcePoctechPlugin.getPlugin());
             pluginsList.add(SourceTomatoPlugin.getPlugin());
             pluginsList.add(SourceEversensePlugin.getPlugin());
-            pluginsList.add(SourceLibre2Plugin.getPlugin());
+            pluginsList.add(SourceLibre2Plugin.INSTANCE);
             if (Config.SMSCOMMUNICATORENABLED) pluginsList.add(SmsCommunicatorPlugin.getPlugin());
             pluginsList.add(FoodPlugin.getPlugin());
 
