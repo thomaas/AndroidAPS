@@ -3,7 +3,7 @@ package info.nightscout.androidaps.plugins.source
 import android.content.Intent
 import info.nightscout.androidaps.MainApp
 import info.nightscout.androidaps.R
-import info.nightscout.androidaps.database.AppRepository
+import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
 import info.nightscout.androidaps.db.BgReading
 import info.nightscout.androidaps.interfaces.BgSourceInterface
@@ -13,7 +13,6 @@ import info.nightscout.androidaps.interfaces.PluginType
 import info.nightscout.androidaps.logging.BundleLogger
 import info.nightscout.androidaps.logging.L
 import info.nightscout.androidaps.services.Intents
-import io.reactivex.schedulers.Schedulers
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -53,11 +52,15 @@ object SourceXdripPlugin : PluginBase(PluginDescription()
             this.advancedFiltering = source.contains("G5 Native") || source.contains("G6 Native")
             MainApp.getDbHelper().createIfNotExists(bgReading, "XDRIP")
 
-            val trendArrow: GlucoseValue.TrendArrow
-            trendArrow = try {
-                GlucoseValue.TrendArrow.valueOf(bundle.getString(Intents.EXTRA_BG_SLOPE_NAME)!!.toUpperCase())
-            } catch (e: IllegalArgumentException) {
-                GlucoseValue.TrendArrow.NONE
+            val trendArrow = when(bundle.getString(Intents.EXTRA_BG_SLOPE_NAME)!!) {
+                "DoubleDown" -> GlucoseValue.TrendArrow.DOUBLE_DOWN
+                "SingleDown" -> GlucoseValue.TrendArrow.SINGLE_DOWN
+                "FortyFiveDown" -> GlucoseValue.TrendArrow.FORTY_FIVE_DOWN
+                "Flat" -> GlucoseValue.TrendArrow.FLAT
+                "FortyFiveUp" -> GlucoseValue.TrendArrow.FORTY_FIVE_UP
+                "SingleUp" -> GlucoseValue.TrendArrow.SINGLE_UP
+                "DoubleUp" -> GlucoseValue.TrendArrow.DOUBLE_UP
+                else -> GlucoseValue.TrendArrow.NONE
             }
 
             val timestamp = bundle.getLong(Intents.EXTRA_TIMESTAMP)
@@ -72,10 +75,7 @@ object SourceXdripPlugin : PluginBase(PluginDescription()
                     noise = null
             )
             log.debug("TrendArrow: " + bundle.getString(Intents.EXTRA_BG_SLOPE_NAME))
-            AppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)
-                    .observeOn(Schedulers.io())
-                    .subscribeOn(Schedulers.io())
-                    .subscribe()
+            BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)
         } catch (e: Throwable) {
             log.error("Error while processing intent", e)
         }
