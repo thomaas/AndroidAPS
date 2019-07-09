@@ -3,6 +3,7 @@ package info.nightscout.androidaps.plugins.general.wear;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.os.HandlerThread;
+
 import androidx.annotation.NonNull;
 
 import java.text.DateFormat;
@@ -20,9 +21,9 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
-import info.nightscout.androidaps.db.BgReading;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.db.CareportalEvent;
-import info.nightscout.androidaps.db.DatabaseHelper;
 import info.nightscout.androidaps.db.ProfileSwitch;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TDD;
@@ -31,15 +32,15 @@ import info.nightscout.androidaps.interfaces.APSInterface;
 import info.nightscout.androidaps.interfaces.Constraint;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PumpInterface;
-import info.nightscout.androidaps.plugins.general.actions.dialogs.FillDialog;
-import info.nightscout.androidaps.plugins.general.careportal.Dialogs.NewNSTreatmentDialog;
-import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
-import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.CobInfo;
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
 import info.nightscout.androidaps.plugins.aps.loop.APSResult;
 import info.nightscout.androidaps.plugins.aps.loop.LoopPlugin;
+import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
+import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
+import info.nightscout.androidaps.plugins.general.actions.dialogs.FillDialog;
+import info.nightscout.androidaps.plugins.general.careportal.Dialogs.NewNSTreatmentDialog;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.CobInfo;
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
 import info.nightscout.androidaps.plugins.pump.danaR.DanaRPlugin;
 import info.nightscout.androidaps.plugins.pump.danaR.DanaRPump;
 import info.nightscout.androidaps.plugins.pump.danaRKorean.DanaRKoreanPlugin;
@@ -52,6 +53,7 @@ import info.nightscout.androidaps.queue.Callback;
 import info.nightscout.androidaps.utils.BolusWizard;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.DecimalFormatter;
+import info.nightscout.androidaps.utils.GlucoseValueUtilsKt;
 import info.nightscout.androidaps.utils.HardLimits;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.utils.SafeParse;
@@ -213,7 +215,7 @@ public class ActionStringHandler {
                 return;
             }
 
-            BgReading bgReading = DatabaseHelper.actualBg();
+            GlucoseValue bgReading = BlockingAppRepository.INSTANCE.getLastRecentGlucoseValue();
             if (bgReading == null && useBG) {
                 sendError("No recent BG to base calculation on!");
                 return;
@@ -228,7 +230,7 @@ public class ActionStringHandler {
             DecimalFormat format = new DecimalFormat("0.00");
             DecimalFormat formatInt = new DecimalFormat("0");
             BolusWizard bolusWizard = new BolusWizard(profile, profileName, TreatmentsPlugin.getPlugin().getTempTargetFromHistory(),
-                    carbsAfterConstraints, cobInfo.displayCob, bgReading.valueToUnits(profile.getUnits()),
+                    carbsAfterConstraints, cobInfo.displayCob, GlucoseValueUtilsKt.valueToUnits(bgReading.getValue(), profile.getUnits()),
                     0d, percentage, useBG, useCOB, useBolusIOB, useBasalIOB, false, useTT, useTrend);
 
             if (Math.abs(bolusWizard.getInsulinAfterConstraints() - bolusWizard.getCalculatedTotalInsulin()) >= 0.01) {

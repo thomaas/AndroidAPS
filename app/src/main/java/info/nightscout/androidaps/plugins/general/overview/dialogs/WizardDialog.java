@@ -3,8 +3,6 @@ package info.nightscout.androidaps.plugins.general.overview.dialogs;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import androidx.fragment.app.DialogFragment;
-import androidx.appcompat.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -23,6 +21,8 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.fragment.app.DialogFragment;
+
 import com.squareup.otto.Subscribe;
 
 import org.slf4j.Logger;
@@ -37,8 +37,8 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.IobTotal;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.ProfileStore;
-import info.nightscout.androidaps.db.BgReading;
-import info.nightscout.androidaps.db.DatabaseHelper;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.db.TempTarget;
 import info.nightscout.androidaps.events.EventFeatureRunning;
 import info.nightscout.androidaps.interfaces.Constraint;
@@ -50,6 +50,7 @@ import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventAutos
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.BolusWizard;
 import info.nightscout.androidaps.utils.DecimalFormatter;
+import info.nightscout.androidaps.utils.GlucoseValueUtilsKt;
 import info.nightscout.androidaps.utils.NumberPicker;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.utils.SafeParse;
@@ -329,10 +330,10 @@ public class WizardDialog extends DialogFragment implements OnClickListener, Com
         else editBg.setStep(0.1d);
 
         // Set BG if not old
-        BgReading lastBg = DatabaseHelper.actualBg();
+        GlucoseValue lastBg = BlockingAppRepository.INSTANCE.getLastGlucoseValue();
 
         if (lastBg != null) {
-            editBg.setValue(lastBg.valueToUnits(units));
+            editBg.setValue(GlucoseValueUtilsKt.valueToUnits(lastBg.getValue(), units));
         } else {
             editBg.setValue(0d);
         }

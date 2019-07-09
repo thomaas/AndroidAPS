@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.SystemClock;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
@@ -27,9 +28,9 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
-import info.nightscout.androidaps.db.BgReading;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.db.CareportalEvent;
-import info.nightscout.androidaps.db.DatabaseHelper;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.events.EventAcceptOpenLoopChange;
@@ -157,17 +158,17 @@ public class LoopPlugin extends PluginBase {
             // Autosens calculation not triggered by a new BG
             return;
         }
-        BgReading bgReading = DatabaseHelper.actualBg();
+        GlucoseValue bgReading = BlockingAppRepository.INSTANCE.getLastRecentGlucoseValue();
         if (bgReading == null) {
             // BG outdated
             return;
         }
-        if (bgReading.date <= lastBgTriggeredRun) {
+        if (bgReading.getTimestamp() <= lastBgTriggeredRun) {
             // already looped with that value
             return;
         }
 
-        lastBgTriggeredRun = bgReading.date;
+        lastBgTriggeredRun = bgReading.getTimestamp();
         invoke("AutosenseCalculation for " + bgReading, true);
     }
 
@@ -414,7 +415,7 @@ public class LoopPlugin extends PluginBase {
                             .setAutoCancel(true)
                             .setPriority(Notification.PRIORITY_HIGH)
                             .setCategory(Notification.CATEGORY_ALARM)
-                            .setVisibility(Notification.VISIBILITY_PUBLIC);
+                            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
                     if (SP.getBoolean("wearcontrol", false)) {
                         builder.setLocalOnly(true);
                     }

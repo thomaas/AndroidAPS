@@ -20,12 +20,11 @@ import info.nightscout.androidaps.Constants;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatus;
 import info.nightscout.androidaps.data.IobTotal;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.ProfileStore;
-import info.nightscout.androidaps.db.BgReading;
-import info.nightscout.androidaps.db.DatabaseHelper;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.events.EventPreferenceChange;
 import info.nightscout.androidaps.events.EventRefreshOverview;
@@ -44,12 +43,14 @@ import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotifi
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.general.smsCommunicator.events.EventSmsCommunicatorUpdateGui;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.CobInfo;
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatus;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.queue.Callback;
 import info.nightscout.androidaps.services.Intents;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.DecimalFormatter;
+import info.nightscout.androidaps.utils.GlucoseValueUtilsKt;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.utils.SafeParse;
 import info.nightscout.androidaps.utils.XdripCalibrations;
@@ -263,19 +264,19 @@ public class SmsCommunicatorPlugin extends PluginBase {
 
     @SuppressWarnings("unused")
     private void processBG(String[] splitted, Sms receivedSms) {
-        BgReading actualBG = DatabaseHelper.actualBg();
-        BgReading lastBG = DatabaseHelper.lastBg();
+        GlucoseValue actualBG = BlockingAppRepository.INSTANCE.getLastRecentGlucoseValue();
+        GlucoseValue lastBG = BlockingAppRepository.INSTANCE.getLastGlucoseValue();
 
         String reply = "";
 
         String units = ProfileFunctions.getInstance().getProfileUnits();
 
         if (actualBG != null) {
-            reply = MainApp.gs(R.string.sms_actualbg) + " " + actualBG.valueToUnitsToString(units) + ", ";
+            reply = MainApp.gs(R.string.sms_actualbg) + " " + GlucoseValueUtilsKt.valueToUnitsToString(actualBG.getValue(), units) + ", ";
         } else if (lastBG != null) {
-            Long agoMsec = System.currentTimeMillis() - lastBG.date;
+            Long agoMsec = System.currentTimeMillis() - lastBG.getTimestamp();
             int agoMin = (int) (agoMsec / 60d / 1000d);
-            reply = MainApp.gs(R.string.sms_lastbg) + " " + lastBG.valueToUnitsToString(units) + " " + String.format(MainApp.gs(R.string.sms_minago), agoMin) + ", ";
+            reply = MainApp.gs(R.string.sms_lastbg) + " " + GlucoseValueUtilsKt.valueToUnitsToString(lastBG.getValue(), units) + " " + String.format(MainApp.gs(R.string.sms_minago), agoMin) + ", ";
         }
         GlucoseStatus glucoseStatus = GlucoseStatus.getGlucoseStatusData();
         if (glucoseStatus != null)

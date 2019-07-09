@@ -56,9 +56,9 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.IobTotal;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.QuickWizardEntry;
-import info.nightscout.androidaps.db.BgReading;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.db.CareportalEvent;
-import info.nightscout.androidaps.db.DatabaseHelper;
 import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TempTarget;
@@ -113,6 +113,7 @@ import info.nightscout.androidaps.utils.BolusWizard;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.DecimalFormatter;
 import info.nightscout.androidaps.utils.DefaultValueHelper;
+import info.nightscout.androidaps.utils.GlucoseValueUtilsKt;
 import info.nightscout.androidaps.utils.OKDialog;
 import info.nightscout.androidaps.utils.Profiler;
 import info.nightscout.androidaps.utils.SP;
@@ -779,7 +780,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
     }
 
     void onClickQuickwizard() {
-        final BgReading actualBg = DatabaseHelper.actualBg();
+        final GlucoseValue actualBg = BlockingAppRepository.INSTANCE.getLastRecentGlucoseValue();
         final Profile profile = ProfileFunctions.getInstance().getProfile();
         final String profileName = ProfileFunctions.getInstance().getProfileName();
         final PumpInterface pump = ConfigBuilderPlugin.getPlugin().getActivePump();
@@ -978,8 +979,8 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
         loopStatusLayout.setVisibility(View.VISIBLE);
 
         CareportalFragment.updateAge(getActivity(), sage, iage, cage, pbage);
-        BgReading actualBG = DatabaseHelper.actualBg();
-        BgReading lastBG = DatabaseHelper.lastBg();
+        GlucoseValue actualBG = BlockingAppRepository.INSTANCE.getLastRecentGlucoseValue();
+        GlucoseValue lastBG = BlockingAppRepository.INSTANCE.getLastGlucoseValue();
 
         final PumpInterface pump = ConfigBuilderPlugin.getPlugin().getActivePump();
 
@@ -994,12 +995,12 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
         // **** BG value ****
         if (lastBG != null) {
             int color = MainApp.gc(R.color.inrange);
-            if (lastBG.valueToUnits(units) < lowLine)
+            if (GlucoseValueUtilsKt.valueToUnits(lastBG.getValue(), units) < lowLine)
                 color = MainApp.gc(R.color.low);
-            else if (lastBG.valueToUnits(units) > highLine)
+            else if (GlucoseValueUtilsKt.valueToUnits(lastBG.getValue(), units) > highLine)
                 color = MainApp.gc(R.color.high);
-            bgView.setText(lastBG.valueToUnitsToString(units));
-            arrowView.setText(lastBG.directionToSymbol());
+            bgView.setText(GlucoseValueUtilsKt.valueToUnitsToString(lastBG.getValue(), units));
+            arrowView.setText(GlucoseValueUtilsKt.toSymbol(lastBG.getTrendArrow()));
             bgView.setTextColor(color);
             arrowView.setTextColor(color);
             GlucoseStatus glucoseStatus = GlucoseStatus.getGlucoseStatusData();
@@ -1093,7 +1094,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
         // **** Calibration & CGM buttons ****
         boolean xDripIsBgSource = SourceXdripPlugin.INSTANCE.isEnabled(PluginType.BGSOURCE);
         boolean dexcomIsSource = SourceDexcomPlugin.INSTANCE.isEnabled(PluginType.BGSOURCE);
-        boolean bgAvailable = DatabaseHelper.actualBg() != null;
+        boolean bgAvailable = BlockingAppRepository.INSTANCE.getLastRecentGlucoseValue() != null;
         if (calibrationButton != null) {
             if ((xDripIsBgSource || dexcomIsSource) && bgAvailable && SP.getBoolean(R.string.key_show_calibration_button, true)) {
                 calibrationButton.setVisibility(View.VISIBLE);
@@ -1237,9 +1238,9 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
         bgView.setPaintFlags(flag);
 
         if (timeAgoView != null)
-            timeAgoView.setText(DateUtil.minAgo(lastBG.date));
+            timeAgoView.setText(DateUtil.minAgo(lastBG.getTimestamp()));
         if (timeAgoShortView != null)
-            timeAgoShortView.setText("(" + DateUtil.minAgoShort(lastBG.date) + ")");
+            timeAgoShortView.setText("(" + DateUtil.minAgoShort(lastBG.getTimestamp()) + ")");
 
         // iob
         TreatmentsPlugin.getPlugin().updateTotalIOBTreatments();

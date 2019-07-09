@@ -7,12 +7,12 @@ import info.nightscout.androidaps.Config;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.Profile;
-import info.nightscout.androidaps.db.BgReading;
-import info.nightscout.androidaps.db.DatabaseHelper;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.interfaces.PumpInterface;
+import info.nightscout.androidaps.plugins.aps.loop.LoopPlugin;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
-import info.nightscout.androidaps.plugins.aps.loop.LoopPlugin;
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
@@ -90,9 +90,9 @@ public class LocalAlertUtils {
     }
 
     public static void checkStaleBGAlert() {
-        BgReading bgReading = DatabaseHelper.lastBg();
+        GlucoseValue bgReading = BlockingAppRepository.INSTANCE.getLastGlucoseValue();
         if (SP.getBoolean(MainApp.gs(R.string.key_enable_missed_bg_readings_alert), false)
-                && bgReading != null && bgReading.date + missedReadingsThreshold() < System.currentTimeMillis()
+                && bgReading != null && bgReading.getTimestamp() + missedReadingsThreshold() < System.currentTimeMillis()
                 && SP.getLong("nextMissedReadingsAlarm", 0l) < System.currentTimeMillis()) {
             Notification n = new Notification(Notification.BG_READINGS_MISSED, MainApp.gs(R.string.missed_bg_readings), Notification.URGENT);
             n.soundId = R.raw.alarm;
