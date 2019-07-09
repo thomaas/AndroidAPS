@@ -48,9 +48,7 @@ public interface Intents {
 
     String GLIMP_BG = "it.ct.glicemia.ACTION_GLUCOSE_MEASURED";
 
-    String DEXCOMG5_BG = "com.dexcom.cgm.DATA";
-    String DEXCOMG5_BG_NEW = "com.dexcom.cgm.g5.AndroidAPSEVGCallback.BROADCAST";
-    String DEXCOMG6_BG = "com.dexcom.cgm.AndroidAPSEVGCallback.BROADCAST";
+    String DEXCOM_BG = "com.dexcom.cgm.EXTERNAL_BROADCAST";
     String EVERSENSE_BG = "com.senseonics.AndroidAPSEventSubscriber.BROADCAST";
     String LIBRE2_BG = "com.librelink.app.AndroidAPSIntegration.GLUCOSE_READING";
     String LIBRE2_ACTIVATION = "com.librelink.app.AndroidAPSIntegration.SENSOR_NFC_ACTIVATE_EXCEPTION";

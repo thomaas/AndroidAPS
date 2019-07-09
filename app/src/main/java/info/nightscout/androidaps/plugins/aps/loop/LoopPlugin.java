@@ -10,8 +10,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationCompat;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
 
 import com.squareup.otto.Subscribe;
 
@@ -27,9 +28,9 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
-import info.nightscout.androidaps.db.BgReading;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.db.CareportalEvent;
-import info.nightscout.androidaps.db.DatabaseHelper;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.events.EventAcceptOpenLoopChange;
@@ -157,17 +158,17 @@ public class LoopPlugin extends PluginBase {
             // Autosens calculation not triggered by a new BG
             return;
         }
-        BgReading bgReading = DatabaseHelper.actualBg();
+        GlucoseValue bgReading = BlockingAppRepository.INSTANCE.getLastRecentGlucoseValue();
         if (bgReading == null) {
             // BG outdated
             return;
         }
-        if (bgReading.date <= lastBgTriggeredRun) {
+        if (bgReading.getTimestamp() <= lastBgTriggeredRun) {
             // already looped with that value
             return;
         }
 
-        lastBgTriggeredRun = bgReading.date;
+        lastBgTriggeredRun = bgReading.getTimestamp();
         invoke("AutosenseCalculation for " + bgReading, true);
     }
 
@@ -414,7 +415,7 @@ public class LoopPlugin extends PluginBase {
                             .setAutoCancel(true)
                             .setPriority(Notification.PRIORITY_HIGH)
                             .setCategory(Notification.CATEGORY_ALARM)
-                            .setVisibility(Notification.VISIBILITY_PUBLIC);
+                            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
                     if (SP.getBoolean("wearcontrol", false)) {
                         builder.setLocalOnly(true);
                     }
@@ -644,14 +645,27 @@ public class LoopPlugin extends PluginBase {
         TreatmentsInterface activeTreatments = TreatmentsPlugin.getPlugin();
 
         LoopPlugin.getPlugin().disconnectTo(System.currentTimeMillis() + durationInMinutes * 60 * 1000L);
-        ConfigBuilderPlugin.getPlugin().getCommandQueue().tempBasalPercent(0, durationInMinutes, true, profile, new Callback() {
-            @Override
-            public void run() {
-                if (!result.success) {
-                    ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.tempbasaldeliveryerror));
+
+        if (pump.getPumpDescription().tempBasalStyle == PumpDescription.ABSOLUTE) {
+            ConfigBuilderPlugin.getPlugin().getCommandQueue().tempBasalAbsolute(0, durationInMinutes, true, profile, new Callback() {
+                @Override
+                public void run() {
+                    if (!result.success) {
+                        ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.tempbasaldeliveryerror));
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            ConfigBuilderPlugin.getPlugin().getCommandQueue().tempBasalPercent(0, durationInMinutes, true, profile, new Callback() {
+                @Override
+                public void run() {
+                    if (!result.success) {
+                        ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.tempbasaldeliveryerror));
+                    }
+                }
+            });
+        }
+
         if (pump.getPumpDescription().isExtendedBolusCapable && activeTreatments.isInHistoryExtendedBoluslInProgress()) {
             ConfigBuilderPlugin.getPlugin().getCommandQueue().cancelExtended(new Callback() {
                 @Override
