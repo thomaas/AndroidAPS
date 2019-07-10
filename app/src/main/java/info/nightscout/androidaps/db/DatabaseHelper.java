@@ -230,7 +230,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             log.error("Unhandled exception", e);
         }
         VirtualPumpPlugin.getPlugin().setFakingStatus(true);
-        scheduleBgChange(null); // trigger refresh
+        scheduleBgChange(); // trigger refresh
         scheduleTemporaryBasalChange();
         scheduleExtendedBolusChange();
         scheduleTemporaryTargetChange();
@@ -368,48 +368,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     }
     // -------------------  BgReading handling -----------------------
 
-    public boolean createIfNotExists(BgReading bgReading, String from) {
-        try {
-            bgReading.date = roundDateToSec(bgReading.date);
-            BgReading old = getDaoBgReadings().queryForId(bgReading.date);
-            if (old == null) {
-                getDaoBgReadings().create(bgReading);
-                if (L.isEnabled(L.DATABASE))
-                    log.debug("BG: New record from: " + from + " " + bgReading.toString());
-                scheduleBgChange(bgReading);
-                return true;
-            }
-            if (!old.isEqual(bgReading)) {
-                if (L.isEnabled(L.DATABASE))
-                    log.debug("BG: Similiar found: " + old.toString());
-                old.copyFrom(bgReading);
-                getDaoBgReadings().update(old);
-                if (L.isEnabled(L.DATABASE))
-                    log.debug("BG: Updating record from: " + from + " New data: " + old.toString());
-                scheduleBgChange(bgReading);
-                return false;
-            }
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return false;
-    }
-
-    public void update(BgReading bgReading) {
-        bgReading.date = roundDateToSec(bgReading.date);
-        try {
-            getDaoBgReadings().update(bgReading);
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-    }
-
-    private static void scheduleBgChange(@Nullable final BgReading bgReading) {
+    public static void scheduleBgChange() {
         class PostRunnable implements Runnable {
             public void run() {
                 if (L.isEnabled(L.DATABASE))
                     log.debug("Firing EventNewBg");
-                MainApp.bus().post(new EventNewBG(bgReading));
+                MainApp.bus().post(new EventNewBG());
                 scheduledBgPost = null;
             }
         }
@@ -421,57 +385,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         final int sec = 1;
         scheduledBgPost = bgWorker.schedule(task, sec, TimeUnit.SECONDS);
 
-    }
-
-    public List<BgReading> getBgreadingsDataFromTime(long mills, boolean ascending) {
-        try {
-            Dao<BgReading, Long> daoBgreadings = getDaoBgReadings();
-            List<BgReading> bgReadings;
-            QueryBuilder<BgReading, Long> queryBuilder = daoBgreadings.queryBuilder();
-            queryBuilder.orderBy("date", ascending);
-            Where where = queryBuilder.where();
-            where.ge("date", mills).and().ge("value", 39).and().eq("isValid", true);
-            PreparedQuery<BgReading> preparedQuery = queryBuilder.prepare();
-            bgReadings = daoBgreadings.query(preparedQuery);
-            return bgReadings;
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return new ArrayList<>();
-    }
-
-    public List<BgReading> getBgreadingsDataFromTime(long start, long end, boolean ascending) {
-        try {
-            Dao<BgReading, Long> daoBgreadings = getDaoBgReadings();
-            List<BgReading> bgReadings;
-            QueryBuilder<BgReading, Long> queryBuilder = daoBgreadings.queryBuilder();
-            queryBuilder.orderBy("date", ascending);
-            Where where = queryBuilder.where();
-            where.between("date", start, end).and().ge("value", 39).and().eq("isValid", true);
-            PreparedQuery<BgReading> preparedQuery = queryBuilder.prepare();
-            bgReadings = daoBgreadings.query(preparedQuery);
-            return bgReadings;
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return new ArrayList<>();
-    }
-
-    public List<BgReading> getAllBgreadingsDataFromTime(long mills, boolean ascending) {
-        try {
-            Dao<BgReading, Long> daoBgreadings = getDaoBgReadings();
-            List<BgReading> bgReadings;
-            QueryBuilder<BgReading, Long> queryBuilder = daoBgreadings.queryBuilder();
-            queryBuilder.orderBy("date", ascending);
-            Where where = queryBuilder.where();
-            where.ge("date", mills);
-            PreparedQuery<BgReading> preparedQuery = queryBuilder.prepare();
-            bgReadings = daoBgreadings.query(preparedQuery);
-            return bgReadings;
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return new ArrayList<BgReading>();
     }
 
     // -------------------  TDD handling -----------------------

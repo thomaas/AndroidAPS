@@ -10,7 +10,6 @@ import info.nightscout.androidaps.R
 import info.nightscout.androidaps.activities.RequestDexcomPermissionActivity
 import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
-import info.nightscout.androidaps.db.BgReading
 import info.nightscout.androidaps.db.CareportalEvent
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
@@ -20,6 +19,7 @@ import info.nightscout.androidaps.logging.L
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload
 import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.androidaps.utils.SP
+import info.nightscout.androidaps.utils.toTrendArrow
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -35,9 +35,9 @@ object SourceDexcomPlugin : PluginBase(PluginDescription()
     private val log = LoggerFactory.getLogger(L.BGSOURCE)
 
     private val PACKAGE_NAMES = arrayOf("com.dexcom.cgm.region1.mgdl", "com.dexcom.cgm.region1.mmol",
-                                        "com.dexcom.cgm.region2.mgdl", "com.dexcom.cgm.region2.mmol",
-                                        "com.dexcom.g6.region1.mmol", "com.dexcom.g6.region2.mgdl",
-                                        "com.dexcom.g6.region3.mgdl", "com.dexcom.g6.region3.mmol")
+            "com.dexcom.cgm.region2.mgdl", "com.dexcom.cgm.region2.mmol",
+            "com.dexcom.g6.region1.mmol", "com.dexcom.g6.region2.mgdl",
+            "com.dexcom.g6.region3.mgdl", "com.dexcom.g6.region3.mmol")
 
     const val PERMISSION = "com.dexcom.cgm.EXTERNAL_PERMISSION"
 
@@ -68,40 +68,24 @@ object SourceDexcomPlugin : PluginBase(PluginDescription()
             val glucoseValues = intent.getBundleExtra("glucoseValues")
             for (i in 0 until glucoseValues.size()) {
                 val glucoseValueBundle = glucoseValues.getBundle(i.toString())
-                val bgReading = BgReading()
-                bgReading.value = glucoseValueBundle!!.getInt("glucoseValue").toDouble()
-                bgReading.direction = glucoseValueBundle.getString("trendArrow")
-                bgReading.date = glucoseValueBundle.getLong("timestamp") * 1000
-                bgReading.raw = 0.0
-                if (MainApp.getDbHelper().createIfNotExists(bgReading, "Dexcom")) {
-                    if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
-                        NSUpload.uploadBg(bgReading, "AndroidAPS-DexcomG6")
-                    }
-                    if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false)) {
-                        NSUpload.sendToXdrip(bgReading)
-                    }
-                }
                 val timestamp = glucoseValueBundle.getLong("timestamp") * 1000
-                val trendArrow = when(glucoseValueBundle.getString("trendArrow")!!) {
-                    "DoubleDown" -> GlucoseValue.TrendArrow.DOUBLE_DOWN
-                    "SingleDown" -> GlucoseValue.TrendArrow.SINGLE_DOWN
-                    "FortyFiveDown" -> GlucoseValue.TrendArrow.FORTY_FIVE_DOWN
-                    "Flat" -> GlucoseValue.TrendArrow.FLAT
-                    "FortyFiveUp" -> GlucoseValue.TrendArrow.FORTY_FIVE_UP
-                    "SingleUp" -> GlucoseValue.TrendArrow.SINGLE_UP
-                    "DoubleUp" -> GlucoseValue.TrendArrow.DOUBLE_UP
-                    else -> GlucoseValue.TrendArrow.NONE
-                }
                 val glucoseValue = GlucoseValue(
                         timestamp = timestamp,
                         utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
-                        value = bgReading.value,
+                        value = glucoseValueBundle!!.getInt("glucoseValue").toDouble(),
                         noise = null,
                         raw = null,
-                        trendArrow = trendArrow,
+                        trendArrow = glucoseValueBundle.getString("trendArrow")!!.toTrendArrow(),
                         sourceSensor = GlucoseValue.SourceSensor.DEXCOM_G6_NATIVE
                 )
-                BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)
+                if (BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)) {
+                    if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
+                        NSUpload.uploadBg(glucoseValue, "AndroidAPS-DexcomG6")
+                    }
+                    if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false)) {
+                        NSUpload.sendToXdrip(glucoseValue)
+                    }
+                }
             }
             val meters = intent.getBundleExtra("meters")
             for (i in 0 until meters.size()) {
@@ -127,7 +111,7 @@ object SourceDexcomPlugin : PluginBase(PluginDescription()
                     NSUpload.uploadCareportalEntryToNS(jsonObject)
                 }
             }
-        } catch (e : Exception) {
+        } catch (e: Exception) {
             log.error("Error while processing intent from Dexcom App", e)
         }
     }

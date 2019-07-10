@@ -63,6 +63,8 @@ data class GlucoseValue(
         LIBRE_1_OOP,
         LIBRE_1_XDRIP,
         LIBRE_2_NATIVE,
-        MM_600_SERIES;
+        POCTECH_NATIVE,
+        MM_600_SERIES,
+        EVERSENSE
     }
 }

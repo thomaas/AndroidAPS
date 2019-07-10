@@ -1,11 +1,9 @@
 package info.nightscout.androidaps.plugins.source
 
 import android.content.Intent
-import info.nightscout.androidaps.MainApp
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
-import info.nightscout.androidaps.db.BgReading
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
 import info.nightscout.androidaps.interfaces.PluginDescription
@@ -41,16 +39,6 @@ object SourceXdripPlugin : PluginBase(PluginDescription()
 
             if (L.isEnabled(L.BGSOURCE))
                 log.debug("Received xDrip data: " + BundleLogger.log(bundle))
-
-            val bgReading = BgReading()
-
-            bgReading.value = bundle.getDouble(Intents.EXTRA_BG_ESTIMATE)
-            bgReading.direction = bundle.getString(Intents.EXTRA_BG_SLOPE_NAME)
-            bgReading.date = bundle.getLong(Intents.EXTRA_TIMESTAMP)
-            bgReading.raw = bundle.getDouble(Intents.EXTRA_RAW)
-            val source = bundle.getString(Intents.XDRIP_DATA_SOURCE_DESCRIPTION, "no Source specified")
-            this.advancedFiltering = source.contains("G5 Native") || source.contains("G6 Native")
-            MainApp.getDbHelper().createIfNotExists(bgReading, "XDRIP")
 
             val trendArrow = when(bundle.getString(Intents.EXTRA_BG_SLOPE_NAME)!!) {
                 "DoubleDown" -> GlucoseValue.TrendArrow.DOUBLE_DOWN

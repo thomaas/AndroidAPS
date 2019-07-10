@@ -4,29 +4,35 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.Paint;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.squareup.otto.Subscribe;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import info.nightscout.androidaps.Constants;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
-import info.nightscout.androidaps.db.BgReading;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.plugins.common.SubscriberFragment;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventAutosensCalculationFinished;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.FabricPrivacy;
+import info.nightscout.androidaps.utils.GlucoseValueUtilsKt;
 import info.nightscout.androidaps.utils.T;
 
 /**
@@ -52,7 +58,9 @@ public class BGSourceFragment extends SubscriberFragment {
             recyclerView.setLayoutManager(llm);
 
             long now = System.currentTimeMillis();
-            RecyclerViewAdapter adapter = new RecyclerViewAdapter(MainApp.getDbHelper().getAllBgreadingsDataFromTime(now - MILLS_TO_THE_PAST, false));
+            List<GlucoseValue> glucoseValues = new ArrayList<GlucoseValue>(BlockingAppRepository.INSTANCE.getGlucoseValuesInTimeRange(now - TimeUnit.DAYS.toMillis(1), Long.MAX_VALUE));
+            Collections.reverse(glucoseValues);
+            RecyclerViewAdapter adapter = new RecyclerViewAdapter(glucoseValues);
             recyclerView.setAdapter(adapter);
 
             if (ConfigBuilderPlugin.getPlugin().getActiveProfileInterface() != null && ConfigBuilderPlugin.getPlugin().getActiveProfileInterface().getProfile() != null && ConfigBuilderPlugin.getPlugin().getActiveProfileInterface().getProfile().getDefaultProfile() != null)
@@ -77,15 +85,15 @@ public class BGSourceFragment extends SubscriberFragment {
         if (activity != null)
             activity.runOnUiThread(() -> {
                 long now = System.currentTimeMillis();
-                recyclerView.swapAdapter(new RecyclerViewAdapter(MainApp.getDbHelper().getAllBgreadingsDataFromTime(now - MILLS_TO_THE_PAST, false)), true);
+                recyclerView.swapAdapter(new RecyclerViewAdapter(new ArrayList<>(BlockingAppRepository.INSTANCE.getGlucoseValuesInTimeRange(now - TimeUnit.DAYS.toMillis(1), Long.MAX_VALUE))), true);
             });
     }
 
     public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.BgReadingsViewHolder> {
 
-        List<BgReading> bgReadings;
+        List<GlucoseValue> bgReadings;
 
-        RecyclerViewAdapter(List<BgReading> bgReadings) {
+        RecyclerViewAdapter(List<GlucoseValue> bgReadings) {
             this.bgReadings = bgReadings;
         }
 
@@ -97,12 +105,12 @@ public class BGSourceFragment extends SubscriberFragment {
 
         @Override
         public void onBindViewHolder(@NonNull BgReadingsViewHolder holder, int position) {
-            BgReading bgReading = bgReadings.get(position);
-            holder.ns.setVisibility(NSUpload.isIdValid(bgReading._id) ? View.VISIBLE : View.GONE);
-            holder.invalid.setVisibility(!bgReading.isValid ? View.VISIBLE : View.GONE);
-            holder.date.setText(DateUtil.dateAndTimeString(bgReading.date));
-            holder.value.setText(bgReading.valueToUnitsToString(units));
-            holder.direction.setText(bgReading.directionToSymbol());
+            GlucoseValue bgReading = bgReadings.get(position);
+            holder.ns.setVisibility(NSUpload.isIdValid(bgReading.getInterfaceIDs().getNightscoutId()) ? View.VISIBLE : View.GONE);
+            holder.invalid.setVisibility(!bgReading.getValid() ? View.VISIBLE : View.GONE);
+            holder.date.setText(DateUtil.dateAndTimeString(bgReading.getTimestamp()));
+            holder.value.setText(GlucoseValueUtilsKt.valueToUnitsToString(bgReading.getValue(), units));
+            holder.direction.setText(GlucoseValueUtilsKt.toSymbol(bgReading.getTrendArrow()));
             holder.remove.setTag(bgReading);
         }
 
@@ -133,13 +141,13 @@ public class BGSourceFragment extends SubscriberFragment {
 
             @Override
             public void onClick(View v) {
-                final BgReading bgReading = (BgReading) v.getTag();
+                final GlucoseValue bgReading = (GlucoseValue) v.getTag();
                 switch (v.getId()) {
 
                     case R.id.bgsource_remove:
                         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                         builder.setTitle(MainApp.gs(R.string.confirmation));
-                        builder.setMessage(MainApp.gs(R.string.removerecord) + "\n" + DateUtil.dateAndTimeString(bgReading.date) + "\n" + bgReading.valueToUnitsToString(units));
+                        builder.setMessage(MainApp.gs(R.string.removerecord) + "\n" + DateUtil.dateAndTimeString(bgReading.getTimestamp()) + "\n" + GlucoseValueUtilsKt.valueToUnitsToString(bgReading.getValue(), units));
                         builder.setPositiveButton(MainApp.gs(R.string.ok), new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
 /*                                final String _id = bgReading._id;
@@ -149,8 +157,8 @@ public class BGSourceFragment extends SubscriberFragment {
                                     UploadQueue.removeID("dbAdd", _id);
                                 }
 */
-                                bgReading.isValid = false;
-                                MainApp.getDbHelper().update(bgReading);
+                                bgReading.setValid(false);
+                                BlockingAppRepository.INSTANCE.update(bgReading);
                                 updateGUI();
                             }
                         });

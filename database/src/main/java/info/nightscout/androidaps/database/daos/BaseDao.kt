@@ -4,6 +4,7 @@ import androidx.room.Insert
 import androidx.room.Transaction
 import androidx.room.Update
 import info.nightscout.androidaps.database.interfaces.DBEntry
+import io.reactivex.Completable
 import io.reactivex.Single
 
 abstract class BaseDao<T : DBEntry<T>> {
@@ -15,6 +16,9 @@ abstract class BaseDao<T : DBEntry<T>> {
 
     @Update
     abstract fun update(entry: T)
+
+    @Update
+    abstract fun updateCompletable(entry: T): Completable
 
     fun insertNewEntry(entry: T): Single<Long> {
         if (entry.id != 0L) throw IllegalArgumentException("ID must be 0.")
@@ -29,8 +33,9 @@ abstract class BaseDao<T : DBEntry<T>> {
     }
 
     @Transaction
-    open fun saveAndLogChanges(entry: T) : Long {
-        val current = findById(entry.id) ?: throw IllegalArgumentException("The entry witht the specified ID does not exist.")
+    open fun saveAndLogChanges(entry: T): Long {
+        val current = findById(entry.id)
+                ?: throw IllegalArgumentException("The entry witht the specified ID does not exist.")
         entry.version = current.version + 1
         update(entry)
         current.referenceID = entry.id

@@ -3,8 +3,6 @@ package info.nightscout.androidaps.plugins.general.careportal.Dialogs;
 
 import android.app.Activity;
 import android.os.Bundle;
-import androidx.fragment.app.DialogFragment;
-import androidx.appcompat.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -19,6 +17,9 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 
 import com.google.common.collect.Lists;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
@@ -39,10 +40,10 @@ import java.util.List;
 import info.nightscout.androidaps.Constants;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatus;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.ProfileStore;
-import info.nightscout.androidaps.db.BgReading;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.ProfileSwitch;
 import info.nightscout.androidaps.db.Source;
@@ -51,6 +52,7 @@ import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
 import info.nightscout.androidaps.plugins.general.careportal.OptionsToShow;
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatus;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.DefaultValueHelper;
@@ -453,11 +455,11 @@ public class NewNSTreatmentDialog extends DialogFragment implements View.OnClick
 
     private void updateBGforDateTime() {
         long millis = eventTime.getTime() - (150 * 1000L); // 2,5 * 60 * 1000
-        List<BgReading> data = MainApp.getDbHelper().getBgreadingsDataFromTime(millis, true);
+        List<GlucoseValue> data = BlockingAppRepository.INSTANCE.getProperGlucoseValuesInTimeRange(millis, Long.MAX_VALUE);
         if ((data.size() > 0) &&
-                (data.get(0).date > millis - 7 * 60 * 1000L) &&
-                (data.get(0).date < millis + 7 * 60 * 1000L)) {
-            editBg.setValue(Profile.fromMgdlToUnits(data.get(0).value, units));
+                (data.get(0).getTimestamp() > millis - 7 * 60 * 1000L) &&
+                (data.get(0).getTimestamp() < millis + 7 * 60 * 1000L)) {
+            editBg.setValue(Profile.fromMgdlToUnits(data.get(0).getValue(), units));
         }
     }
 

@@ -1,6 +1,7 @@
 package info.nightscout.androidaps.plugins.iob.iobCobCalculator;
 
 import android.os.SystemClock;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.collection.LongSparseArray;
@@ -19,6 +20,7 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.IobTotal;
 import info.nightscout.androidaps.data.Profile;
+import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.db.BgReading;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.events.Event;
@@ -31,14 +33,15 @@ import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginDescription;
 import info.nightscout.androidaps.interfaces.PluginType;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.aps.openAPSSMB.OpenAPSSMBPlugin;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventNewHistoryData;
-import info.nightscout.androidaps.plugins.aps.openAPSSMB.OpenAPSSMBPlugin;
 import info.nightscout.androidaps.plugins.sensitivity.SensitivityOref1Plugin;
 import info.nightscout.androidaps.plugins.treatments.Treatment;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
+import info.nightscout.androidaps.utils.GlucoseValueUtilsKt;
 import info.nightscout.androidaps.utils.T;
 
 import static info.nightscout.androidaps.utils.DateUtil.now;
@@ -128,11 +131,11 @@ public class IobCobCalculatorPlugin extends PluginBase {
         if (DateUtil.isCloseToNow(to)) {
             // if close to now expect there can be some readings with time in close future (caused by wrong time setting)
             // so read all records
-            bgReadings = MainApp.getDbHelper().getBgreadingsDataFromTime(start, false);
+            bgReadings = GlucoseValueUtilsKt.convertToBGReadings(BlockingAppRepository.INSTANCE.getProperGlucoseValuesInTimeRange(start, Long.MAX_VALUE));
             if (L.isEnabled(L.AUTOSENS))
                 log.debug("BG data loaded. Size: " + bgReadings.size() + " Start date: " + DateUtil.dateAndTimeString(start));
         } else {
-            bgReadings = MainApp.getDbHelper().getBgreadingsDataFromTime(start, to, false);
+            bgReadings = GlucoseValueUtilsKt.convertToBGReadings(BlockingAppRepository.INSTANCE.getProperGlucoseValuesInTimeRange(start, to));
             if (L.isEnabled(L.AUTOSENS))
                 log.debug("BG data loaded. Size: " + bgReadings.size() + " Start date: " + DateUtil.dateAndTimeString(start) + " End date: " + DateUtil.dateAndTimeString(to));
         }

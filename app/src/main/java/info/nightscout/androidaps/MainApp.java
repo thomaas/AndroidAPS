@@ -121,6 +121,10 @@ public class MainApp extends Application {
     public void onCreate() {
         super.onCreate();
         AppRepository.INSTANCE.initialize(this);
+        AppRepository.INSTANCE.setGlucoseValuesChangedCallback(() ->  {
+            DatabaseHelper.scheduleBgChange();
+            return null;
+        });
         log.debug("onCreate");
         sInstance = this;
         sResources = getResources();
@@ -191,13 +195,13 @@ public class MainApp extends Application {
             if (Config.SAFETY) pluginsList.add(StorageConstraintPlugin.getPlugin());
             if (Config.APS) pluginsList.add(ObjectivesPlugin.getPlugin());
             pluginsList.add(SourceXdripPlugin.INSTANCE);
-            pluginsList.add(SourceNSClientPlugin.getPlugin());
-            pluginsList.add(SourceMM640gPlugin.getPlugin());
-            pluginsList.add(SourceGlimpPlugin.getPlugin());
+            pluginsList.add(SourceNSClientPlugin.INSTANCE);
+            pluginsList.add(SourceMM640gPlugin.INSTANCE);
+            pluginsList.add(SourceGlimpPlugin.INSTANCE);
             pluginsList.add(SourceDexcomPlugin.INSTANCE);
-            pluginsList.add(SourcePoctechPlugin.getPlugin());
-            pluginsList.add(SourceTomatoPlugin.getPlugin());
-            pluginsList.add(SourceEversensePlugin.getPlugin());
+            pluginsList.add(SourcePoctechPlugin.INSTANCE);
+            pluginsList.add(SourceTomatoPlugin.INSTANCE);
+            pluginsList.add(SourceEversensePlugin.INSTANCE);
             if (Config.SMSCOMMUNICATORENABLED) pluginsList.add(SmsCommunicatorPlugin.getPlugin());
             pluginsList.add(FoodPlugin.getPlugin());
 

@@ -65,19 +65,19 @@ public class DataService extends IntentService {
         if (Intents.ACTION_NEW_BG_ESTIMATE.equals(action)) {
             SourceXdripPlugin.INSTANCE.handleNewData(intent);
         } else if (Intents.NS_EMULATOR.equals(action)) {
-            SourceMM640gPlugin.getPlugin().handleNewData(intent);
+            SourceMM640gPlugin.INSTANCE.handleNewData(intent);
         } else if (Intents.GLIMP_BG.equals(action)) {
-            SourceGlimpPlugin.getPlugin().handleNewData(intent);
+            SourceGlimpPlugin.INSTANCE.handleNewData(intent);
         } else if (Intents.DEXCOM_BG.equals(action)) {
             SourceDexcomPlugin.INSTANCE.handleNewData(intent);
         } else if (Intents.POCTECH_BG.equals(action)) {
-            SourcePoctechPlugin.getPlugin().handleNewData(intent);
+            SourcePoctechPlugin.INSTANCE.handleNewData(intent);
         } else if (Intents.TOMATO_BG.equals(action)) {
-            SourceTomatoPlugin.getPlugin().handleNewData(intent);
+            SourceTomatoPlugin.INSTANCE.handleNewData(intent);
         } else if (Intents.EVERSENSE_BG.equals(action)) {
-            SourceEversensePlugin.getPlugin().handleNewData(intent);
+            SourceEversensePlugin.INSTANCE.handleNewData(intent);
         } else if (Intents.ACTION_NEW_SGV.equals(action)) {
-            SourceNSClientPlugin.getPlugin().handleNewData(intent);
+            SourceNSClientPlugin.INSTANCE.handleNewData(intent);
         } else if (Intents.ACTION_NEW_PROFILE.equals(action)) {
             // always handle Profile if NSProfile is enabled without looking at nsUploadOnly
             NSProfilePlugin.getPlugin().handleNewData(intent);
