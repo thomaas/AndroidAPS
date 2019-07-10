@@ -85,7 +85,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     private final static PumpDescription pumpDescription = new PumpDescription();
 
     @NonNull
-    private final RuffyCommands ruffyScripter;
+    private volatile RuffyCommands ruffyScripter;
 
     @NonNull
     private static final ComboPump pump = new ComboPump();
@@ -1394,6 +1394,11 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     @Override
     public boolean canHandleDST() {
         return false;
+    }
+
+    //TODO: Adrian call from right position?
+    public void forceRuffyReconnect(){
+        ruffyScripter = ruffyScripter.recreate(MainApp.instance());
     }
 
 }

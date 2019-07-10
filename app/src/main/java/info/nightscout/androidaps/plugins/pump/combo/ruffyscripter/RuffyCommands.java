@@ -3,8 +3,6 @@ package info.nightscout.androidaps.plugins.pump.combo.ruffyscripter;
 import info.nightscout.androidaps.plugins.pump.combo.ruffyscripter.history.PumpHistoryRequest;
 import android.content.Context;
 
-import info.nightscout.androidaps.plugins.PumpCombo.ruffyscripter.history.PumpHistoryRequest;
-
 public interface RuffyCommands {
     /** Issues a bolus issues updates on progress through via {@link BolusProgressReporter}. */
     CommandResult deliverBolus(double amount, BolusProgressReporter bolusProgressReporter);
