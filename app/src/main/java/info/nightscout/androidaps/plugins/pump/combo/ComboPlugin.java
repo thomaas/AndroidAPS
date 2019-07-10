@@ -85,7 +85,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     private final static PumpDescription pumpDescription = new PumpDescription();
 
     @NonNull
-    private volatile RuffyCommands ruffyScripter;
+    private RuffyCommands ruffyScripter;
 
     @NonNull
     private static final ComboPump pump = new ComboPump();
@@ -907,6 +907,10 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
                     ConfigBuilderPlugin.getPlugin().getCommandQueue().cancelTempBasal(true, null);
                 }
                 updateLocalData(commandResult);
+            } else {
+                //TODO evaluate test and change log afterwards.
+                log.debug("ADRIAN TEST: Command not successful, reconnect ruffy");
+                forceRuffyReconnect();
             }
         } finally {
             if (activity != null) {
@@ -1396,8 +1400,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
         return false;
     }
 
-    //TODO: Adrian call from right position?
-    public void forceRuffyReconnect(){
+    void  forceRuffyReconnect(){
         ruffyScripter = ruffyScripter.recreate(MainApp.instance());
     }
 
