@@ -11,6 +11,7 @@ import info.nightscout.androidaps.interfaces.PluginType
 import info.nightscout.androidaps.logging.BundleLogger
 import info.nightscout.androidaps.logging.L
 import info.nightscout.androidaps.services.Intents
+import info.nightscout.androidaps.utils.determineSourceSensor
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -52,6 +53,7 @@ object SourceXdripPlugin : PluginBase(PluginDescription()
             }
 
             val timestamp = bundle.getLong(Intents.EXTRA_TIMESTAMP)
+            val source = bundle.getString(Intents.XDRIP_DATA_SOURCE_DESCRIPTION)
 
             val glucoseValue = GlucoseValue(
                     value = bundle.getDouble(Intents.EXTRA_BG_ESTIMATE),
@@ -59,10 +61,13 @@ object SourceXdripPlugin : PluginBase(PluginDescription()
                     timestamp = timestamp,
                     utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                     raw = bundle.getDouble(Intents.EXTRA_RAW),
-                    sourceSensor = GlucoseValue.SourceSensor.UNKNOWN,
+                    sourceSensor = source.determineSourceSensor(),
                     noise = null
             )
             log.debug("TrendArrow: " + bundle.getString(Intents.EXTRA_BG_SLOPE_NAME))
+            this.advancedFiltering = source?.let {
+                it.contains("G5 Native") || it.contains("G6 Native")
+            } ?: false
             BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)
         } catch (e: Throwable) {
             log.error("Error while processing intent", e)

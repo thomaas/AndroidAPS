@@ -64,3 +64,27 @@ fun GlucoseValue.convertToBGReading(): BgReading {
 }
 
 fun List<GlucoseValue>.convertToBGReadings(): List<BgReading> = map { it.convertToBGReading() }
+
+fun String?.determineSourceSensor() = when (this) {
+    "AndroidAPS-Dexcom" -> GlucoseValue.SourceSensor.DEXCOM_NATIVE_UNKNOWN
+    "AndroidAPS-DexcomG6" -> GlucoseValue.SourceSensor.DEXCOM_G6_NATIVE
+    "AndroidAPS-DexcomG5" -> GlucoseValue.SourceSensor.DEXCOM_G5_NATIVE
+    "Bluetooth Wixel" -> GlucoseValue.SourceSensor.DEXCOM_G4_XDRIP
+    "xBridge Wixel" -> GlucoseValue.SourceSensor.DEXCOM_G4_XDRIP
+    "G4 Share Receiver" -> GlucoseValue.SourceSensor.DEXCOM_G4_NATIVE
+    "Medtrum A6" -> GlucoseValue.SourceSensor.MEDTRUM_A6
+    "Network G4" -> GlucoseValue.SourceSensor.DEXCOM_G4_XDRIP
+    "Network G4 and xBridge" -> GlucoseValue.SourceSensor.DEXCOM_G4_XDRIP
+    "Network G4 and Classic xDrip" -> GlucoseValue.SourceSensor.DEXCOM_G4_XDRIP
+    "DexcomG5" -> GlucoseValue.SourceSensor.DEXCOM_G5_XDRIP
+    "G6 Native" -> GlucoseValue.SourceSensor.DEXCOM_G6_NATIVE
+    "G5 Native" -> GlucoseValue.SourceSensor.DEXCOM_G5_NATIVE
+    "Network libre" -> GlucoseValue.SourceSensor.LIBRE_1_XDRIP
+    "BlueReader" -> GlucoseValue.SourceSensor.LIBRE_1_XDRIP
+    "Transmiter PL" -> GlucoseValue.SourceSensor.LIBRE_1_XDRIP
+    "Blucon" -> GlucoseValue.SourceSensor.LIBRE_1_XDRIP
+    "Tomato" -> GlucoseValue.SourceSensor.LIBRE_1_XDRIP
+    "Rfduino" -> GlucoseValue.SourceSensor.LIBRE_1_XDRIP
+    "LimiTTer" -> GlucoseValue.SourceSensor.LIBRE_1_XDRIP
+    else -> GlucoseValue.SourceSensor.UNKNOWN
+}

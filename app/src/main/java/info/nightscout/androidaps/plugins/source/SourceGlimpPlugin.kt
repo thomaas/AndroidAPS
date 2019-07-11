@@ -46,7 +46,7 @@ object SourceGlimpPlugin : PluginBase(PluginDescription()
                 trendArrow = bundle.getString("myTrend")!!.toTrendArrow(),
                 raw = null,
                 noise = null,
-                sourceSensor = GlucoseValue.SourceSensor.LIBRE_1_OOP
+                sourceSensor = GlucoseValue.SourceSensor.GLIMP
         )
 
         BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)

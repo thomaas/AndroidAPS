@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import info.nightscout.androidaps.database.TABLE_GLUCOSE_VALUES
 import info.nightscout.androidaps.database.entities.GlucoseValue
+import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
 
@@ -27,5 +28,8 @@ abstract class GlucoseValueDao : BaseDao<GlucoseValue>() {
 
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE timestamp >= :start AND timestamp <= :end AND value >= 39 AND referenceID IS NULL AND valid = 1 ORDER BY timestamp ASC")
     abstract fun getProperGlucoseValuesInTimeRange(start: Long, end: Long) : Single<List<GlucoseValue>>
+
+    @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE timestamp >= (julianday('now') - 2440587.5) * 86400000.0 - :timeRange AND timestamp < (julianday('now') - 2440587.5) * 86400000.0 AND referenceID IS NULL AND valid = 1 ORDER BY timestamp ASC")
+    abstract fun getProperGlucoseValuesInTimeRange(timeRange: Long) : Flowable<List<GlucoseValue>>
 
 }

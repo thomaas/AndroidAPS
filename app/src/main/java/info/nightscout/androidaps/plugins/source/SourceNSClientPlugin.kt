@@ -13,6 +13,7 @@ import info.nightscout.androidaps.plugins.constraints.objectives.ObjectivesPlugi
 import info.nightscout.androidaps.plugins.general.nsclient.data.NSSgv
 import info.nightscout.androidaps.utils.JsonHelper
 import info.nightscout.androidaps.utils.SP
+import info.nightscout.androidaps.utils.determineSourceSensor
 import info.nightscout.androidaps.utils.toTrendArrow
 import org.json.JSONArray
 import org.json.JSONObject
@@ -75,6 +76,9 @@ object SourceNSClientPlugin : PluginBase(PluginDescription()
 
     private fun storeSgv(sgvJson: JSONObject) {
         val nsSgv = NSSgv(sgvJson)
+
+        val source = JsonHelper.safeGetString(sgvJson, "device", "none")
+
         val glucoseValue = GlucoseValue(
                 utcOffset = TimeZone.getDefault().getOffset(nsSgv.mills).toLong(),
                 timestamp = nsSgv.mills,
@@ -82,12 +86,12 @@ object SourceNSClientPlugin : PluginBase(PluginDescription()
                 trendArrow = nsSgv.direction.toTrendArrow(),
                 raw = nsSgv.filtered?.toDouble(),
                 noise = nsSgv.noise?.toDouble(),
-                sourceSensor = GlucoseValue.SourceSensor.LIBRE_1_OOP
+                sourceSensor = source.determineSourceSensor()
         )
         glucoseValue.interfaceIDs.nightscoutId = nsSgv.id
 
         BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)
-        detectSource(JsonHelper.safeGetString(sgvJson, "device", "none"), JsonHelper.safeGetLong(sgvJson, "mills"))
+        detectSource(source, JsonHelper.safeGetLong(sgvJson, "mills"))
     }
 
     private fun detectSource(source: String, timeStamp: Long) {

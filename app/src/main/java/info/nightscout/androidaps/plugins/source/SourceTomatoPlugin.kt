@@ -48,7 +48,7 @@ object SourceTomatoPlugin : PluginBase(PluginDescription()
                 trendArrow = GlucoseValue.TrendArrow.NONE,
                 raw = null,
                 noise = null,
-                sourceSensor = GlucoseValue.SourceSensor.LIBRE_1_OOP
+                sourceSensor = GlucoseValue.SourceSensor.TOMATO
         )
         if (BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)) {
             if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
