@@ -8,7 +8,7 @@ interface DBEntry<T> {
     var lastModified: Long
     var valid: Boolean
     var referenceID: Long?
-    var interfaceIDs2: InterfaceIDs?
+    var interfaceIDs_backing: InterfaceIDs?
 
     val historic: Boolean get() = referenceID != 0L
 
@@ -16,15 +16,15 @@ interface DBEntry<T> {
 
     var interfaceIDs: InterfaceIDs
         get() {
-            var value = this.interfaceIDs2
+            var value = this.interfaceIDs_backing
             if (value == null) {
                 value = InterfaceIDs()
-                interfaceIDs2 = value
+                interfaceIDs_backing = value
             }
             return value
         }
         set(value) {
-            interfaceIDs2 = value
+            interfaceIDs_backing = value
         }
 
     fun contentEqualsTo(other: T) : Boolean = this == other

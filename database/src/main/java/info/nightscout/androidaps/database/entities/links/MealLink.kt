@@ -42,7 +42,7 @@ data class MealLink(
         override var valid: Boolean = true,
         override var referenceID: Long? = null,
         @Embedded
-        override var interfaceIDs2: InterfaceIDs? = null,
+        override var interfaceIDs_backing: InterfaceIDs? = null,
         var bolusID: Long? = null,
         var carbsID: Long? = null,
         var bolusCalcResultID: Long? = null,

@@ -21,7 +21,7 @@ data class EffectiveProfileSwitch(
         override var valid: Boolean = true,
         override var referenceID: Long? = null,
         @Embedded
-        override var interfaceIDs2: InterfaceIDs? = null,
+        override var interfaceIDs_backing: InterfaceIDs? = null,
         override var timestamp: Long,
         override var utcOffset: Long,
         override var duration: Long,

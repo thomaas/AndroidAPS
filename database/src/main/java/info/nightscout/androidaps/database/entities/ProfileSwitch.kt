@@ -21,7 +21,7 @@ data class ProfileSwitch(
         override var valid: Boolean = true,
         override var referenceID: Long? = null,
         @Embedded
-        override var interfaceIDs2: InterfaceIDs? = InterfaceIDs(),
+        override var interfaceIDs_backing: InterfaceIDs? = InterfaceIDs(),
         override var timestamp: Long,
         override var utcOffset: Long,
         var profileName: String,
