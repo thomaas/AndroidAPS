@@ -90,6 +90,7 @@ import info.nightscout.androidaps.receivers.NSAlarmReceiver;
 import info.nightscout.androidaps.services.Intents;
 import info.nightscout.androidaps.utils.FabricPrivacy;
 import io.fabric.sdk.android.Fabric;
+import io.reactivex.schedulers.Schedulers;
 
 import static info.nightscout.androidaps.plugins.general.versionChecker.VersionCheckerUtilsKt.triggerCheckVersion;
 
@@ -122,7 +123,7 @@ public class MainApp extends Application {
     public void onCreate() {
         super.onCreate();
         AppRepository.INSTANCE.initialize(this);
-        AppRepository.INSTANCE.getProperGlucoseValuesInTimeRange(TimeUnit.DAYS.toMillis(1)).subscribe(values -> {
+        AppRepository.INSTANCE.getProperGlucoseValuesInTimeRange(TimeUnit.DAYS.toMillis(1)).subscribeOn(Schedulers.io()).subscribe(values -> {
             DatabaseHelper.scheduleBgChange();
         });
         log.debug("onCreate");
