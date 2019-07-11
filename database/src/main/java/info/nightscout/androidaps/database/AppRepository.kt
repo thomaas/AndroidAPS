@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import info.nightscout.androidaps.database.entities.GlucoseValue
 import io.reactivex.Completable
+import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import java.util.concurrent.TimeUnit
@@ -51,4 +52,6 @@ object AppRepository {
     fun getGlucoseValuesInTimeRange(start: Long, end: Long): Single<List<GlucoseValue>> = database.glucoseValueDao.getGlucoseValuesInTimeRange(start, end)
 
     fun getProperGlucoseValuesInTimeRange(start: Long, end: Long): Single<List<GlucoseValue>> = database.glucoseValueDao.getProperGlucoseValuesInTimeRange(start, end)
+
+    fun getProperGlucoseValuesInTimeRange(timeRange: Long) : Flowable<List<GlucoseValue>> = database.glucoseValueDao.getProperGlucoseValuesInTimeRange(timeRange)
 }

@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import info.nightscout.androidaps.data.ConstraintChecker;
 import info.nightscout.androidaps.database.AppRepository;
@@ -121,9 +122,8 @@ public class MainApp extends Application {
     public void onCreate() {
         super.onCreate();
         AppRepository.INSTANCE.initialize(this);
-        AppRepository.INSTANCE.setGlucoseValuesChangedCallback(() ->  {
+        AppRepository.INSTANCE.getProperGlucoseValuesInTimeRange(TimeUnit.DAYS.toMillis(1)).subscribe(values -> {
             DatabaseHelper.scheduleBgChange();
-            return null;
         });
         log.debug("onCreate");
         sInstance = this;

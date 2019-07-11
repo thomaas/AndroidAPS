@@ -55,16 +55,20 @@ data class GlucoseValue(
 
     enum class SourceSensor {
         UNKNOWN,
+        DEXCOM_NATIVE_UNKNOWN,
         DEXCOM_G6_NATIVE,
         DEXCOM_G6_XDRIP,
         DEXCOM_G5_NATIVE,
         DEXCOM_G5_XDRIP,
-        DEXCOM_G4,
-        LIBRE_1_OOP,
+        DEXCOM_G4_NATIVE,
+        DEXCOM_G4_XDRIP,
         LIBRE_1_XDRIP,
+        TOMATO,
+        GLIMP,
         LIBRE_2_NATIVE,
         POCTECH_NATIVE,
         MM_600_SERIES,
-        EVERSENSE
+        EVERSENSE,
+        MEDTRUM_A6
     }
 }
