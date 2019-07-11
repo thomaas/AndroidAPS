@@ -19,5 +19,5 @@ object BlockingAppRepository {
 
     fun getProperGlucoseValuesInTimeRange(start: Long, end: Long): List<GlucoseValue> = AppRepository.getProperGlucoseValuesInTimeRange(start, end).subscribeOn(Schedulers.io()).blockingGet()
 
-    fun update(glucoseValue: GlucoseValue) = AppRepository.update(glucoseValue).blockingAwait()
+    fun update(glucoseValue: GlucoseValue) = AppRepository.update(glucoseValue).subscribeOn(Schedulers.io()).blockingAwait()
 }
