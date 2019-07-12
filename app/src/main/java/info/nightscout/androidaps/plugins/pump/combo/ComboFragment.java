@@ -36,7 +36,6 @@ public class ComboFragment extends SubscriberFragment implements View.OnClickLis
     private TextView baseBasalRate;
     private TextView tempBasalText;
     private Button refreshButton;
-    private Button ruffyButton;
     private TextView bolusCount;
     private TextView tbrCount;
 
@@ -58,10 +57,6 @@ public class ComboFragment extends SubscriberFragment implements View.OnClickLis
 
         refreshButton = view.findViewById(R.id.combo_refresh_button);
         refreshButton.setOnClickListener(this);
-
-        //TODO: Adrian remove
-        ruffyButton = view.findViewById(R.id.combo_ruffy_button);
-        ruffyButton.setOnClickListener(this);
 
         updateGUI();
         return view;
@@ -85,10 +80,6 @@ public class ComboFragment extends SubscriberFragment implements View.OnClickLis
                         runOnUiThread(() -> refreshButton.setEnabled(true));
                     }
                 });
-                break;
-            case R.id.combo_ruffy_button:
-                //TODO Adrian: remove
-                ComboPlugin.getPlugin().forceRuffyReconnect();
                 break;
         }
     }

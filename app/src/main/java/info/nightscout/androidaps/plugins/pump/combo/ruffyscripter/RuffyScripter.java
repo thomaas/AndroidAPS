@@ -57,8 +57,6 @@ public class RuffyScripter implements RuffyCommands {
 
     private ServiceConnection mRuffyServiceConnection;
 
-
-    private String previousCommand = "<none>";
     private volatile Command activeCmd = null;
 
     private boolean started = false;
@@ -128,6 +126,7 @@ public class RuffyScripter implements RuffyCommands {
         //unbind ruffy service
         if (mRuffyServiceConnection != null) {
             context.unbindService(mRuffyServiceConnection);
+            SystemClock.sleep(2_000);
         }
 
         //send kill signal to ruffy

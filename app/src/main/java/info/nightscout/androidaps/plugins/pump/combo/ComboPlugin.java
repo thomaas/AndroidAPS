@@ -908,8 +908,6 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
                 }
                 updateLocalData(commandResult);
             } else {
-                //TODO evaluate test and change log afterwards.
-                log.debug("ADRIAN TEST: Command not successful, reconnect ruffy");
                 forceRuffyReconnect();
             }
         } finally {
@@ -1403,5 +1401,4 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     void  forceRuffyReconnect(){
         ruffyScripter = ruffyScripter.recreate(MainApp.instance());
     }
-
 }
