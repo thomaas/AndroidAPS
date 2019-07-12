@@ -120,7 +120,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             if (L.isEnabled(L.DATABASE))
                 log.info("onCreate");
             TableUtils.createTableIfNotExists(connectionSource, TempTarget.class);
-            TableUtils.createTableIfNotExists(connectionSource, BgReading.class);
             TableUtils.createTableIfNotExists(connectionSource, DanaRHistoryRecord.class);
             TableUtils.createTableIfNotExists(connectionSource, DbRequest.class);
             TableUtils.createTableIfNotExists(connectionSource, TemporaryBasal.class);
@@ -150,7 +149,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             if (oldVersion < 7) {
                 log.info(DatabaseHelper.class.getName(), "onUpgrade");
                 TableUtils.dropTable(connectionSource, TempTarget.class, true);
-                TableUtils.dropTable(connectionSource, BgReading.class, true);
                 TableUtils.dropTable(connectionSource, DanaRHistoryRecord.class, true);
                 TableUtils.dropTable(connectionSource, DbRequest.class, true);
                 TableUtils.dropTable(connectionSource, TemporaryBasal.class, true);
@@ -208,7 +206,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     public void resetDatabases() {
         try {
             TableUtils.dropTable(connectionSource, TempTarget.class, true);
-            TableUtils.dropTable(connectionSource, BgReading.class, true);
             TableUtils.dropTable(connectionSource, DanaRHistoryRecord.class, true);
             TableUtils.dropTable(connectionSource, DbRequest.class, true);
             TableUtils.dropTable(connectionSource, TemporaryBasal.class, true);
@@ -217,7 +214,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             TableUtils.dropTable(connectionSource, ProfileSwitch.class, true);
             TableUtils.dropTable(connectionSource, TDD.class, true);
             TableUtils.createTableIfNotExists(connectionSource, TempTarget.class);
-            TableUtils.createTableIfNotExists(connectionSource, BgReading.class);
             TableUtils.createTableIfNotExists(connectionSource, DanaRHistoryRecord.class);
             TableUtils.createTableIfNotExists(connectionSource, DbRequest.class);
             TableUtils.createTableIfNotExists(connectionSource, TemporaryBasal.class);
@@ -313,10 +309,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     private Dao<TempTarget, Long> getDaoTempTargets() throws SQLException {
         return getDao(TempTarget.class);
-    }
-
-    private Dao<BgReading, Long> getDaoBgReadings() throws SQLException {
-        return getDao(BgReading.class);
     }
 
     private Dao<DanaRHistoryRecord, String> getDaoDanaRHistory() throws SQLException {

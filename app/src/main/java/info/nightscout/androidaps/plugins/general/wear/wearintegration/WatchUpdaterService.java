@@ -41,10 +41,10 @@ import info.nightscout.androidaps.data.IobTotal;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
-import info.nightscout.androidaps.db.BgReading;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.interfaces.PluginType;
 import info.nightscout.androidaps.interfaces.TreatmentsInterface;
+import info.nightscout.androidaps.plugins.aps.loop.APSResult;
 import info.nightscout.androidaps.plugins.aps.loop.LoopPlugin;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
@@ -558,12 +558,12 @@ public class WatchUpdaterService extends WearableListenerService implements Goog
 
         final LoopPlugin.LastRun finalLastRun = LoopPlugin.lastRun;
         if (SP.getBoolean("wear_predictions", true) && finalLastRun != null && finalLastRun.request.hasPredictions && finalLastRun.constraintsProcessed != null) {
-            List<BgReading> predArray = finalLastRun.constraintsProcessed.getPredictions();
+            List<APSResult.Prediction> predArray = finalLastRun.constraintsProcessed.getPredictions();
 
             if (!predArray.isEmpty()) {
-                for (BgReading bg : predArray) {
-                    if (bg.value < 40) continue;
-                    predictions.add(predictionMap(bg.date, bg.value, bg.getPredectionColor()));
+                for (APSResult.Prediction bg : predArray) {
+                    if (bg.getValue() < 40) continue;
+                    predictions.add(predictionMap(bg.getTimestamp(), bg.getValue(), bg.getColor()));
                 }
             }
         }

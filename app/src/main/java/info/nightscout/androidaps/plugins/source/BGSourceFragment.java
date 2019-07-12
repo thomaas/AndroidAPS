@@ -58,7 +58,7 @@ public class BGSourceFragment extends SubscriberFragment {
             recyclerView.setLayoutManager(llm);
 
             long now = System.currentTimeMillis();
-            List<GlucoseValue> glucoseValues = new ArrayList<GlucoseValue>(BlockingAppRepository.INSTANCE.getGlucoseValuesInTimeRange(now - TimeUnit.DAYS.toMillis(1), Long.MAX_VALUE));
+            List<GlucoseValue> glucoseValues = new ArrayList<>(BlockingAppRepository.INSTANCE.getGlucoseValuesInTimeRange(now - TimeUnit.DAYS.toMillis(1), Long.MAX_VALUE));
             Collections.reverse(glucoseValues);
             RecyclerViewAdapter adapter = new RecyclerViewAdapter(glucoseValues);
             recyclerView.setAdapter(adapter);
@@ -85,7 +85,9 @@ public class BGSourceFragment extends SubscriberFragment {
         if (activity != null)
             activity.runOnUiThread(() -> {
                 long now = System.currentTimeMillis();
-                recyclerView.swapAdapter(new RecyclerViewAdapter(new ArrayList<>(BlockingAppRepository.INSTANCE.getGlucoseValuesInTimeRange(now - TimeUnit.DAYS.toMillis(1), Long.MAX_VALUE))), true);
+                List<GlucoseValue> glucoseValues = new ArrayList<>(BlockingAppRepository.INSTANCE.getGlucoseValuesInTimeRange(now - TimeUnit.DAYS.toMillis(1), Long.MAX_VALUE));
+                Collections.reverse(glucoseValues);
+                recyclerView.swapAdapter(new RecyclerViewAdapter(glucoseValues), true);
             });
     }
 

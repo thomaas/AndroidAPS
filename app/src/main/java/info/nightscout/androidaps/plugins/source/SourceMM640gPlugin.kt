@@ -4,7 +4,6 @@ import android.content.Intent
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
-import info.nightscout.androidaps.db.BgReading
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
 import info.nightscout.androidaps.interfaces.PluginDescription
@@ -51,7 +50,6 @@ object SourceMM640gPlugin : PluginBase(PluginDescription()
                         val jsonObject = jsonArray.getJSONObject(i)
                         when (val type = jsonObject.getString("type")) {
                             "sgv" -> {
-                                val bgReading = BgReading()
                                 val timestamp = jsonObject.getLong("date")
                                 val glucoseValue = GlucoseValue(
                                         utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),

@@ -5,7 +5,6 @@ import info.nightscout.androidaps.Constants
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
-import info.nightscout.androidaps.db.BgReading
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
 import info.nightscout.androidaps.interfaces.PluginDescription
@@ -41,8 +40,6 @@ object SourcePoctechPlugin : PluginBase(PluginDescription()
         if (!isEnabled(PluginType.BGSOURCE)) return
 
         val bundle = intent.extras ?: return
-
-        val bgReading = BgReading()
 
         val data = bundle.getString("data")
         if (L.isEnabled(L.BGSOURCE))

@@ -22,19 +22,17 @@ import info.nightscout.androidaps.Constants;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.Profile;
-import info.nightscout.androidaps.db.BgReading;
+import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.db.ProfileSwitch;
 import info.nightscout.androidaps.db.TempTarget;
 import info.nightscout.androidaps.logging.L;
-import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
-import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.AutosensData;
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.BasalData;
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
 import info.nightscout.androidaps.plugins.aps.loop.APSResult;
 import info.nightscout.androidaps.plugins.aps.loop.LoopPlugin;
+import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
+import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
+import info.nightscout.androidaps.plugins.general.overview.OverviewPlugin;
 import info.nightscout.androidaps.plugins.general.overview.graphExtensions.AreaGraphSeries;
 import info.nightscout.androidaps.plugins.general.overview.graphExtensions.DataPointWithLabelInterface;
 import info.nightscout.androidaps.plugins.general.overview.graphExtensions.DoubleDataPoint;
@@ -43,8 +41,12 @@ import info.nightscout.androidaps.plugins.general.overview.graphExtensions.Point
 import info.nightscout.androidaps.plugins.general.overview.graphExtensions.Scale;
 import info.nightscout.androidaps.plugins.general.overview.graphExtensions.ScaledDataPoint;
 import info.nightscout.androidaps.plugins.general.overview.graphExtensions.TimeAsXAxisLabelFormatter;
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.AutosensData;
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.BasalData;
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
 import info.nightscout.androidaps.plugins.treatments.Treatment;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
+import info.nightscout.androidaps.utils.GlucoseValueUtilsKt;
 import info.nightscout.androidaps.utils.Round;
 
 /**
@@ -57,7 +59,7 @@ public class GraphData {
     private GraphView graph;
     public double maxY = Double.MIN_VALUE;
     public double minY = Double.MAX_VALUE;
-    private List<BgReading> bgReadingsArray;
+    private List<GlucoseValue> bgReadingsArray;
     private String units;
     private List<Series> series = new ArrayList<>();
 
@@ -69,7 +71,7 @@ public class GraphData {
         this.iobCobCalculatorPlugin = iobCobCalculatorPlugin;
     }
 
-    public void addBgReadings(long fromTime, long toTime, double lowLine, double highLine, List<BgReading> predictions) {
+    public void addBgReadings(long fromTime, long toTime, double lowLine, double highLine, List<APSResult.Prediction> predictions) {
         double maxBgValue = Double.MIN_VALUE;
         //bgReadingsArray = MainApp.getDbHelper().getBgreadingsDataFromTime(fromTime, true);
         bgReadingsArray = iobCobCalculatorPlugin.getBgReadings();
@@ -83,15 +85,16 @@ public class GraphData {
             return;
         }
 
-        for (BgReading bg : bgReadingsArray) {
-            if (bg.date < fromTime || bg.date > toTime) continue;
-            if (bg.value > maxBgValue) maxBgValue = bg.value;
-            bgListArray.add(bg);
+        String units = ProfileFunctions.getInstance().getProfileUnits();
+        for (GlucoseValue bg : bgReadingsArray) {
+            if (bg.getTimestamp() < fromTime || bg.getTimestamp() > toTime) continue;
+            if (bg.getValue() > maxBgValue) maxBgValue = bg.getValue();
+            bgListArray.add(new GlucoseValueDataPoint(bg));
         }
         if (predictions != null) {
             Collections.sort(predictions, (o1, o2) -> Double.compare(o1.getX(), o2.getX()));
-            for (BgReading prediction : predictions) {
-                if (prediction.value >= 40)
+            for (APSResult.Prediction prediction : predictions) {
+                if (prediction.getValue() >= 40)
                     bgListArray.add(prediction);
             }
         }
@@ -336,12 +339,12 @@ public class GraphData {
         if (bgReadingsArray == null)
             return Profile.fromMgdlToUnits(100, units);
         for (int r = 0; r < bgReadingsArray.size(); r++) {
-            BgReading reading = bgReadingsArray.get(r);
-            if (reading.date > date) continue;
-            return Profile.fromMgdlToUnits(reading.value, units);
+            GlucoseValue reading = bgReadingsArray.get(r);
+            if (reading.getTimestamp() > date) continue;
+            return Profile.fromMgdlToUnits(reading.getValue(), units);
         }
         return bgReadingsArray.size() > 0
-                ? Profile.fromMgdlToUnits(bgReadingsArray.get(0).value, units) : Profile.fromMgdlToUnits(100, units);
+                ? Profile.fromMgdlToUnits(bgReadingsArray.get(0).getValue(), units) : Profile.fromMgdlToUnits(100, units);
     }
 
     // scale in % of vertical size (like 0.3)
@@ -626,5 +629,64 @@ public class GraphData {
 
         // draw it
         graph.onDataChanged(false, false);
+    }
+
+    public static class GlucoseValueDataPoint implements DataPointWithLabelInterface {
+
+        private final GlucoseValue glucoseValue;
+
+        public GlucoseValueDataPoint(GlucoseValue glucoseValue) {
+            this.glucoseValue = glucoseValue;
+        }
+
+        @Override
+        public double getX() {
+            return glucoseValue.getTimestamp();
+        }
+
+        @Override
+        public double getY() {
+            String units = ProfileFunctions.getInstance().getProfileUnits();
+            return GlucoseValueUtilsKt.valueToUnits(glucoseValue.getValue(), units);
+        }
+
+        @Override
+        public void setY(double y) {
+
+        }
+
+        @Override
+        public String getLabel() {
+            return null;
+        }
+
+        @Override
+        public long getDuration() {
+            return 0;
+        }
+
+        @Override
+        public PointsWithLabelGraphSeries.Shape getShape() {
+            return PointsWithLabelGraphSeries.Shape.BG;
+        }
+
+        @Override
+        public float getSize() {
+            return 1;
+        }
+
+        @Override
+        public int getColor() {
+            String units = ProfileFunctions.getInstance().getProfileUnits();
+            Double lowLine = OverviewPlugin.getPlugin().determineLowLine(units);
+            Double highLine = OverviewPlugin.getPlugin().determineHighLine(units);
+            int color = MainApp.gc(R.color.inrange);
+            double value = GlucoseValueUtilsKt.valueToUnits(glucoseValue.getValue(), units);
+            if (value < lowLine)
+                color = MainApp.gc(R.color.low);
+            else if (value > highLine)
+                color = MainApp.gc(R.color.high);
+            return color;
+        }
     }
 }

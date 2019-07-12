@@ -24,6 +24,6 @@ data class TotalDailyDose(
         override var timestamp: Long,
         override var utcOffset: Long,
         var basalAmount: Double?,
-        var totalAmount: Double?,
-        var bolusAmount: Double?
+        var bolusAmount: Double?,
+        var totalAmount: Double?
 ) : DBEntry<TotalDailyDose>, DBEntryWithTime

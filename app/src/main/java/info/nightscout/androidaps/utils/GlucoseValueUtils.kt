@@ -2,7 +2,6 @@ package info.nightscout.androidaps.utils
 
 import info.nightscout.androidaps.Constants
 import info.nightscout.androidaps.database.entities.GlucoseValue
-import info.nightscout.androidaps.db.BgReading
 
 fun GlucoseValue.TrendArrow.toSymbol(): String {
     return when (this) {
@@ -52,7 +51,7 @@ fun valueToUnitsToString(value: Double, units: String): String {
     else
         DecimalFormatter.to1Decimal(value * Constants.MGDL_TO_MMOLL)
 }
-
+/*
 fun GlucoseValue.convertToBGReading(): BgReading {
     val bgReading = BgReading()
     bgReading.date = timestamp
@@ -63,7 +62,7 @@ fun GlucoseValue.convertToBGReading(): BgReading {
     return bgReading
 }
 
-fun List<GlucoseValue>.convertToBGReadings(): List<BgReading> = map { it.convertToBGReading() }
+fun List<GlucoseValue>.convertToBGReadings(): List<BgReading> = map { it.convertToBGReading() }*/
 
 fun String?.determineSourceSensor() = when (this) {
     "AndroidAPS-Dexcom" -> GlucoseValue.SourceSensor.DEXCOM_NATIVE_UNKNOWN
