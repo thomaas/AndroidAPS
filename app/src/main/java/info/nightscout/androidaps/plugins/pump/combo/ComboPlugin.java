@@ -1398,7 +1398,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
         return false;
     }
 
-    void  forceRuffyReconnect(){
+    private void  forceRuffyReconnect(){
         ruffyScripter = ruffyScripter.recreate(MainApp.instance());
     }
 }
