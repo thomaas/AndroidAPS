@@ -4,6 +4,6 @@ import info.nightscout.androidaps.database.embedments.InsulinConfiguration
 
 interface DBEntryWithInsulinConfig {
 
-    var insulinConfiguration: InsulinConfiguration
+    var insulinConfiguration: InsulinConfiguration?
     
 }

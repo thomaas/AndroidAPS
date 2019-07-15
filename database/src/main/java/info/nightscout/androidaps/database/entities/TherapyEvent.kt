@@ -23,10 +23,10 @@ data class TherapyEvent(
         override var interfaceIDs_backing: InterfaceIDs? = InterfaceIDs(),
         override var timestamp: Long,
         override var utcOffset: Long,
-        override var duration: Long,
+        override var duration: Long = 0,
         var type: Type,
-        var note: String?,
-        var amount: Double?
+        var note: String? = null,
+        var amount: Double? = null
 ) : DBEntry<TherapyEvent>, DBEntryWithTimeAndDuration {
     enum class Type {
         CANNULA_CHANGED,
@@ -52,8 +52,11 @@ data class TherapyEvent(
         QUESTION,
         NOTE,
         APS_OFFLINE,
-        PUMP_BATTERY_EMPTY,
+        BATTERY_EMPTY,
         RESERVOIR_EMPTY,
-        OCCLUSION
+        OCCLUSION,
+        PUMP_STOPPED,
+        PUMP_STARTED,
+        PUMP_PAUSED
     }
 }

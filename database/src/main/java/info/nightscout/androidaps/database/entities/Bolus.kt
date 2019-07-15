@@ -29,7 +29,7 @@ data class Bolus(
         var type: Type,
         var basalInsulin: Boolean,
         @Embedded
-        override var insulinConfiguration: InsulinConfiguration
+        override var insulinConfiguration: InsulinConfiguration? = null
 ) : DBEntry<Bolus>, DBEntryWithTime, DBEntryWithInsulinConfig {
     enum class Type {
         NORMAL,

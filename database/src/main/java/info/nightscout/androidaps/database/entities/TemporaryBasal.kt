@@ -2,10 +2,8 @@ package info.nightscout.androidaps.database.entities
 
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_TEMPORARY_BASALS
-import info.nightscout.androidaps.database.embedments.InsulinConfiguration
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.interfaces.DBEntry
-import info.nightscout.androidaps.database.interfaces.DBEntryWithInsulinConfig
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTimeAndDuration
 
 @Entity(tableName = TABLE_TEMPORARY_BASALS,
@@ -28,10 +26,8 @@ data class TemporaryBasal(
         var type: Type,
         var absolute: Boolean,
         var rate: Double,
-        override var duration: Long,
-        @Embedded
-        override var insulinConfiguration: InsulinConfiguration
-) : DBEntry<TemporaryBasal>, DBEntryWithTimeAndDuration, DBEntryWithInsulinConfig {
+        override var duration: Long
+) : DBEntry<TemporaryBasal>, DBEntryWithTimeAndDuration {
     enum class Type {
         NORMAL,
         EMULATED_PUMP_SUSPEND,

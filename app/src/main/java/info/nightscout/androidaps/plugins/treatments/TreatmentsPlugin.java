@@ -2,6 +2,7 @@ package info.nightscout.androidaps.plugins.treatments;
 
 import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.annotation.Nullable;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -453,7 +454,7 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
 
     @Override
     public boolean addToHistoryExtendedBolus(ExtendedBolus extendedBolus) {
-        //log.debug("Adding new ExtentedBolus record" + extendedBolus.log());
+        //log.debug("Adding new ExtentedBolus record" + extendedBolusDao.log());
         boolean newRecordCreated = MainApp.getDbHelper().createOrUpdate(extendedBolus);
         if (newRecordCreated) {
             if (extendedBolus.durationInMinutes == 0) {

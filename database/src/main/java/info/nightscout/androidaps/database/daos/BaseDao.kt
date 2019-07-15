@@ -4,8 +4,6 @@ import androidx.room.Insert
 import androidx.room.Transaction
 import androidx.room.Update
 import info.nightscout.androidaps.database.interfaces.DBEntry
-import io.reactivex.Completable
-import io.reactivex.Single
 
 abstract class BaseDao<T : DBEntry<T>> {
 
@@ -17,41 +15,41 @@ abstract class BaseDao<T : DBEntry<T>> {
     @Update
     abstract fun update(entry: T)
 
-    @Update
-    abstract fun updateCompletable(entry: T): Completable
-
-    fun insertNewEntry(entry: T): Single<Long> {
+    /**
+     * Inserts a new entry
+     * @return The ID of the newly generated entry
+     */
+    @Transaction
+    open fun insertNewEntry(entry: T): Long {
         if (entry.id != 0L) throw IllegalArgumentException("ID must be 0.")
         if (entry.version != 0) throw IllegalArgumentException("Version must be 0.")
         if (entry.referenceID != null) throw IllegalArgumentException("Reference ID must be null.")
         if (!entry.foreignKeysValid) throw java.lang.IllegalArgumentException("One or more foreign keys are invalid (e.g. 0 value).")
         val lastModified = System.currentTimeMillis()
-        return Single.fromCallable {
-            entry.lastModified = lastModified
-            insert(entry)
-        }
+        entry.lastModified = lastModified
+        val id = insert(entry)
+        entry.id = id
+        return id
     }
 
+    /**
+     * Updates an existing entry
+     * @return The ID of the newly generated HISTORIC entry
+     */
     @Transaction
-    open fun saveAndLogChanges(entry: T): Long {
+    open fun updateExistingEntry(entry: T): Long {
+        if (entry.id == 0L) throw IllegalArgumentException("ID must not be 0.")
+        if (entry.referenceID != null) throw IllegalArgumentException("Reference ID must be null.")
+        if (!entry.foreignKeysValid) throw java.lang.IllegalArgumentException("One or more foreign keys are invalid (e.g. 0 value).")
+        val lastModified = System.currentTimeMillis()
+        entry.lastModified = lastModified
         val current = findById(entry.id)
-                ?: throw IllegalArgumentException("The entry witht the specified ID does not exist.")
+                ?: throw IllegalArgumentException("The entry with the specified ID does not exist.")
         entry.version = current.version + 1
         update(entry)
         current.referenceID = entry.id
         current.id = 0
         return insert(current)
-    }
-
-    fun updateExistingEntry(entry: T): Single<Long> {
-        if (entry.id == 0L) throw IllegalArgumentException("ID must not be 0.")
-        if (entry.referenceID != null) throw IllegalArgumentException("Reference ID must be null.")
-        if (!entry.foreignKeysValid) throw java.lang.IllegalArgumentException("One or more foreign keys are invalid (e.g. 0 value).")
-        val lastModified = System.currentTimeMillis()
-        return Single.fromCallable() {
-            entry.lastModified = lastModified
-            saveAndLogChanges(entry)
-        }
     }
 
 }

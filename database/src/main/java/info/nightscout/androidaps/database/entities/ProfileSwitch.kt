@@ -3,8 +3,10 @@ package info.nightscout.androidaps.database.entities
 import androidx.room.*
 import info.nightscout.androidaps.database.Block
 import info.nightscout.androidaps.database.TABLE_PROFILE_SWITCHES
+import info.nightscout.androidaps.database.embedments.InsulinConfiguration
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.interfaces.DBEntry
+import info.nightscout.androidaps.database.interfaces.DBEntryWithInsulinConfig
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTimeAndDuration
 
 @Entity(tableName = TABLE_PROFILE_SWITCHES,
@@ -30,10 +32,12 @@ data class ProfileSwitch(
         var isfBlocks: List<Block>,
         var icBlocks: List<Block>,
         var targetBlocks: List<Block>,
+        @Embedded
+        override var insulinConfiguration: InsulinConfiguration?,
         var timeshift: Int,
         var percentage: Int,
         override var duration: Long
-) : DBEntry<ProfileSwitch>, DBEntryWithTimeAndDuration {
+) : DBEntry<ProfileSwitch>, DBEntryWithTimeAndDuration, DBEntryWithInsulinConfig {
     enum class GlucoseUnit {
         MGDL,
         MMOL

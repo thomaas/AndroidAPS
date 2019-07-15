@@ -1,6 +1,8 @@
 package info.nightscout.androidaps.database
 
 import info.nightscout.androidaps.database.entities.GlucoseValue
+import info.nightscout.androidaps.database.entities.TherapyEvent
+import info.nightscout.androidaps.database.transactions.InsightHistoryTransaction
 
 @Deprecated(
         message = "This class only adds support for blocking calls while migrating to reactive application design. Avoid using it.",
@@ -18,5 +20,9 @@ object BlockingAppRepository {
 
     fun getProperGlucoseValuesInTimeRange(start: Long, end: Long): List<GlucoseValue> = AppRepository.getProperGlucoseValuesInTimeRange(start, end).blockingGet()
 
-    fun update(glucoseValue: GlucoseValue) = AppRepository.update(glucoseValue).blockingAwait()
+    fun insert(therapyEvent: TherapyEvent): Long = AppRepository.insert(therapyEvent).blockingGet()
+
+    fun update(glucoseValue: GlucoseValue): Long = AppRepository.update(glucoseValue).blockingGet()
+
+    fun processInsightHistoryTransaction(transaction: InsightHistoryTransaction) = AppRepository.processInsightHistoryTransaction(transaction).blockingAwait()
 }

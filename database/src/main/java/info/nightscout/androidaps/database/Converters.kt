@@ -1,6 +1,7 @@
 package info.nightscout.androidaps.database
 
 import androidx.room.TypeConverter
+import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -48,6 +49,12 @@ class Converters {
 
     @TypeConverter
     fun toGlucoseUnit(glucoseUnit: String) = ProfileSwitch.GlucoseUnit.valueOf(glucoseUnit)
+
+    @TypeConverter
+    fun fromPumpType(pumpType: InterfaceIDs.PumpType) = pumpType.name
+
+    @TypeConverter
+    fun toPumpType(pumpType: String) = InterfaceIDs.PumpType.valueOf(pumpType)
 
     @TypeConverter
     fun fromListOfBlocks(blocks: List<Block>): String {
