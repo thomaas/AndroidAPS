@@ -122,6 +122,7 @@ public class RuffyScripter implements RuffyCommands {
 
     @Override
     public RuffyCommands recreate(Context context) {
+        log.debug("Recreating ruffy service connection");
 
         //unbind ruffy service
         if (mRuffyServiceConnection != null) {
@@ -161,7 +162,7 @@ public class RuffyScripter implements RuffyCommands {
             mRuffyServiceConnection = new ServiceConnection() {
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {
-                    log.debug("ruffy service connected");
+                    log.debug("Ruffy service connected");
                     ruffyService = IRuffyService.Stub.asInterface(service);
                     try {
                         ruffyService.setHandler(mHandler);
