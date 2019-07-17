@@ -7,12 +7,12 @@ interface DBEntry<T> {
     var version: Int
     var lastModified: Long
     var valid: Boolean
-    var referenceID: Long?
+    var referenceId: Long?
     var interfaceIDs_backing: InterfaceIDs?
 
-    val historic: Boolean get() = referenceID != 0L
+    val historic: Boolean get() = referenceId != 0L
 
-    val foreignKeysValid: Boolean get() = referenceID != 0L
+    val foreignKeysValid: Boolean get() = referenceId != 0L
 
     var interfaceIDs: InterfaceIDs
         get() {

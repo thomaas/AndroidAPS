@@ -38,7 +38,7 @@ class InsightHistoryProcessor(pumpSerial: String, private var timeOffset: Long, 
         transaction.boluses.sortBy { it.eventId }
         transaction.temporaryBasals.sortBy { it.eventId }
         transaction.totalDailyDoses.sortBy { it.eventId }
-        BlockingAppRepository.processInsightHistoryTransaction(transaction)
+        BlockingAppRepository.runTransaction(transaction)
     }
 
     private fun processDateTimeChangedEvent(event: DateTimeChangedEvent) {
@@ -69,7 +69,7 @@ class InsightHistoryProcessor(pumpSerial: String, private var timeOffset: Long, 
                 event.adjustedTimestamp,
                 event.bolusID,
                 event.immediateAmount,
-                event.duration.toLong() * 1000L,
+                event.duration.toLong() * 60000L,
                 event.extendedAmount
         ))
     }
@@ -82,7 +82,7 @@ class InsightHistoryProcessor(pumpSerial: String, private var timeOffset: Long, 
                 event.adjustedTimestamp,
                 event.bolusID,
                 event.immediateAmount,
-                event.duration.toLong() * 1000L,
+                event.duration.toLong() * 60000L,
                 event.extendedAmount
         ))
     }
@@ -98,7 +98,7 @@ class InsightHistoryProcessor(pumpSerial: String, private var timeOffset: Long, 
                 true,
                 event.eventPosition,
                 event.adjustedTimestamp,
-                event.duration.toLong() * 1000L,
+                event.duration.toLong() * 60000L,
                 event.amount
         ))
     }
@@ -108,7 +108,7 @@ class InsightHistoryProcessor(pumpSerial: String, private var timeOffset: Long, 
                 false,
                 event.eventPosition,
                 event.adjustedTimestamp,
-                event.duration.toLong() * 1000L,
+                event.duration.toLong() * 60000L,
                 event.amount
         ))
     }

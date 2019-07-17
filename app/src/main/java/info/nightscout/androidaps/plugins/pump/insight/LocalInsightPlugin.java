@@ -26,6 +26,9 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.transactions.InsightExtendedBolusTransaction;
+import info.nightscout.androidaps.database.transactions.InsightMealBolusTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.db.Source;
@@ -559,6 +562,14 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
                 detailedBolusInfo.date = insightBolusID.timestamp;
                 detailedBolusInfo.source = Source.PUMP;
                 detailedBolusInfo.pumpId = insightBolusID.id;
+                BlockingAppRepository.INSTANCE.runTransaction(new InsightMealBolusTransaction(
+                        connectionService.getPumpSystemIdentification().getSerialNumber(),
+                        System.currentTimeMillis(),
+                        insulin,
+                        detailedBolusInfo.carbs,
+                        bolusID,
+                        detailedBolusInfo.isSMB
+                ));
                 TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, true);
                 while (true) {
                     synchronized ($bolusLock) {
@@ -651,7 +662,7 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
                     PumpEnactResult cancelTBRResult = cancelTempBasalOnly();
                     if (cancelTBRResult.success) {
                         PumpEnactResult ebResult = setExtendedBolusOnly((absoluteRate - getBaseBasalRate()) / 60D
-                                * ((double) durationInMinutes), durationInMinutes);
+                                * ((double) durationInMinutes), durationInMinutes, true);
                         if (ebResult.success) {
                             result.success = true;
                             result.enacted = true;
@@ -729,7 +740,7 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
     @Override
     public PumpEnactResult setExtendedBolus(Double insulin, Integer durationInMinutes) {
         PumpEnactResult result = cancelExtendedBolusOnly();
-        if (result.success) result = setExtendedBolusOnly(insulin, durationInMinutes);
+        if (result.success) result = setExtendedBolusOnly(insulin, durationInMinutes, false);
         try {
             fetchStatus();
             readHistory();
@@ -743,7 +754,7 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
         return result;
     }
 
-    public PumpEnactResult setExtendedBolusOnly(Double insulin, Integer durationInMinutes) {
+    public PumpEnactResult setExtendedBolusOnly(Double insulin, Integer durationInMinutes, boolean emulatingTempBasal) {
         PumpEnactResult result = new PumpEnactResult();
         try {
             DeliverBolusMessage bolusMessage = new DeliverBolusMessage();
@@ -763,6 +774,14 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
             extendedBolus.durationInMinutes = durationInMinutes;
             extendedBolus.insulin = insulin;
             extendedBolus.pumpId = insightBolusID.id;
+            BlockingAppRepository.INSTANCE.runTransaction(new InsightExtendedBolusTransaction(
+                    connectionService.getPumpSystemIdentification().getSerialNumber(),
+                    System.currentTimeMillis(),
+                    insulin,
+                    durationInMinutes * 60000,
+                    bolusID,
+                    emulatingTempBasal
+            ));
             TreatmentsPlugin.getPlugin().addToHistoryExtendedBolus(extendedBolus);
             result.success = true;
             result.enacted = true;

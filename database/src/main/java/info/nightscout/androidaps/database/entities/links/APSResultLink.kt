@@ -24,8 +24,8 @@ import info.nightscout.androidaps.database.interfaces.DBEntry
 
                 entity = APSResultLink::class,
                 parentColumns = arrayOf("id"),
-                childColumns = arrayOf("referenceID"))],
-        indices = [Index("referenceID"), Index("apsResultID"),
+                childColumns = arrayOf("referenceId"))],
+        indices = [Index("referenceId"), Index("apsResultID"),
                 Index("smbID"), Index("tbrID")])
 data class APSResultLink(
         @PrimaryKey(autoGenerate = true)
@@ -33,7 +33,7 @@ data class APSResultLink(
         override var version: Int = 0,
         override var lastModified: Long = -1,
         override var valid: Boolean = true,
-        override var referenceID: Long? = null,
+        override var referenceId: Long? = null,
         @Embedded
         override var interfaceIDs_backing: InterfaceIDs? = null,
         var apsResultID: Long,

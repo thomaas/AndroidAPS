@@ -30,4 +30,8 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract val totalDailyDoseDao : TotalDailyDoseDao
 
+    abstract val carbsDao: CarbsDao
+
+    abstract val mealLinkDao: MealLinkDao
+
 }

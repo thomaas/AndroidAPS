@@ -10,46 +10,46 @@ import info.nightscout.androidaps.database.interfaces.DBEntry
         foreignKeys = [ForeignKey(
                 entity = Bolus::class,
                 parentColumns = arrayOf("id"),
-                childColumns = arrayOf("bolusID")), ForeignKey(
+                childColumns = arrayOf("bolusId")), ForeignKey(
 
                 entity = Carbs::class,
                 parentColumns = arrayOf("id"),
-                childColumns = arrayOf("carbsID")), ForeignKey(
+                childColumns = arrayOf("carbsId")), ForeignKey(
 
                 entity = BolusCalculatorResult::class,
                 parentColumns = arrayOf("id"),
-                childColumns = arrayOf("bolusCalcResultID")), ForeignKey(
+                childColumns = arrayOf("bolusCalcResultId")), ForeignKey(
 
                 entity = TemporaryBasal::class,
                 parentColumns = arrayOf("id"),
-                childColumns = arrayOf("superbolusTempBasalID")), ForeignKey(
+                childColumns = arrayOf("superbolusTempBasalId")), ForeignKey(
 
                 entity = TherapyEvent::class,
                 parentColumns = arrayOf("id"),
-                childColumns = arrayOf("noteID")), ForeignKey(
+                childColumns = arrayOf("noteId")), ForeignKey(
 
                 entity = MealLink::class,
                 parentColumns = ["id"],
-                childColumns = ["referenceID"])],
-        indices = [Index("referenceID"), Index("bolusID"),
-                Index("carbsID"), Index("bolusCalcResultID"),
-                Index("superbolusTempBasalID"), Index("noteID")])
+                childColumns = ["referenceId"])],
+        indices = [Index("referenceId"), Index("bolusId"),
+                Index("carbsId"), Index("bolusCalcResultId"),
+                Index("superbolusTempBasalId"), Index("noteId")])
 data class MealLink(
         @PrimaryKey(autoGenerate = true)
         override var id: Long = 0,
         override var version: Int = 0,
         override var lastModified: Long = -1,
         override var valid: Boolean = true,
-        override var referenceID: Long? = null,
+        override var referenceId: Long? = null,
         @Embedded
         override var interfaceIDs_backing: InterfaceIDs? = null,
-        var bolusID: Long? = null,
-        var carbsID: Long? = null,
-        var bolusCalcResultID: Long? = null,
-        var superbolusTempBasalID: Long? = null,
-        var noteID: Long? = null
+        var bolusId: Long? = null,
+        var carbsId: Long? = null,
+        var bolusCalcResultId: Long? = null,
+        var superbolusTempBasalId: Long? = null,
+        var noteId: Long? = null
 ) : DBEntry<MealLink> {
     override val foreignKeysValid: Boolean
-        get() = super.foreignKeysValid && bolusID != 0L && carbsID != 0L &&
-                bolusCalcResultID != 0L && superbolusTempBasalID != 0L && noteID != 0L
+        get() = super.foreignKeysValid && bolusId != 0L && carbsId != 0L &&
+                bolusCalcResultId != 0L && superbolusTempBasalId != 0L && noteId != 0L
 }

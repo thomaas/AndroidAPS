@@ -16,7 +16,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
     val operatingModeChanges = mutableListOf<OperatingModeChange>()
 
 
-    override fun process() {
+    override fun run() {
         processBoluses()
         processTemporaryBasals()
         processTherapyEvents()
@@ -35,6 +35,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             ).apply {
                 interfaceIDs.pumpSerial = pumpSerial
                 interfaceIDs.pumpId = it.eventId
+                interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
             })
         }
     }
@@ -59,6 +60,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             ).apply {
                 interfaceIDs.pumpSerial = pumpSerial
                 interfaceIDs.pumpId = eventId
+                interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
             })
         }
     }
@@ -93,6 +95,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             ).apply {
                 interfaceIDs.pumpSerial = pumpSerial
                 interfaceIDs.pumpId = startEvent.eventId
+                interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
             })
         }
     }
@@ -125,6 +128,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             ).apply {
                 interfaceIDs.pumpSerial = pumpSerial
                 interfaceIDs.pumpId = it.eventId
+                interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
             })
         }
     }
@@ -181,130 +185,121 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
                 interfaceIDs.pumpSerial = pumpSerial
                 interfaceIDs.startId = it.first.eventId
                 interfaceIDs.endId = it.second?.eventId
+                interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
             })
             it.first.databaseId = id
             it.second?.databaseId = id
         }
     }
 
-    private fun saveStandardBolus(start: Bolus?, end: Bolus?): Long {
-        val bolusId = (start?.bolusId ?: end!!.bolusId).toLong()
-        var bolus = when {
-            start == null && end != null -> {
-                AppRepository.database.bolusDao.findByPumpId_StartIdIsNotNull_EndIdIsNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
-            }
-            else -> {
-                AppRepository.database.bolusDao.findByPumpId_StartAndEndIDsAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
-            }
+    private fun saveStandardBolus(timestamp: Long, utcOffset: Long, amount: Double, bolusId: Long, startId: Long?, endId: Long?): Pair<Long, Boolean> {
+        var bolus = if (startId == null && endId != null) {
+            AppRepository.database.bolusDao.findByPumpId_StartIdIsNotNull_EndIdIsNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
+        } else {
+            AppRepository.database.bolusDao.findByPumpId_StartAndEndIDsAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
         }
-        val amount = end?.immediateAmount ?: start!!.immediateAmount
         if (bolus != null) {
             bolus.amount = amount
-            if (start != null) bolus.interfaceIDs.startId = start.eventId
-            if (end != null) bolus.interfaceIDs.endId = end.eventId
+            if (startId != null) bolus.interfaceIDs.startId = startId
+            if (endId != null) bolus.interfaceIDs.endId = endId
             AppRepository.database.bolusDao.updateExistingEntry(bolus)
+            return bolus.id to false
         } else {
-            val timestamp = start?.timestamp ?: end!!.timestamp
             bolus = Bolus(
-                    utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
+                    utcOffset = utcOffset,
                     timestamp = timestamp,
                     amount = amount,
                     type = info.nightscout.androidaps.database.entities.Bolus.Type.NORMAL,
                     basalInsulin = false
             )
             bolus.interfaceIDs.pumpId = bolusId
-            if (start != null) bolus.interfaceIDs.startId = start.eventId
-            if (end != null) bolus.interfaceIDs.endId = end.eventId
+            bolus.interfaceIDs.startId = startId
+            bolus.interfaceIDs.endId = endId
             bolus.interfaceIDs.pumpSerial = pumpSerial
-            AppRepository.database.bolusDao.insertNewEntry(bolus)
+            bolus.interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
+            return AppRepository.database.bolusDao.insertNewEntry(bolus) to true
         }
-        start?.bolusDatabaseId = bolus.id
-        end?.bolusDatabaseId = bolus.id
-        return bolus.id
     }
 
-    private fun saveExtendedBolus(start: Bolus?, end: Bolus?): Long {
-        val bolusId = (start?.bolusId ?: end!!.bolusId).toLong()
-        var extendedBolus = when {
-            start == null && end != null -> {
-                AppRepository.database.extendedBolusDao.findByPumpId_StartIdIsNotNull_EndIdIsNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
-            }
-            else -> {
-                AppRepository.database.extendedBolusDao.findByPumpId_StartAndEndIDsAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
-            }
+    private fun saveExtendedBolus(timestamp: Long, utcOffset: Long, amount: Double, duration: Long, bolusId: Long, startId: Long?, endId: Long?): Pair<Long, Boolean> {
+        var extendedBolus = if (startId == null && endId != null) {
+            AppRepository.database.extendedBolusDao.findByPumpId_StartIdIsNotNull_EndIdIsNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
+        } else {
+            AppRepository.database.extendedBolusDao.findByPumpId_StartAndEndIDsAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
         }
-        val amount = end?.extendedAmount ?: start!!.extendedAmount
         if (extendedBolus != null) {
             extendedBolus.amount = amount
-            if (start != null) extendedBolus.interfaceIDs.startId = start.eventId
-            if (end != null) extendedBolus.interfaceIDs.endId = end.eventId
+            extendedBolus.duration = duration
+            if (startId != null) extendedBolus.interfaceIDs.startId = startId
+            if (endId != null) extendedBolus.interfaceIDs.endId = endId
             AppRepository.database.extendedBolusDao.updateExistingEntry(extendedBolus)
+            return extendedBolus.id to false
         } else {
-            val timestamp = start?.timestamp ?: end!!.timestamp
             extendedBolus = ExtendedBolus(
-                    utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
+                    utcOffset = utcOffset,
                     timestamp = timestamp,
                     amount = amount,
-                    duration = end?.duration ?: start!!.duration,
+                    duration = duration,
                     emulatingTempBasal = false
             )
             extendedBolus.interfaceIDs.pumpId = bolusId
-            if (start != null) extendedBolus.interfaceIDs.startId = start.eventId
-            if (end != null) extendedBolus.interfaceIDs.endId = end.eventId
+            extendedBolus.interfaceIDs.startId = startId
+            extendedBolus.interfaceIDs.endId = endId
             extendedBolus.interfaceIDs.pumpSerial = pumpSerial
-            AppRepository.database.extendedBolusDao.insertNewEntry(extendedBolus)
+            extendedBolus.interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
+            return AppRepository.database.extendedBolusDao.insertNewEntry(extendedBolus) to true
         }
-        start?.bolusDatabaseId = extendedBolus.id
-        end?.bolusDatabaseId = extendedBolus.id
-        return extendedBolus.id
     }
 
-    private fun saveMultiwaveBolusLink(start: Bolus?, end: Bolus?, standardBolusId: Long, extendedBolusId: Long): Long {
-        val bolusId = (start?.bolusId ?: end!!.bolusId).toLong()
-        var multiwaveBolusLink = when {
-            start == null && end != null -> {
-                AppRepository.database.multiwaveBolusLinkDao.findByPumpId_StartIdIsNotNull_EndIdIsNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
-            }
-            else -> {
-                AppRepository.database.multiwaveBolusLinkDao.findByPumpId_StartAndEndIDsAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
-            }
-        }
-        if (multiwaveBolusLink != null) {
-            if (start != null) multiwaveBolusLink.interfaceIDs.startId = start.eventId
-            if (end != null) multiwaveBolusLink.interfaceIDs.endId = end.eventId
-            AppRepository.database.multiwaveBolusLinkDao.updateExistingEntry(multiwaveBolusLink)
+    private fun saveMultiwaveBolusLink(create: Boolean, bolusId: Long, startId: Long?, endId: Long?, standardBolusId: Long, extendedBolusId: Long): Long {
+        if (create) {
+            return AppRepository.database.multiwaveBolusLinkDao.insertNewEntry(MultiwaveBolusLink(
+                    bolusId = standardBolusId,
+                    extendedBolusId = extendedBolusId
+            ).apply {
+                interfaceIDs.pumpId = bolusId
+                interfaceIDs.startId = startId
+                interfaceIDs.endId = endId
+                interfaceIDs.pumpSerial = pumpSerial
+                interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
+            })
         } else {
-            multiwaveBolusLink = MultiwaveBolusLink(
-                    bolusID = standardBolusId,
-                    extendedBolusID = extendedBolusId
-            )
-            if (start != null) multiwaveBolusLink.interfaceIDs.startId = start.eventId
-            if (end != null) multiwaveBolusLink.interfaceIDs.endId = end.eventId
-            multiwaveBolusLink.interfaceIDs.pumpSerial = pumpSerial
-            AppRepository.database.multiwaveBolusLinkDao.insertNewEntry(multiwaveBolusLink)
+            val multiwaveBolusLink = AppRepository.database.multiwaveBolusLinkDao.findByBolusIDs(standardBolusId, extendedBolusId)!!
+            if (startId != null) multiwaveBolusLink.interfaceIDs.startId = startId
+            if (endId != null) multiwaveBolusLink.interfaceIDs.endId = endId
+            AppRepository.database.multiwaveBolusLinkDao.updateExistingEntry(multiwaveBolusLink)
+            return multiwaveBolusLink.id
         }
-        start?.multiwaveBolusLinkDatabaseId = multiwaveBolusLink.id
-        end?.multiwaveBolusLinkDatabaseId = multiwaveBolusLink.id
-        return multiwaveBolusLink.id
     }
 
     private fun processBoluses() {
-        val groupedBoluses = boluses.groupBy { it.bolusId }
-        val bolusPairs = groupedBoluses.map { entry -> entry.value.find { it.start } to entry.value.findLast { !it.start } }
-        bolusPairs.forEach {
+        boluses.groupBy { it.bolusId }
+                .map { entry -> entry.value.find { it.start } to entry.value.findLast { !it.start } }
+                .forEach {
             val type = it.first?.type ?: it.second!!.type
-            val bolusDatabaseId = if (type == Bolus.Type.STANDARD || type == Bolus.Type.MULTIWAVE) {
-                saveStandardBolus(it.first, it.second)
+            val timestamp = it.first?.timestamp ?: it.second!!.timestamp
+            val utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong()
+            val bolusId = (it.first?.bolusId ?: it.second!!.bolusId).toLong()
+            val startId = it.first?.eventId
+            val endId = it.second?.eventId
+            val (bolusDatabaseId, bolusCreated) = if (type == Bolus.Type.STANDARD || type == Bolus.Type.MULTIWAVE) {
+                saveStandardBolus(timestamp, utcOffset, it.second?.immediateAmount ?: it.first!!.immediateAmount, bolusId, startId, endId)
             } else {
-                null
+                null to false
             }
-            val extendedBolusDatabaseId = if (type == Bolus.Type.EXTENDED || type == Bolus.Type.MULTIWAVE) {
-                saveExtendedBolus(it.first, it.second)
+            it.first?.bolusDatabaseId = bolusDatabaseId
+            it.second?.bolusDatabaseId = bolusDatabaseId
+            val (extendedBolusDatabaseId, extendedBolusCreated) = if (type == Bolus.Type.EXTENDED || type == Bolus.Type.MULTIWAVE) {
+                saveExtendedBolus(timestamp, utcOffset, it.second?.extendedAmount ?: it.first!!.extendedAmount, it.second?.duration ?: it.first!!.duration, bolusId, startId, endId)
             } else {
-                null
+                null to false
             }
-            if (type == Bolus.Type.MULTIWAVE) {
-                saveMultiwaveBolusLink(it.first, it.second, bolusDatabaseId!!, extendedBolusDatabaseId!!)
+            it.first?.extendedBolusDatabaseId = extendedBolusDatabaseId
+            it.second?.extendedBolusDatabaseId = extendedBolusDatabaseId
+            if (bolusDatabaseId != null && extendedBolusDatabaseId != null) {
+                val id = saveMultiwaveBolusLink(bolusCreated && extendedBolusCreated, bolusId, startId, endId, bolusDatabaseId, extendedBolusDatabaseId)
+                it.first?.multiwaveBolusLinkDatabaseId = id
+                it.second?.multiwaveBolusLinkDatabaseId = id
             }
         }
     }

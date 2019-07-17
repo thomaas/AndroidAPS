@@ -23,7 +23,7 @@ abstract class BaseDao<T : DBEntry<T>> {
     open fun insertNewEntry(entry: T): Long {
         if (entry.id != 0L) throw IllegalArgumentException("ID must be 0.")
         if (entry.version != 0) throw IllegalArgumentException("Version must be 0.")
-        if (entry.referenceID != null) throw IllegalArgumentException("Reference ID must be null.")
+        if (entry.referenceId != null) throw IllegalArgumentException("Reference ID must be null.")
         if (!entry.foreignKeysValid) throw IllegalArgumentException("One or more foreign keys are invalid (e.g. 0 value).")
         val lastModified = System.currentTimeMillis()
         entry.lastModified = lastModified
@@ -39,16 +39,16 @@ abstract class BaseDao<T : DBEntry<T>> {
     @Transaction
     open fun updateExistingEntry(entry: T): Long {
         if (entry.id == 0L) throw IllegalArgumentException("ID must not be 0.")
-        if (entry.referenceID != null) throw IllegalArgumentException("Reference ID must be null.")
+        if (entry.referenceId != null) throw IllegalArgumentException("Reference ID must be null.")
         if (!entry.foreignKeysValid) throw IllegalArgumentException("One or more foreign keys are invalid (e.g. 0 value).")
         val lastModified = System.currentTimeMillis()
         entry.lastModified = lastModified
         val current = findById(entry.id)
                 ?: throw IllegalArgumentException("The entry with the specified ID does not exist.")
-        if (current.referenceID != null) throw IllegalArgumentException("The entry witht the specified ID is historic and cannot be updated.")
+        if (current.referenceId != null) throw IllegalArgumentException("The entry witht the specified ID is historic and cannot be updated.")
         entry.version = current.version + 1
         update(entry)
-        current.referenceID = entry.id
+        current.referenceId = entry.id
         current.id = 0
         return insert(current)
     }

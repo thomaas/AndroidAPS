@@ -10,15 +10,15 @@ import info.nightscout.androidaps.database.interfaces.DBEntryWithTimeAndDuration
         foreignKeys = [ForeignKey(
                 entity = Carbs::class,
                 parentColumns = ["id"],
-                childColumns = ["referenceID"])],
-        indices = [Index("referenceID"), Index("timestamp")])
+                childColumns = ["referenceId"])],
+        indices = [Index("referenceId"), Index("timestamp")])
 data class Carbs(
         @PrimaryKey(autoGenerate = true)
         override var id: Long = 0,
         override var version: Int = 0,
         override var lastModified: Long = -1,
         override var valid: Boolean = true,
-        override var referenceID: Long? = null,
+        override var referenceId: Long? = null,
         @Embedded
         override var interfaceIDs_backing: InterfaceIDs? = null,
         override var timestamp: Long,
