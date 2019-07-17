@@ -5,6 +5,7 @@ import androidx.room.Room
 import info.nightscout.androidaps.database.entities.GlucoseValue
 import info.nightscout.androidaps.database.entities.TherapyEvent
 import info.nightscout.androidaps.database.transactions.InsightHistoryTransaction
+import info.nightscout.androidaps.database.transactions.Transaction
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
@@ -46,5 +47,17 @@ object AppRepository {
         database.therapyEventDao.insertNewEntry(therapyEvent)
     }.subscribeOn(Schedulers.io())
 
-    fun processInsightHistoryTransaction(transaction: InsightHistoryTransaction): Completable = InsightHistoryTransaction.process(transaction)
+    fun processInsightHistoryTransaction(transaction: InsightHistoryTransaction): Completable = transaction.runTransaction()
+
+    private fun <T> Transaction<T>.runTransaction() = Single.fromCallable {
+        database.runInTransaction {
+            this.process()
+        }
+    }
+
+    private fun Transaction<Unit>.runTransaction() = Completable.fromCallable {
+        database.runInTransaction {
+            this.process()
+        }
+    }
 }
