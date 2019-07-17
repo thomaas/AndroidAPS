@@ -16,7 +16,6 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
     val totalDailyDoses = mutableListOf<TotalDailyDose>()
     val operatingModeChanges = mutableListOf<OperatingModeChange>()
 
-
     override fun run() {
         processBoluses()
         processTemporaryBasals()

@@ -5,7 +5,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import info.nightscout.androidaps.database.interfaces.DBEntry
 
-abstract class BaseDao<T : DBEntry<T>> {
+abstract class BaseDao<T : DBEntry> {
 
     abstract fun findById(id: Long): T?
 
@@ -45,7 +45,7 @@ abstract class BaseDao<T : DBEntry<T>> {
         entry.lastModified = lastModified
         val current = findById(entry.id)
                 ?: throw IllegalArgumentException("The entry with the specified ID does not exist.")
-        if (current.referenceId != null) throw IllegalArgumentException("The entry witht the specified ID is historic and cannot be updated.")
+        if (current.referenceId != null) throw IllegalArgumentException("The entry with the specified ID is historic and cannot be updated.")
         entry.version = current.version + 1
         update(entry)
         current.referenceId = entry.id
