@@ -26,6 +26,7 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
+import info.nightscout.androidaps.database.transactions.InvalidateGlucoseValueTransaction;
 import info.nightscout.androidaps.plugins.common.SubscriberFragment;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
@@ -159,8 +160,7 @@ public class BGSourceFragment extends SubscriberFragment {
                                     UploadQueue.removeID("dbAdd", _id);
                                 }
 */
-                                bgReading.setValid(false);
-                                BlockingAppRepository.INSTANCE.update(bgReading);
+                                BlockingAppRepository.INSTANCE.runTransaction(new InvalidateGlucoseValueTransaction(bgReading.getId()));
                                 updateGUI();
                             }
                         });

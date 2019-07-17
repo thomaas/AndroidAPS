@@ -26,7 +26,7 @@ data class TemporaryTarget(
         var reason: Reason,
         var target: Double,
         override var duration: Long
-) : DBEntry<TemporaryTarget>, DBEntryWithTimeAndDuration {
+) : DBEntry, DBEntryWithTimeAndDuration {
     enum class Reason {
         CUSTOM,
         HYPOGLYCEMIA,

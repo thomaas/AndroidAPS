@@ -2,7 +2,7 @@ package info.nightscout.androidaps.database.interfaces
 
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 
-interface DBEntry<T> {
+interface DBEntry {
     var id: Long
     var version: Int
     var lastModified: Long
@@ -26,6 +26,4 @@ interface DBEntry<T> {
         set(value) {
             interfaceIDs_backing = value
         }
-
-    fun contentEqualsTo(other: T) : Boolean = this == other
 }

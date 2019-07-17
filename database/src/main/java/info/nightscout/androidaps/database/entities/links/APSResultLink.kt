@@ -39,7 +39,7 @@ data class APSResultLink(
         var apsResultID: Long,
         var smbID: Long? = null,
         var tbrID: Long? = null
-) : DBEntry<APSResult> {
+) : DBEntry {
     override val foreignKeysValid: Boolean
         get() = super.foreignKeysValid && apsResultID != 0L && smbID != 0L && tbrID != 0L
 }

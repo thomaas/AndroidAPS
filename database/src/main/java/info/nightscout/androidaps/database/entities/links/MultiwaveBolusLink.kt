@@ -33,7 +33,7 @@ data class MultiwaveBolusLink(
         override var interfaceIDs_backing: InterfaceIDs? = null,
         var bolusId: Long,
         var extendedBolusId: Long
-) : DBEntry<MultiwaveBolusLink> {
+) : DBEntry {
     override val foreignKeysValid: Boolean
         get() = super.foreignKeysValid && bolusId != 0L && bolusId != 0L && extendedBolusId != 0L
 }

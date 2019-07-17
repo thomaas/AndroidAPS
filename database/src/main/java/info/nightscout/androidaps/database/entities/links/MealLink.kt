@@ -48,7 +48,7 @@ data class MealLink(
         var bolusCalcResultId: Long? = null,
         var superbolusTempBasalId: Long? = null,
         var noteId: Long? = null
-) : DBEntry<MealLink> {
+) : DBEntry {
     override val foreignKeysValid: Boolean
         get() = super.foreignKeysValid && bolusId != 0L && carbsId != 0L &&
                 bolusCalcResultId != 0L && superbolusTempBasalId != 0L && noteId != 0L

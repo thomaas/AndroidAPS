@@ -28,9 +28,9 @@ data class GlucoseValue(
         var trendArrow: TrendArrow,
         var noise: Double?,
         var sourceSensor: SourceSensor
-) : DBEntry<GlucoseValue>, DBEntryWithTime {
+) : DBEntry, DBEntryWithTime {
 
-    override fun contentEqualsTo(other: GlucoseValue): Boolean {
+    fun contentEqualsTo(other: GlucoseValue): Boolean {
         return timestamp == other.timestamp &&
                 utcOffset == other.utcOffset &&
                 raw == other.raw &&

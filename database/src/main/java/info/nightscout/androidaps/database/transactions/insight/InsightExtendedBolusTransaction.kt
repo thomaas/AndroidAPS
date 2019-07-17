@@ -1,8 +1,9 @@
-package info.nightscout.androidaps.database.transactions
+package info.nightscout.androidaps.database.transactions.insight
 
 import info.nightscout.androidaps.database.AppRepository
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.ExtendedBolus
+import info.nightscout.androidaps.database.transactions.Transaction
 import java.util.*
 
 class InsightExtendedBolusTransaction(
@@ -27,6 +28,7 @@ class InsightExtendedBolusTransaction(
             interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
             interfaceIDs.pumpSerial = pumpSerial
             interfaceIDs.pumpId = bolusId
+            inserted.add(this)
         })
     }
 }

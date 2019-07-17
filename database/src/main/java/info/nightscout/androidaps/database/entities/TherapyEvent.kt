@@ -27,7 +27,7 @@ data class TherapyEvent(
         var type: Type,
         var note: String? = null,
         var amount: Double? = null
-) : DBEntry<TherapyEvent>, DBEntryWithTimeAndDuration {
+) : DBEntry, DBEntryWithTimeAndDuration {
     enum class Type {
         CANNULA_CHANGED,
         TUBE_CHANGED,

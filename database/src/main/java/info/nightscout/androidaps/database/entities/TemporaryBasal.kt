@@ -27,7 +27,7 @@ data class TemporaryBasal(
         var absolute: Boolean,
         var rate: Double,
         override var duration: Long
-) : DBEntry<TemporaryBasal>, DBEntryWithTimeAndDuration {
+) : DBEntry, DBEntryWithTimeAndDuration {
     enum class Type {
         NORMAL,
         EMULATED_PUMP_SUSPEND,

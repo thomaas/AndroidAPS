@@ -26,4 +26,4 @@ data class EffectiveProfileSwitch(
         override var utcOffset: Long,
         override var duration: Long,
         var basalBlocks: List<Block>
-) : DBEntry<EffectiveProfileSwitch>, DBEntryWithTimeAndDuration
+) : DBEntry, DBEntryWithTimeAndDuration

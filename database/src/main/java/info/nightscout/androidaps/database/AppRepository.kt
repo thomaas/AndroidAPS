@@ -3,7 +3,6 @@ package info.nightscout.androidaps.database
 import android.content.Context
 import androidx.room.Room
 import info.nightscout.androidaps.database.entities.GlucoseValue
-import info.nightscout.androidaps.database.entities.TherapyEvent
 import info.nightscout.androidaps.database.transactions.Transaction
 import io.reactivex.Completable
 import io.reactivex.Flowable
@@ -37,10 +36,6 @@ object AppRepository {
         database.glucoseValueDao.createOrUpdateBasedOnTimestamp(glucoseValue)
     }.subscribeOn(Schedulers.io())
 
-    fun update(glucoseValue: GlucoseValue): Single<Long> = Single.fromCallable {
-        database.glucoseValueDao.updateExistingEntry(glucoseValue)
-    }
-
     fun getLastGlucoseValue(): Maybe<GlucoseValue> = database.glucoseValueDao.getLastGlucoseValue().subscribeOn(Schedulers.io())
 
     fun getLastRecentGlucoseValue(): Maybe<GlucoseValue> = System.currentTimeMillis().let {
@@ -52,8 +47,4 @@ object AppRepository {
     fun getProperGlucoseValuesInTimeRange(start: Long, end: Long): Single<List<GlucoseValue>> = database.glucoseValueDao.getProperGlucoseValuesInTimeRange(start, end).subscribeOn(Schedulers.io())
 
     fun getProperGlucoseValuesInTimeRange(timeRange: Long): Flowable<List<GlucoseValue>> = database.glucoseValueDao.getProperGlucoseValuesInTimeRange(timeRange).subscribeOn(Schedulers.io())
-
-    fun insert(therapyEvent: TherapyEvent): Single<Long> = Single.fromCallable {
-        database.therapyEventDao.insertNewEntry(therapyEvent)
-    }.subscribeOn(Schedulers.io())
 }

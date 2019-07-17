@@ -43,4 +43,4 @@ data class BolusCalculatorResult(
         var carbsInsulin: Double,
         var otherCorrection: Double,
         var totalInsulin: Double
-) : DBEntry<BolusCalculatorResult>, DBEntryWithTime
+) : DBEntry, DBEntryWithTime

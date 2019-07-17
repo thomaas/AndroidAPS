@@ -25,4 +25,4 @@ data class Carbs(
         override var utcOffset: Long,
         override var duration: Long,
         var amount: Double
-) : DBEntry<Carbs>, DBEntryWithTimeAndDuration
+) : DBEntry, DBEntryWithTimeAndDuration

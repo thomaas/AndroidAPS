@@ -23,4 +23,4 @@ data class APSResult(
         override var interfaceIDs_backing: InterfaceIDs? = null,
         override var timestamp: Long,
         override var utcOffset: Long
-) : DBEntry<APSResult>, DBEntryWithTime
+) : DBEntry, DBEntryWithTime

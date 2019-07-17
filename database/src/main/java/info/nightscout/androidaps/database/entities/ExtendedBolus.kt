@@ -26,4 +26,4 @@ data class ExtendedBolus(
         override var duration: Long,
         var amount: Double,
         var emulatingTempBasal: Boolean
-) : DBEntry<ExtendedBolus>, DBEntryWithTimeAndDuration
+) : DBEntry, DBEntryWithTimeAndDuration

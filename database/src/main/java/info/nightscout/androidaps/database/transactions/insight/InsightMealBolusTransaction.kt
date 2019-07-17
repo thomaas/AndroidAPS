@@ -1,10 +1,11 @@
-package info.nightscout.androidaps.database.transactions
+package info.nightscout.androidaps.database.transactions.insight
 
 import info.nightscout.androidaps.database.AppRepository
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.Bolus
 import info.nightscout.androidaps.database.entities.Carbs
 import info.nightscout.androidaps.database.entities.links.MealLink
+import info.nightscout.androidaps.database.transactions.Transaction
 import java.util.*
 
 class InsightMealBolusTransaction(
@@ -30,6 +31,7 @@ class InsightMealBolusTransaction(
             interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
             interfaceIDs.pumpSerial = pumpSerial
             interfaceIDs.pumpId = bolusId
+            inserted.add(this)
         })
         if (carbs > 0) {
             val carbsDBId = AppRepository.database.carbsDao.insertNewEntry(Carbs(
@@ -37,11 +39,15 @@ class InsightMealBolusTransaction(
                     utcOffset = utcOffset,
                     amount = carbs,
                     duration = 0
-            ))
+            ).apply {
+                inserted.add(this)
+            })
             AppRepository.database.mealLinkDao.insertNewEntry(MealLink(
                     bolusId = bolusDBId,
                     carbsId = carbsDBId
-            ))
+            ).apply {
+                inserted.add(this)
+            })
         }
     }
 }

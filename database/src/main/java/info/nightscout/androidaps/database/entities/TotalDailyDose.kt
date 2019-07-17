@@ -26,4 +26,4 @@ data class TotalDailyDose(
         var basalAmount: Double?,
         var bolusAmount: Double?,
         var totalAmount: Double?
-) : DBEntry<TotalDailyDose>, DBEntryWithTime
+) : DBEntry, DBEntryWithTime

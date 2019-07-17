@@ -37,7 +37,7 @@ data class ProfileSwitch(
         var timeshift: Int,
         var percentage: Int,
         override var duration: Long
-) : DBEntry<ProfileSwitch>, DBEntryWithTimeAndDuration, DBEntryWithInsulinConfig {
+) : DBEntry, DBEntryWithTimeAndDuration, DBEntryWithInsulinConfig {
     enum class GlucoseUnit {
         MGDL,
         MMOL

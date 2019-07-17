@@ -1,7 +1,7 @@
 package info.nightscout.androidaps.plugins.pump.insight
 
 import info.nightscout.androidaps.database.BlockingAppRepository
-import info.nightscout.androidaps.database.transactions.InsightHistoryTransaction
+import info.nightscout.androidaps.database.transactions.insight.InsightHistoryTransaction
 import info.nightscout.androidaps.plugins.pump.insight.app_layer.history.history_events.*
 import info.nightscout.androidaps.plugins.pump.insight.descriptors.AlertType
 import info.nightscout.androidaps.plugins.pump.insight.descriptors.BolusType
