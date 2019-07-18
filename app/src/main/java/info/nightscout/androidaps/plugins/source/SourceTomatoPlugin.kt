@@ -46,7 +46,7 @@ object SourceTomatoPlugin : PluginBase(PluginDescription()
                 raw = null,
                 noise = null,
                 sourceSensor = GlucoseValue.SourceSensor.TOMATO
-        )))).firstOrNull()?.let {
+        )), listOf(), null)).firstOrNull()?.let {
             if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
                 NSUpload.uploadBg(it, "AndroidAPS-Tomato")
             }

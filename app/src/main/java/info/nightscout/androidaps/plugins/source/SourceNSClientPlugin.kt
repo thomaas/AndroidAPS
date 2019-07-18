@@ -65,7 +65,7 @@ object SourceNSClientPlugin : PluginBase(PluginDescription()
                     glucoseValues.add(createGlucoseValue(sgvJson))
                 }
             }
-            BlockingAppRepository.runTransaction(GlucoseValuesTransaction(glucoseValues))
+            BlockingAppRepository.runTransaction(GlucoseValuesTransaction(glucoseValues, listOf(), null))
         } catch (e: Exception) {
             log.error("Unhandled exception", e)
         }

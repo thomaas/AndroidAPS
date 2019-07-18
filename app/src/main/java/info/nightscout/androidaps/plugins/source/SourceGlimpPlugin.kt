@@ -38,8 +38,6 @@ object SourceGlimpPlugin : PluginBase(PluginDescription()
         if (L.isEnabled(L.BGSOURCE))
             log.debug("Received Glimp Data: " + BundleLogger.log(bundle))
 
-        val timestamp = bundle.getLong("myTimestamp")
-
         BlockingAppRepository.runTransactionForResult(GlucoseValuesTransaction(
                 listOf(GlucoseValuesTransaction.GlucoseValue(
                         timestamp = bundle.getLong("myTimestamp"),
@@ -48,7 +46,7 @@ object SourceGlimpPlugin : PluginBase(PluginDescription()
                         raw = null,
                         trendArrow = bundle.getString("myTrend")!!.toTrendArrow(),
                         sourceSensor = GlucoseValue.SourceSensor.GLIMP
-                )))).firstOrNull()?.let {
+                )), listOf(), null)).firstOrNull()?.let {
         }
     }
 }

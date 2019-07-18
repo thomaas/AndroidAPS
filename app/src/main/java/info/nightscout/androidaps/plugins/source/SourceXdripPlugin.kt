@@ -53,7 +53,7 @@ object SourceXdripPlugin : PluginBase(PluginDescription()
                     sourceSensor = source.determineSourceSensor(),
                     noise = null,
                     trendArrow = bundle.getString(Intents.EXTRA_BG_SLOPE_NAME)!!.toTrendArrow()
-            ))))
+            )), listOf(), null))
         } catch (e: Throwable) {
             log.error("Error while processing intent", e)
         }

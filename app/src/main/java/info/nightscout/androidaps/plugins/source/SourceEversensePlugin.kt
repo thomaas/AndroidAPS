@@ -1,13 +1,10 @@
 package info.nightscout.androidaps.plugins.source
 
 import android.content.Intent
-import info.nightscout.androidaps.Constants
-import info.nightscout.androidaps.MainApp
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
 import info.nightscout.androidaps.database.transactions.GlucoseValuesTransaction
-import info.nightscout.androidaps.db.CareportalEvent
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
 import info.nightscout.androidaps.interfaces.PluginDescription
@@ -16,8 +13,6 @@ import info.nightscout.androidaps.logging.L
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload
 import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.androidaps.utils.SP
-import org.json.JSONException
-import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -79,6 +74,8 @@ object SourceEversensePlugin : PluginBase(PluginDescription()
                 log.debug("transmitterConnectionState: " + bundle.getString("transmitterConnectionState")!!)
         }
 
+        val glucoseValues = mutableListOf<GlucoseValuesTransaction.GlucoseValue>()
+
         if (bundle.containsKey("glucoseLevels")) {
             val glucoseLevels = bundle.getIntArray("glucoseLevels")
             val glucoseRecordNumbers = bundle.getIntArray("glucoseRecordNumbers")
@@ -90,7 +87,6 @@ object SourceEversensePlugin : PluginBase(PluginDescription()
                 log.debug("glucoseTimestamps", Arrays.toString(glucoseTimestamps))
             }
 
-            val glucoseValues = mutableListOf<GlucoseValuesTransaction.GlucoseValue>()
             for (i in glucoseLevels!!.indices) {
                 glucoseValues.add(GlucoseValuesTransaction.GlucoseValue(
                         timestamp = glucoseTimestamps[i],
@@ -101,15 +97,9 @@ object SourceEversensePlugin : PluginBase(PluginDescription()
                         sourceSensor = GlucoseValue.SourceSensor.EVERSENSE
                 ))
             }
-            BlockingAppRepository.runTransactionForResult(GlucoseValuesTransaction(glucoseValues)).forEach {
-                if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
-                    NSUpload.uploadBg(it, "AndroidAPS-Eversense")
-                }
-                if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false)) {
-                    NSUpload.sendToXdrip(it)
-                }
-            }
         }
+
+        val calibrations = mutableListOf<GlucoseValuesTransaction.Calibration>()
 
         if (bundle.containsKey("calibrationGlucoseLevels")) {
             val calibrationGlucoseLevels = bundle.getIntArray("calibrationGlucoseLevels")
@@ -123,21 +113,25 @@ object SourceEversensePlugin : PluginBase(PluginDescription()
             }
 
             for (i in calibrationGlucoseLevels!!.indices) {
-                try {
-                    if (MainApp.getDbHelper().getCareportalEventFromTimestamp(calibrationTimestamps!![i]) == null) {
-                        val data = JSONObject()
-                        data.put("enteredBy", "AndroidAPS-Eversense")
-                        data.put("created_at", DateUtil.toISOString(calibrationTimestamps[i]))
-                        data.put("eventType", CareportalEvent.BGCHECK)
-                        data.put("glucoseType", "Finger")
-                        data.put("glucose", calibrationGlucoseLevels[i])
-                        data.put("units", Constants.MGDL)
-                        NSUpload.uploadCareportalEntryToNS(data)
-                    }
-                } catch (e: JSONException) {
-                    log.error("Unhandled exception", e)
-                }
+                calibrations.add(GlucoseValuesTransaction.Calibration(
+                        calibrationTimestamps!![i],
+                        calibrationGlucoseLevels[i].toDouble()
+                ))
+            }
+        }
 
+        val sensorInsertionTime = if (bundle.containsKey("sensorInsertionTimestamp")) {
+            bundle.getLong("sensorInsertionTimestamp")
+        } else {
+            null
+        }
+
+        BlockingAppRepository.runTransactionForResult(GlucoseValuesTransaction(glucoseValues, calibrations, sensorInsertionTime)).forEach {
+            if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
+                NSUpload.uploadBg(it, "AndroidAPS-Eversense")
+            }
+            if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false)) {
+                NSUpload.sendToXdrip(it)
             }
         }
     }

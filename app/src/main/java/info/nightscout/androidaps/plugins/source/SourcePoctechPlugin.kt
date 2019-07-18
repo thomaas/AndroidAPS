@@ -65,7 +65,7 @@ object SourcePoctechPlugin : PluginBase(PluginDescription()
                         sourceSensor = GlucoseValue.SourceSensor.POCTECH_NATIVE
                 ))
             }
-            BlockingAppRepository.runTransactionForResult(GlucoseValuesTransaction(glucoseValues)).forEach {
+            BlockingAppRepository.runTransactionForResult(GlucoseValuesTransaction(glucoseValues, listOf(), null)).forEach {
                 if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
                     NSUpload.uploadBg(it, "AndroidAPS-Poctech")
                 }

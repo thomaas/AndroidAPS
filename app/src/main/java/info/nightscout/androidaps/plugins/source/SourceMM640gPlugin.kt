@@ -69,7 +69,7 @@ object SourceMM640gPlugin : PluginBase(PluginDescription()
                     log.error("Exception: ", e)
                 }
             }
-            BlockingAppRepository.runTransaction(GlucoseValuesTransaction(glucoseValues))
+            BlockingAppRepository.runTransaction(GlucoseValuesTransaction(glucoseValues, listOf(), null))
         }
     }
 }
