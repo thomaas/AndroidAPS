@@ -3,7 +3,7 @@ package info.nightscout.androidaps.plugins.source
 import android.content.Intent
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.database.BlockingAppRepository
-import info.nightscout.androidaps.database.entities.GlucoseValue
+import info.nightscout.androidaps.database.transactions.GlucoseValuesTransaction
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
 import info.nightscout.androidaps.interfaces.PluginDescription
@@ -12,8 +12,8 @@ import info.nightscout.androidaps.logging.BundleLogger
 import info.nightscout.androidaps.logging.L
 import info.nightscout.androidaps.services.Intents
 import info.nightscout.androidaps.utils.determineSourceSensor
+import info.nightscout.androidaps.utils.toTrendArrow
 import org.slf4j.LoggerFactory
-import java.util.*
 
 /**
  * Created by mike on 05.08.2016.
@@ -41,34 +41,19 @@ object SourceXdripPlugin : PluginBase(PluginDescription()
             if (L.isEnabled(L.BGSOURCE))
                 log.debug("Received xDrip data: " + BundleLogger.log(bundle))
 
-            val trendArrow = when(bundle.getString(Intents.EXTRA_BG_SLOPE_NAME)!!) {
-                "DoubleDown" -> GlucoseValue.TrendArrow.DOUBLE_DOWN
-                "SingleDown" -> GlucoseValue.TrendArrow.SINGLE_DOWN
-                "FortyFiveDown" -> GlucoseValue.TrendArrow.FORTY_FIVE_DOWN
-                "Flat" -> GlucoseValue.TrendArrow.FLAT
-                "FortyFiveUp" -> GlucoseValue.TrendArrow.FORTY_FIVE_UP
-                "SingleUp" -> GlucoseValue.TrendArrow.SINGLE_UP
-                "DoubleUp" -> GlucoseValue.TrendArrow.DOUBLE_UP
-                else -> GlucoseValue.TrendArrow.NONE
-            }
-
-            val timestamp = bundle.getLong(Intents.EXTRA_TIMESTAMP)
             val source = bundle.getString(Intents.XDRIP_DATA_SOURCE_DESCRIPTION)
-
-            val glucoseValue = GlucoseValue(
-                    value = bundle.getDouble(Intents.EXTRA_BG_ESTIMATE),
-                    trendArrow = trendArrow,
-                    timestamp = timestamp,
-                    utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
-                    raw = bundle.getDouble(Intents.EXTRA_RAW),
-                    sourceSensor = source.determineSourceSensor(),
-                    noise = null
-            )
             log.debug("TrendArrow: " + bundle.getString(Intents.EXTRA_BG_SLOPE_NAME))
             this.advancedFiltering = source?.let {
                 it.contains("G5 Native") || it.contains("G6 Native")
             } ?: false
-            BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)
+            BlockingAppRepository.runTransaction(GlucoseValuesTransaction(listOf(GlucoseValuesTransaction.GlucoseValue(
+                    timestamp = bundle.getLong(Intents.EXTRA_TIMESTAMP),
+                    value = bundle.getDouble(Intents.EXTRA_BG_ESTIMATE),
+                    raw = bundle.getDouble(Intents.EXTRA_RAW),
+                    sourceSensor = source.determineSourceSensor(),
+                    noise = null,
+                    trendArrow = bundle.getString(Intents.EXTRA_BG_SLOPE_NAME)!!.toTrendArrow()
+            ))))
         } catch (e: Throwable) {
             log.error("Error while processing intent", e)
         }

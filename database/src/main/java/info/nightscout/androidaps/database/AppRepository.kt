@@ -32,10 +32,6 @@ object AppRepository {
         database.runInTransaction(Callable<T> { transaction.run() })
     }.subscribeOn(Schedulers.io())
 
-    fun createOrUpdateBasedOnTimestamp(glucoseValue: GlucoseValue): Single<Boolean> = Single.fromCallable {
-        database.glucoseValueDao.createOrUpdateBasedOnTimestamp(glucoseValue)
-    }.subscribeOn(Schedulers.io())
-
     fun getLastGlucoseValue(): Maybe<GlucoseValue> = database.glucoseValueDao.getLastGlucoseValue().subscribeOn(Schedulers.io())
 
     fun getLastRecentGlucoseValue(): Maybe<GlucoseValue> = System.currentTimeMillis().let {

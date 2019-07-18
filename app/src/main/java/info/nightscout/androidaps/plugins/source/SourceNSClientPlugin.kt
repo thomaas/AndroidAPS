@@ -3,7 +3,7 @@ package info.nightscout.androidaps.plugins.source
 import android.content.Intent
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.database.BlockingAppRepository
-import info.nightscout.androidaps.database.entities.GlucoseValue
+import info.nightscout.androidaps.database.transactions.GlucoseValuesTransaction
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
 import info.nightscout.androidaps.interfaces.PluginDescription
@@ -18,7 +18,6 @@ import info.nightscout.androidaps.utils.toTrendArrow
 import org.json.JSONArray
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
-import java.util.*
 
 /**
  * Created by mike on 05.08.2016.
@@ -46,13 +45,14 @@ object SourceNSClientPlugin : PluginBase(PluginDescription()
         val bundles = intent.extras
 
         try {
+            val glucoseValues = mutableListOf<GlucoseValuesTransaction.GlucoseValue>()
             if (bundles!!.containsKey("sgv")) {
                 val sgvstring = bundles.getString("sgv")
                 if (L.isEnabled(L.BGSOURCE))
                     log.debug("Received NS Data: " + sgvstring!!)
 
                 val sgvJson = JSONObject(sgvstring)
-                storeSgv(sgvJson)
+                glucoseValues.add(createGlucoseValue(sgvJson))
             }
 
             if (bundles.containsKey("sgvs")) {
@@ -62,9 +62,10 @@ object SourceNSClientPlugin : PluginBase(PluginDescription()
                 val jsonArray = JSONArray(sgvstring)
                 for (i in 0 until jsonArray.length()) {
                     val sgvJson = jsonArray.getJSONObject(i)
-                    storeSgv(sgvJson)
+                    glucoseValues.add(createGlucoseValue(sgvJson))
                 }
             }
+            BlockingAppRepository.runTransaction(GlucoseValuesTransaction(glucoseValues))
         } catch (e: Exception) {
             log.error("Unhandled exception", e)
         }
@@ -74,24 +75,20 @@ object SourceNSClientPlugin : PluginBase(PluginDescription()
         ObjectivesPlugin.getPlugin().saveProgress()
     }
 
-    private fun storeSgv(sgvJson: JSONObject) {
+    private fun createGlucoseValue(sgvJson: JSONObject): GlucoseValuesTransaction.GlucoseValue {
         val nsSgv = NSSgv(sgvJson)
 
         val source = JsonHelper.safeGetString(sgvJson, "device", "none")
-
-        val glucoseValue = GlucoseValue(
-                utcOffset = TimeZone.getDefault().getOffset(nsSgv.mills).toLong(),
+        detectSource(source, JsonHelper.safeGetLong(sgvJson, "mills"))
+        return GlucoseValuesTransaction.GlucoseValue(
                 timestamp = nsSgv.mills,
                 value = nsSgv.mgdl.toDouble(),
+                raw = null,
+                noise = null,
                 trendArrow = nsSgv.direction.toTrendArrow(),
-                raw = nsSgv.filtered?.toDouble(),
-                noise = nsSgv.noise?.toDouble(),
-                sourceSensor = source.determineSourceSensor()
+                sourceSensor = source.determineSourceSensor(),
+                nightscoutId = nsSgv.id
         )
-        glucoseValue.interfaceIDs.nightscoutId = nsSgv.id
-
-        BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)
-        detectSource(source, JsonHelper.safeGetLong(sgvJson, "mills"))
     }
 
     private fun detectSource(source: String, timeStamp: Long) {

@@ -26,7 +26,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
 
     private fun processTotalDailyDoses() {
         totalDailyDoses.forEach {
-            it.databaseId = AppRepository.database.totalDailyDoseDao.insertNewEntry(TotalDailyDose(
+            AppRepository.database.totalDailyDoseDao.insertNewEntry(TotalDailyDose(
                     utcOffset = TimeZone.getDefault().getOffset(it.timestamp).toLong(),
                     timestamp = it.timestamp,
                     bolusAmount = it.bolusAmount,
@@ -53,7 +53,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
                 TherapyEvent.Type.RESERVOIR_EMPTY -> info.nightscout.androidaps.database.entities.TherapyEvent.Type.RESERVOIR_EMPTY
                 TherapyEvent.Type.BATTERY_CHANGED -> info.nightscout.androidaps.database.entities.TherapyEvent.Type.BATTERY_CHANGED
             }
-            it.databaseId = AppRepository.database.therapyEventDao.insertNewEntry(TherapyEvent(
+            AppRepository.database.therapyEventDao.insertNewEntry(TherapyEvent(
                     utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                     timestamp = timestamp,
                     type = type
@@ -86,7 +86,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             lastPausedEvent?.timestamp ?: lastStoppedEvent.timestamp
         }
         if (dateStopped != null) {
-            startEvent.tbrDatabaseId = AppRepository.database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
+            AppRepository.database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
                     utcOffset = TimeZone.getDefault().getOffset(dateStopped).toLong(),
                     timestamp = dateStopped,
                     duration = startEvent.timestamp - dateStopped,
@@ -123,7 +123,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
                     info.nightscout.androidaps.database.entities.TherapyEvent.Type.PUMP_STOPPED
                 }
             }
-            it.therapyEventDatabaseId = AppRepository.database.therapyEventDao.insertNewEntry(TherapyEvent(
+            AppRepository.database.therapyEventDao.insertNewEntry(TherapyEvent(
                     utcOffset = TimeZone.getDefault().getOffset(it.timestamp).toLong(),
                     timestamp = it.timestamp,
                     type = therapyEventType
@@ -157,7 +157,6 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             AppRepository.database.temporaryBasalDao.insertNewEntry(dbTBR)
             inserted.add(dbTBR)
         }
-        temporaryBasal.databaseId = dbTBR.id
     }
 
     private fun processTemporaryBasals() {
@@ -193,8 +192,6 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
                 interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
                 inserted.add(this)
             })
-            it.first.databaseId = id
-            it.second?.databaseId = id
         }
     }
 
@@ -299,23 +296,13 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             } else {
                 null to false
             }
-            if (bolusDatabaseId != null) {
-                it.first?.bolusDatabaseId = bolusDatabaseId
-                it.second?.bolusDatabaseId = bolusDatabaseId
-            }
             val (extendedBolusDatabaseId, extendedBolusCreated) = if (type == Bolus.Type.EXTENDED || type == Bolus.Type.MULTIWAVE) {
                 saveExtendedBolus(timestamp, utcOffset, it.second?.extendedAmount ?: it.first!!.extendedAmount, it.second?.duration ?: it.first!!.duration, bolusId, startId, endId)
             } else {
                 null to false
             }
-            if (extendedBolusDatabaseId != null) {
-                it.first?.extendedBolusDatabaseId = extendedBolusDatabaseId
-                it.second?.extendedBolusDatabaseId = extendedBolusDatabaseId
-            }
             if (bolusDatabaseId != null && extendedBolusDatabaseId != null) {
-                val id = saveMultiwaveBolusLink(bolusCreated && extendedBolusCreated, bolusId, startId, endId, bolusDatabaseId, extendedBolusDatabaseId)
-                it.first?.multiwaveBolusLinkDatabaseId = id
-                it.second?.multiwaveBolusLinkDatabaseId = id
+                saveMultiwaveBolusLink(bolusCreated && extendedBolusCreated, bolusId, startId, endId, bolusDatabaseId, extendedBolusDatabaseId)
             }
         }
     }
@@ -324,17 +311,14 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             val eventId: Long,
             val timestamp: Long,
             val bolusAmount: Double,
-            val basalAmount: Double,
-            var databaseId: Long = 0L
+            val basalAmount: Double
     )
 
     data class OperatingModeChange(
             val eventId: Long,
             val timestamp: Long,
             val from: OperatingMode,
-            val to: OperatingMode,
-            var therapyEventDatabaseId: Long = 0L,
-            var tbrDatabaseId: Long = 0L
+            val to: OperatingMode
     ) {
         enum class OperatingMode {
             STARTED,
@@ -346,8 +330,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
     data class TherapyEvent(
             val eventId: Long,
             val timestamp: Long,
-            val type: Type,
-            var databaseId: Long = 0L
+            val type: Type
     ) {
         enum class Type {
             CANNULA_FILLED,
@@ -365,8 +348,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             val eventId: Long,
             val timestamp: Long,
             val duration: Long,
-            val percentage: Int,
-            var databaseId: Long = 0L
+            val percentage: Int
     )
 
     data class Bolus(
@@ -377,10 +359,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             val bolusId: Int,
             val immediateAmount: Double,
             val duration: Long,
-            val extendedAmount: Double,
-            var bolusDatabaseId: Long = 0L,
-            var extendedBolusDatabaseId: Long = 0L,
-            var multiwaveBolusLinkDatabaseId: Long = 0L
+            val extendedAmount: Double
     ) {
         enum class Type {
             STANDARD,

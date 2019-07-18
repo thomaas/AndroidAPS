@@ -4,6 +4,7 @@ import android.content.Intent
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
+import info.nightscout.androidaps.database.transactions.GlucoseValuesTransaction
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
 import info.nightscout.androidaps.interfaces.PluginDescription
@@ -12,7 +13,6 @@ import info.nightscout.androidaps.logging.L
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload
 import info.nightscout.androidaps.utils.SP
 import org.slf4j.LoggerFactory
-import java.util.*
 
 /**
  * Created by mike on 05.08.2016.
@@ -39,23 +39,19 @@ object SourceTomatoPlugin : PluginBase(PluginDescription()
 
         if (L.isEnabled(L.BGSOURCE))
             log.debug("Received Tomato Data")
-
-        val timestamp = bundle.getLong("com.fangies.tomatofn.Extras.Time")
-        val glucoseValue = GlucoseValue(
-                utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
-                timestamp = timestamp,
+        BlockingAppRepository.runTransactionForResult(GlucoseValuesTransaction(listOf(GlucoseValuesTransaction.GlucoseValue(
+                timestamp = bundle.getLong("com.fangies.tomatofn.Extras.Time"),
                 value = bundle.getDouble("com.fangies.tomatofn.Extras.BgEstimate"),
                 trendArrow = GlucoseValue.TrendArrow.NONE,
                 raw = null,
                 noise = null,
                 sourceSensor = GlucoseValue.SourceSensor.TOMATO
-        )
-        if (BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)) {
+        )))).firstOrNull()?.let {
             if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
-                NSUpload.uploadBg(glucoseValue, "AndroidAPS-Tomato")
+                NSUpload.uploadBg(it, "AndroidAPS-Tomato")
             }
             if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false)) {
-                NSUpload.sendToXdrip(glucoseValue)
+                NSUpload.sendToXdrip(it)
             }
         }
     }

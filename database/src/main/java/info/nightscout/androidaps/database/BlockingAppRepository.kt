@@ -9,8 +9,6 @@ import info.nightscout.androidaps.database.transactions.Transaction
 )
 object BlockingAppRepository {
 
-    fun createOrUpdateBasedOnTimestamp(glucoseValue: GlucoseValue): Boolean = AppRepository.createOrUpdateBasedOnTimestamp(glucoseValue).blockingGet()
-
     fun getLastGlucoseValue(): GlucoseValue? = AppRepository.getLastGlucoseValue().blockingGet()
 
     fun getLastRecentGlucoseValue(): GlucoseValue? = AppRepository.getLastRecentGlucoseValue().blockingGet()

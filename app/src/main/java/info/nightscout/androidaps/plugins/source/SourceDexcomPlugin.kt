@@ -10,6 +10,7 @@ import info.nightscout.androidaps.R
 import info.nightscout.androidaps.activities.RequestDexcomPermissionActivity
 import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
+import info.nightscout.androidaps.database.transactions.GlucoseValuesTransaction
 import info.nightscout.androidaps.db.CareportalEvent
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
@@ -22,7 +23,6 @@ import info.nightscout.androidaps.utils.SP
 import info.nightscout.androidaps.utils.toTrendArrow
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
-import java.util.*
 
 object SourceDexcomPlugin : PluginBase(PluginDescription()
         .mainType(PluginType.BGSOURCE)
@@ -65,26 +65,25 @@ object SourceDexcomPlugin : PluginBase(PluginDescription()
     override fun handleNewData(intent: Intent) {
         if (!isEnabled(PluginType.BGSOURCE)) return
         try {
-            val glucoseValues = intent.getBundleExtra("glucoseValues")
-            for (i in 0 until glucoseValues.size()) {
-                val glucoseValueBundle = glucoseValues.getBundle(i.toString())
-                val timestamp = glucoseValueBundle.getLong("timestamp") * 1000
-                val glucoseValue = GlucoseValue(
-                        timestamp = timestamp,
-                        utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
-                        value = glucoseValueBundle!!.getInt("glucoseValue").toDouble(),
+            val glucoseValuesBundle = intent.getBundleExtra("glucoseValues")!!
+            val glucoseValues = mutableListOf<GlucoseValuesTransaction.GlucoseValue>()
+            for (i in 0 until glucoseValuesBundle.size()) {
+                val glucoseValueBundle = glucoseValuesBundle.getBundle(i.toString())!!
+                glucoseValues.add(GlucoseValuesTransaction.GlucoseValue(
+                        timestamp = glucoseValueBundle.getLong("timestamp") * 1000,
+                        value = glucoseValueBundle.getInt("glucoseValue").toDouble(),
                         noise = null,
                         raw = null,
                         trendArrow = glucoseValueBundle.getString("trendArrow")!!.toTrendArrow(),
-                        sourceSensor = GlucoseValue.SourceSensor.DEXCOM_G6_NATIVE
-                )
-                if (BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)) {
-                    if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
-                        NSUpload.uploadBg(glucoseValue, "AndroidAPS-DexcomG6")
-                    }
-                    if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false)) {
-                        NSUpload.sendToXdrip(glucoseValue)
-                    }
+                        sourceSensor = GlucoseValue.SourceSensor.DEXCOM_NATIVE_UNKNOWN
+                ))
+            }
+            BlockingAppRepository.runTransactionForResult(GlucoseValuesTransaction(glucoseValues)).forEach {
+                if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
+                    NSUpload.uploadBg(it, "AndroidAPS-Poctech")
+                }
+                if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false)) {
+                    NSUpload.sendToXdrip(it)
                 }
             }
             val meters = intent.getBundleExtra("meters")

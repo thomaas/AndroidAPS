@@ -5,6 +5,7 @@ import info.nightscout.androidaps.Constants
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
+import info.nightscout.androidaps.database.transactions.GlucoseValuesTransaction
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
 import info.nightscout.androidaps.interfaces.PluginDescription
@@ -17,7 +18,6 @@ import info.nightscout.androidaps.utils.toTrendArrow
 import org.json.JSONArray
 import org.json.JSONException
 import org.slf4j.LoggerFactory
-import java.util.*
 
 /**
  * Created by mike on 05.08.2016.
@@ -49,12 +49,11 @@ object SourcePoctechPlugin : PluginBase(PluginDescription()
             val jsonArray = JSONArray(data)
             if (L.isEnabled(L.BGSOURCE))
                 log.debug("Received Poctech Data size:" + jsonArray.length())
+            val glucoseValues = mutableListOf<GlucoseValuesTransaction.GlucoseValue>()
             for (i in 0 until jsonArray.length()) {
                 val json = jsonArray.getJSONObject(i)
-                val timestamp = json.getLong("date")
-                val glucoseValue = GlucoseValue(
-                        utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
-                        timestamp = timestamp,
+                glucoseValues.add(GlucoseValuesTransaction.GlucoseValue(
+                        timestamp = json.getLong("date"),
                         value = json.getDouble("current").let {
                             if (JsonHelper.safeGetString(json, "units", Constants.MGDL) == "mmol/L")
                                 it * Constants.MMOLL_TO_MGDL
@@ -64,17 +63,16 @@ object SourcePoctechPlugin : PluginBase(PluginDescription()
                         raw = null,
                         noise = null,
                         sourceSensor = GlucoseValue.SourceSensor.POCTECH_NATIVE
-                )
-                if (BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)) {
-                    if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
-                        NSUpload.uploadBg(glucoseValue, "AndroidAPS-Poctech")
-                    }
-                    if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false)) {
-                        NSUpload.sendToXdrip(glucoseValue)
-                    }
+                ))
+            }
+            BlockingAppRepository.runTransactionForResult(GlucoseValuesTransaction(glucoseValues)).forEach {
+                if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
+                    NSUpload.uploadBg(it, "AndroidAPS-Poctech")
+                }
+                if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false)) {
+                    NSUpload.sendToXdrip(it)
                 }
             }
-
         } catch (e: JSONException) {
             log.error("Exception: ", e)
         }

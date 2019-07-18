@@ -4,6 +4,7 @@ import android.content.Intent
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
+import info.nightscout.androidaps.database.transactions.GlucoseValuesTransaction
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
 import info.nightscout.androidaps.interfaces.PluginDescription
@@ -13,7 +14,6 @@ import info.nightscout.androidaps.utils.toTrendArrow
 import org.json.JSONArray
 import org.json.JSONException
 import org.slf4j.LoggerFactory
-import java.util.*
 
 /**
  * Created by mike on 05.08.2016.
@@ -43,35 +43,33 @@ object SourceMM640gPlugin : PluginBase(PluginDescription()
             if (L.isEnabled(L.BGSOURCE))
                 log.debug("Received MM640g Data: ", data)
 
+            val glucoseValues = mutableListOf<GlucoseValuesTransaction.GlucoseValue>()
             if (data != null && data.isNotEmpty()) {
                 try {
                     val jsonArray = JSONArray(data)
                     for (i in 0 until jsonArray.length()) {
                         val jsonObject = jsonArray.getJSONObject(i)
-                        when (val type = jsonObject.getString("type")) {
-                            "sgv" -> {
-                                val timestamp = jsonObject.getLong("date")
-                                val glucoseValue = GlucoseValue(
-                                        utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
-                                        timestamp = timestamp,
-                                        value = jsonObject.getDouble("sgv"),
-                                        trendArrow = jsonObject.getString("direction").toTrendArrow(),
-                                        raw = null,
-                                        noise = null,
-                                        sourceSensor = GlucoseValue.SourceSensor.MM_600_SERIES
-                                )
-
-                                BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)
-                            }
-                            else -> if (L.isEnabled(L.BGSOURCE))
+                        val type = jsonObject.getString("type")
+                        if (type == "sgv") {
+                            glucoseValues.add(GlucoseValuesTransaction.GlucoseValue(
+                                    timestamp = jsonObject.getLong("date"),
+                                    value = jsonObject.getDouble("sgv"),
+                                    raw = null,
+                                    noise = null,
+                                    trendArrow = jsonObject.getString("direction").toTrendArrow(),
+                                    sourceSensor = GlucoseValue.SourceSensor.MM_600_SERIES
+                            ))
+                        } else {
+                            if (L.isEnabled(L.BGSOURCE)) {
                                 log.debug("Unknown entries type: $type")
+                            }
                         }
                     }
                 } catch (e: JSONException) {
                     log.error("Exception: ", e)
                 }
-
             }
+            BlockingAppRepository.runTransaction(GlucoseValuesTransaction(glucoseValues))
         }
     }
 }

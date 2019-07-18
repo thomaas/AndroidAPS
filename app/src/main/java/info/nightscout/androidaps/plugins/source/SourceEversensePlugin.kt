@@ -6,6 +6,7 @@ import info.nightscout.androidaps.MainApp
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
+import info.nightscout.androidaps.database.transactions.GlucoseValuesTransaction
 import info.nightscout.androidaps.db.CareportalEvent
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
@@ -89,24 +90,23 @@ object SourceEversensePlugin : PluginBase(PluginDescription()
                 log.debug("glucoseTimestamps", Arrays.toString(glucoseTimestamps))
             }
 
+            val glucoseValues = mutableListOf<GlucoseValuesTransaction.GlucoseValue>()
             for (i in glucoseLevels!!.indices) {
-                val timestamp = glucoseTimestamps!![i]
-                val glucoseValue = GlucoseValue(
+                glucoseValues.add(GlucoseValuesTransaction.GlucoseValue(
+                        timestamp = glucoseTimestamps[i],
                         value = glucoseLevels[i].toDouble(),
-                        utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
-                        timestamp = timestamp,
-                        raw = null,
-                        sourceSensor = GlucoseValue.SourceSensor.EVERSENSE,
                         noise = null,
-                        trendArrow = GlucoseValue.TrendArrow.NONE
-                )
-                if (BlockingAppRepository.createOrUpdateBasedOnTimestamp(glucoseValue)) {
-                    if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
-                        NSUpload.uploadBg(glucoseValue, "AndroidAPS-Eversense")
-                    }
-                    if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false)) {
-                        NSUpload.sendToXdrip(glucoseValue)
-                    }
+                        raw = null,
+                        trendArrow = GlucoseValue.TrendArrow.NONE,
+                        sourceSensor = GlucoseValue.SourceSensor.EVERSENSE
+                ))
+            }
+            BlockingAppRepository.runTransactionForResult(GlucoseValuesTransaction(glucoseValues)).forEach {
+                if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
+                    NSUpload.uploadBg(it, "AndroidAPS-Eversense")
+                }
+                if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false)) {
+                    NSUpload.sendToXdrip(it)
                 }
             }
         }
