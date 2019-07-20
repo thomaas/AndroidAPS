@@ -10,11 +10,11 @@ public class SourceGlimpPluginTest {
 
     @Test
     public void getPlugin() {
-        Assert.assertNotEquals(null, SourceGlimpPlugin.Companion.getPlugin());
+        Assert.assertNotEquals(null, SourceGlimpPlugin.INSTANCE);
     }
 
     @Test
     public void advancedFilteringSupported() {
-        Assert.assertEquals(false, SourceGlimpPlugin.Companion.getPlugin().advancedFilteringSupported());
+        Assert.assertEquals(false, SourceGlimpPlugin.INSTANCE.advancedFilteringSupported());
     }
 }
