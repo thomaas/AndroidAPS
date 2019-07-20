@@ -9,55 +9,56 @@ import org.json.JSONObject
 class Converters {
 
     @TypeConverter
-    fun fromBolusType(bolusType: Bolus.Type) = bolusType.name
+    fun fromBolusType(bolusType: Bolus.Type?) = bolusType?.name
 
     @TypeConverter
-    fun toBolusType(bolusType: String) = Bolus.Type.valueOf(bolusType)
+    fun toBolusType(bolusType: String?) = bolusType?.let { Bolus.Type.valueOf(it) }
 
     @TypeConverter
-    fun fromTrendArrow(trendArrow: GlucoseValue.TrendArrow) = trendArrow.name
+    fun fromTrendArrow(trendArrow: GlucoseValue.TrendArrow?) = trendArrow?.name
 
     @TypeConverter
-    fun toTrendArrow(trendArrow: String) = GlucoseValue.TrendArrow.valueOf(trendArrow)
+    fun toTrendArrow(trendArrow: String?) = trendArrow?.let { GlucoseValue.TrendArrow.valueOf(it) }
 
     @TypeConverter
-    fun fromSourceSensor(sourceSensor: GlucoseValue.SourceSensor) = sourceSensor.name
+    fun fromSourceSensor(sourceSensor: GlucoseValue.SourceSensor?) = sourceSensor?.name
 
     @TypeConverter
-    fun toSourceSensor(sourceSensor: String) = GlucoseValue.SourceSensor.valueOf(sourceSensor)
+    fun toSourceSensor(sourceSensor: String?) = sourceSensor?.let { GlucoseValue.SourceSensor.valueOf(it) }
 
     @TypeConverter
-    fun fromTBRType(tbrType: TemporaryBasal.Type) = tbrType.name
+    fun fromTBRType(tbrType: TemporaryBasal.Type?) = tbrType?.name
 
     @TypeConverter
-    fun toTBRType(tbrType: String) = TemporaryBasal.Type.valueOf(tbrType)
+    fun toTBRType(tbrType: String?) = tbrType?.let { TemporaryBasal.Type.valueOf(it) }
 
     @TypeConverter
-    fun fromTempTargetReason(tempTargetReason: TemporaryTarget.Reason) = tempTargetReason.name
+    fun fromTempTargetReason(tempTargetReason: TemporaryTarget.Reason?) = tempTargetReason?.name
 
     @TypeConverter
-    fun toTempTargetReason(tempTargetReason: String) = TemporaryTarget.Reason.valueOf(tempTargetReason)
+    fun toTempTargetReason(tempTargetReason: String?) = tempTargetReason?.let { TemporaryTarget.Reason.valueOf(it) }
 
     @TypeConverter
-    fun fromTherapyEventType(therapyEventType: TherapyEvent.Type) = therapyEventType.name
+    fun fromTherapyEventType(therapyEventType: TherapyEvent.Type?) = therapyEventType?.name
 
     @TypeConverter
-    fun toTherapyEventType(therapyEventType: String) = TherapyEvent.Type.valueOf(therapyEventType)
+    fun toTherapyEventType(therapyEventType: String?) = therapyEventType?.let { TherapyEvent.Type.valueOf(it) }
 
     @TypeConverter
-    fun fromGlucoseUnit(glucoseUnit: ProfileSwitch.GlucoseUnit) = glucoseUnit.name
+    fun fromGlucoseUnit(glucoseUnit: ProfileSwitch.GlucoseUnit?) = glucoseUnit?.name
 
     @TypeConverter
-    fun toGlucoseUnit(glucoseUnit: String) = ProfileSwitch.GlucoseUnit.valueOf(glucoseUnit)
+    fun toGlucoseUnit(glucoseUnit: String?) = glucoseUnit?.let { ProfileSwitch.GlucoseUnit.valueOf(it) }
 
     @TypeConverter
-    fun fromPumpType(pumpType: InterfaceIDs.PumpType) = pumpType.name
+    fun fromPumpType(pumpType: InterfaceIDs.PumpType?) = pumpType?.name
 
     @TypeConverter
-    fun toPumpType(pumpType: String) = InterfaceIDs.PumpType.valueOf(pumpType)
+    fun toPumpType(pumpType: String?) = pumpType?.let { InterfaceIDs.PumpType.valueOf(it) }
 
     @TypeConverter
-    fun fromListOfBlocks(blocks: List<Block>): String {
+    fun fromListOfBlocks(blocks: List<Block>?): String? {
+        if (blocks == null) return null;
         val jsonArray = JSONArray()
         blocks.forEach {
             val jsonObject = JSONObject()
@@ -69,7 +70,8 @@ class Converters {
     }
 
     @TypeConverter
-    fun toListOfBlocks(jsonString: String) : List<Block> {
+    fun toListOfBlocks(jsonString: String?) : List<Block>? {
+        if (jsonString == null) return null
         val jsonArray = JSONArray(jsonString)
         val list = mutableListOf<Block>()
         for (i in 0 until jsonArray.length()) {
