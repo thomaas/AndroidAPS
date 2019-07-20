@@ -25,7 +25,9 @@ import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.transactions.combo.ComboCancelTempBasalTransaction;
 import info.nightscout.androidaps.database.transactions.combo.ComboMealBolusTransaction;
+import info.nightscout.androidaps.database.transactions.combo.ComboNewTempBasalTransaction;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TDD;
 import info.nightscout.androidaps.db.TemporaryBasal;
@@ -775,13 +777,11 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
         PumpState state = commandResult.state;
         if (state.tbrActive && state.tbrPercent == adjustedPercent
                 && (state.tbrRemainingDuration == durationInMinutes || state.tbrRemainingDuration == durationInMinutes - 1)) {
-            TemporaryBasal tempStart = new TemporaryBasal()
-                    .date(state.timestamp)
-                    .duration(state.tbrRemainingDuration)
-                    .percent(state.tbrPercent)
-                    .source(Source.USER);
-            // TODO
-            TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStart);
+            BlockingAppRepository.INSTANCE.runTransaction(new ComboNewTempBasalTransaction(
+                    PUMP_SERIAL,
+                    state.timestamp,
+                    state.tbrPercent,
+                    state.tbrRemainingDuration));
 
             MainApp.bus().post(new EventComboPumpUpdateGUI());
         }
@@ -824,12 +824,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
                 return new PumpEnactResult().success(false).enacted(false);
             }
             if (!cancelResult.state.tbrActive) {
-                TemporaryBasal tempBasal = new TemporaryBasal()
-                        .date(cancelResult.state.timestamp)
-                        .duration(0)
-                        .source(Source.USER);
-                // TODO
-                TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
+                BlockingAppRepository.INSTANCE.runTransaction(new ComboCancelTempBasalTransaction());
                 return new PumpEnactResult().isTempCancel(true).success(true).enacted(true);
             } else {
                 return new PumpEnactResult().success(false).enacted(false);
@@ -970,17 +965,15 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
             }
         } else {
             long now = System.currentTimeMillis();
+            // TODO change to use finder from new DB or move into tx or end an update a running TBR to end now
+            // applies to other access to TreatmentsPlugin as well
             TemporaryBasal aapsTbr = TreatmentsPlugin.getPlugin().getTempBasalFromHistory(now);
             if (aapsTbr == null || aapsTbr.percentRate != 0) {
-                if (L.isEnabled(L.PUMP))
+                if (L.isEnabled(L.PUMP)) {
                     log.debug("Creating 15m zero temp since pump is suspended");
-                TemporaryBasal newTempBasal = new TemporaryBasal()
-                        .date(now)
-                        .percent(0)
-                        .duration(15)
-                        .source(Source.USER);
-                // TODO
-                TreatmentsPlugin.getPlugin().addToHistoryTempBasal(newTempBasal);
+                }
+                BlockingAppRepository.INSTANCE.runTransaction(new ComboNewTempBasalTransaction(
+                        PUMP_SERIAL, now, 0, 15));
             }
         }
 
@@ -1099,43 +1092,31 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
      */
     private void checkAndResolveTbrMismatch(PumpState state) {
         // compare with: info.nightscout.androidaps.plugins.PumpDanaR.comm.MsgStatusTempBasal.updateTempBasalInDB()
-        // TODO addToHistoryTempBasal
         long now = System.currentTimeMillis();
         TemporaryBasal aapsTbr = TreatmentsPlugin.getPlugin().getTempBasalFromHistory(now);
         if (aapsTbr == null && state.tbrActive && state.tbrRemainingDuration > 2) {
             if (L.isEnabled(L.PUMP))
                 log.debug("Creating temp basal from pump TBR");
-            TemporaryBasal newTempBasal = new TemporaryBasal()
-                    .date(now)
-                    .percent(state.tbrPercent)
-                    .duration(state.tbrRemainingDuration)
-                    .source(Source.USER);
-            TreatmentsPlugin.getPlugin().addToHistoryTempBasal(newTempBasal);
+            BlockingAppRepository.INSTANCE.runTransaction(new ComboNewTempBasalTransaction(
+                    PUMP_SERIAL,
+                    now,
+                    state.tbrPercent,
+                    state.tbrRemainingDuration));
         } else if (aapsTbr != null && aapsTbr.getPlannedRemainingMinutes() > 2 && !state.tbrActive) {
             if (L.isEnabled(L.PUMP))
                 log.debug("Ending AAPS-TBR since pump has no TBR active");
-            TemporaryBasal tempStop = new TemporaryBasal()
-                    .date(now)
-                    .duration(0)
-                    .source(Source.USER);
-            TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
+            BlockingAppRepository.INSTANCE.runTransaction(new ComboCancelTempBasalTransaction());
         } else if (aapsTbr != null && state.tbrActive
                 && (aapsTbr.percentRate != state.tbrPercent ||
                 Math.abs(aapsTbr.getPlannedRemainingMinutes() - state.tbrRemainingDuration) > 2)) {
             if (L.isEnabled(L.PUMP))
                 log.debug("AAPSs and pump-TBR differ; ending AAPS-TBR and creating new TBR based on pump TBR");
-            TemporaryBasal tempStop = new TemporaryBasal()
-                    .date(now - 1000)
-                    .duration(0)
-                    .source(Source.USER);
-            TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
-
-            TemporaryBasal newTempBasal = new TemporaryBasal()
-                    .date(now)
-                    .percent(state.tbrPercent)
-                    .duration(state.tbrRemainingDuration)
-                    .source(Source.USER);
-            TreatmentsPlugin.getPlugin().addToHistoryTempBasal(newTempBasal);
+            BlockingAppRepository.INSTANCE.runTransaction(new ComboCancelTempBasalTransaction());
+            BlockingAppRepository.INSTANCE.runTransaction(new ComboNewTempBasalTransaction(
+                    PUMP_SERIAL,
+                    now + 1000,
+                    state.tbrPercent,
+                    state.tbrRemainingDuration));
         }
     }
 
@@ -1214,7 +1195,6 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
 
         // compare recent records
         List<Bolus> initialPumpBolusHistory = quickInfoResult.history.bolusHistory;
-        // TODO
         if (recentBoluses.size() == 1 && initialPumpBolusHistory.size() >= 1
                 && recentBoluses.get(0).equals(quickInfoResult.history.bolusHistory.get(0))) {
             if (L.isEnabled(L.PUMP))
