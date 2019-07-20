@@ -24,7 +24,8 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
-import info.nightscout.androidaps.db.CareportalEvent;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.transactions.combo.ComboMealBolusTransaction;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TDD;
 import info.nightscout.androidaps.db.TemporaryBasal;
@@ -67,6 +68,18 @@ import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.InstanceId;
 import info.nightscout.androidaps.utils.SP;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+
 
 /**
  * Created by mike on 05.08.2016.
@@ -75,6 +88,8 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     private static final Logger log = LoggerFactory.getLogger(L.PUMP);
     static final String COMBO_TBRS_SET = "combo_tbrs_set";
     static final String COMBO_BOLUSES_DELIVERED = "combo_boluses_delivered";
+
+    private final String PUMP_SERIAL = "Combo";
 
     private static ComboPlugin plugin = null;
 
@@ -471,6 +486,8 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
                 // bolus needed, ask pump to deliver it
                 return deliverBolus(detailedBolusInfo);
             } else {
+                // TODO refactor
+                if (1==1) throw new IllegalStateException("This path is never taken, is it? If it is, Insight would be borked");
                 // no bolus required, carb only treatment
                 TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false);
 
@@ -654,22 +671,27 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
      * Creates a treatment record based on the request in DetailBolusInfo and the delivered bolus.
      */
     private boolean addBolusToTreatments(DetailedBolusInfo detailedBolusInfo, Bolus lastPumpBolus) {
-        DetailedBolusInfo dbi = detailedBolusInfo.copy();
-        dbi.date = calculateFakeBolusDate(lastPumpBolus);
-        dbi.pumpId = dbi.date;
-        dbi.source = Source.PUMP;
-        dbi.insulin = lastPumpBolus.amount;
+        long timestampAndId = calculateFakeBolusDate(lastPumpBolus);
+        boolean inserted = false;
         try {
-            TreatmentsPlugin.getPlugin().addToHistoryTreatment(dbi, true);
+            inserted = BlockingAppRepository.INSTANCE.runTransactionForResult(new ComboMealBolusTransaction(
+                    PUMP_SERIAL,
+                    timestampAndId,
+                    lastPumpBolus.amount,
+                    detailedBolusInfo.carbs,
+                    timestampAndId,
+                    detailedBolusInfo.isSMB
+            ));
         } catch (Exception e) {
-            log.error("Adding treatment record failed", e);
-            if (dbi.isSMB) {
+            log.error("Adding treatment record failed, record with id already exists");
+        }
+        if (!inserted) {
+            if (detailedBolusInfo.isSMB) {
                 Notification notification = new Notification(Notification.COMBO_PUMP_ALARM, MainApp.gs(R.string.combo_error_updating_treatment_record), Notification.URGENT);
                 RxBus.INSTANCE.send(new EventNewNotification(notification));
             }
-            return false;
         }
-        return true;
+        return inserted;
     }
 
     @Override
@@ -758,6 +780,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
                     .duration(state.tbrRemainingDuration)
                     .percent(state.tbrPercent)
                     .source(Source.USER);
+            // TODO
             TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStart);
 
             MainApp.bus().post(new EventComboPumpUpdateGUI());
@@ -805,6 +828,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
                         .date(cancelResult.state.timestamp)
                         .duration(0)
                         .source(Source.USER);
+                // TODO
                 TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
                 return new PumpEnactResult().isTempCancel(true).success(true).enacted(true);
             } else {
@@ -955,6 +979,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
                         .percent(0)
                         .duration(15)
                         .source(Source.USER);
+                // TODO
                 TreatmentsPlugin.getPlugin().addToHistoryTempBasal(newTempBasal);
             }
         }
@@ -1074,6 +1099,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
      */
     private void checkAndResolveTbrMismatch(PumpState state) {
         // compare with: info.nightscout.androidaps.plugins.PumpDanaR.comm.MsgStatusTempBasal.updateTempBasalInDB()
+        // TODO addToHistoryTempBasal
         long now = System.currentTimeMillis();
         TemporaryBasal aapsTbr = TreatmentsPlugin.getPlugin().getTempBasalFromHistory(now);
         if (aapsTbr == null && state.tbrActive && state.tbrRemainingDuration > 2) {
@@ -1142,15 +1168,15 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     private boolean updateDbFromPumpHistory(@NonNull PumpHistory history) {
         boolean updated = false;
         for (Bolus pumpBolus : history.bolusHistory) {
-            DetailedBolusInfo dbi = new DetailedBolusInfo();
-            dbi.date = calculateFakeBolusDate(pumpBolus);
-            dbi.pumpId = dbi.date;
-            dbi.source = Source.PUMP;
-            dbi.insulin = pumpBolus.amount;
-            dbi.eventType = CareportalEvent.CORRECTIONBOLUS;
-            if (TreatmentsPlugin.getPlugin().addToHistoryTreatment(dbi, true)) {
-                updated = true;
-            }
+            long timestampAndId = calculateFakeBolusDate(pumpBolus);
+            updated |= BlockingAppRepository.INSTANCE.runTransactionForResult(new ComboMealBolusTransaction(
+                    PUMP_SERIAL,
+                    timestampAndId,
+                    pumpBolus.amount,
+                    0,
+                    timestampAndId,
+                    false
+            ));
         }
         return updated;
     }
@@ -1188,6 +1214,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
 
         // compare recent records
         List<Bolus> initialPumpBolusHistory = quickInfoResult.history.bolusHistory;
+        // TODO
         if (recentBoluses.size() == 1 && initialPumpBolusHistory.size() >= 1
                 && recentBoluses.get(0).equals(quickInfoResult.history.bolusHistory.get(0))) {
             if (L.isEnabled(L.PUMP))
