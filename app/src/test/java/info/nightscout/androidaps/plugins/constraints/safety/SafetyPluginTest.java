@@ -91,7 +91,7 @@ public class SafetyPluginTest {
 
     @Test
     public void bgsourceShouldPreventSMBAlways() throws Exception {
-        when(ConfigBuilderPlugin.getPlugin().getActiveBgSource()).thenReturn(SourceGlimpPlugin.Companion.getPlugin());
+        when(ConfigBuilderPlugin.getPlugin().getActiveBgSource()).thenReturn(SourceGlimpPlugin.INSTANCE);
 
         Constraint<Boolean> c = new Constraint<>(true);
         c = safetyPlugin.isAdvancedFilteringEnabled(c);

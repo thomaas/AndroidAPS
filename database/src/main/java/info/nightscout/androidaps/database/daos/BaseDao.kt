@@ -7,13 +7,13 @@ import info.nightscout.androidaps.database.interfaces.DBEntry
 
 abstract class BaseDao<T : DBEntry> {
 
-    abstract fun findById(id: Long): T?
+    protected abstract fun findById(id: Long): T?
 
     @Insert
-    abstract fun insert(entry: T): Long
+    protected abstract fun insert(entry: T): Long
 
     @Update
-    abstract fun update(entry: T)
+    protected abstract fun update(entry: T)
 
     /**
      * Inserts a new entry
