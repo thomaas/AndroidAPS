@@ -28,14 +28,14 @@ class GlucoseValuesTransaction(
             when {
                 current == null -> {
                     AppRepository.database.glucoseValueDao.insertNewEntry(glucoseValue)
-                    inserted.add(glucoseValue)
+                    changes.add(glucoseValue)
                     insertedGlucoseValues.add(glucoseValue)
                 }
                 current.contentEqualsTo(glucoseValue) -> return@forEach
                 else -> {
                     glucoseValue.id = current.id
                     AppRepository.database.glucoseValueDao.updateExistingEntry(glucoseValue)
-                    updated.add(glucoseValue)
+                    changes.add(glucoseValue)
                 }
             }
         }
@@ -46,7 +46,7 @@ class GlucoseValuesTransaction(
                         utcOffset = TimeZone.getDefault().getOffset(it.timestamp).toLong(),
                         type = TherapyEvent.Type.FINGER_STICK_BG_VALUE,
                         amount = it.value
-                ).apply { inserted.add(this) })
+                ).apply { changes.add(this) })
             }
         }
         sensorInsertionTime?.let {
@@ -55,7 +55,7 @@ class GlucoseValuesTransaction(
                         timestamp = it,
                         utcOffset = TimeZone.getDefault().getOffset(it).toLong(),
                         type = TherapyEvent.Type.SENSOR_INSERTED
-                ).apply { inserted.add(this) })
+                ).apply { changes.add(this) })
             }
         }
         return insertedGlucoseValues

@@ -3,12 +3,11 @@ package info.nightscout.androidaps.database
 import android.content.Context
 import androidx.room.Room
 import info.nightscout.androidaps.database.entities.GlucoseValue
+import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.transactions.Transaction
-import io.reactivex.Completable
-import io.reactivex.Flowable
-import io.reactivex.Maybe
-import io.reactivex.Single
+import io.reactivex.*
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
 
@@ -18,6 +17,10 @@ object AppRepository {
 
     internal lateinit var database: AppDatabase;
 
+    private val changeSubject = PublishSubject.create<List<DBEntry>>()
+
+    val changeObservable: Observable<List<DBEntry>> = changeSubject
+
     fun initialize(context: Context) {
         database = Room.databaseBuilder(context, AppDatabase::class.java, DB_FILE).build()
     }
@@ -26,11 +29,15 @@ object AppRepository {
         database.runInTransaction {
             transaction.run()
         }
-    }.subscribeOn(Schedulers.io())
+    }.subscribeOn(Schedulers.io()).doOnComplete {
+        changeSubject.onNext(transaction.changes)
+    }
 
     fun <T> runTransactionForResult(transaction: Transaction<T>): Single<T> = Single.fromCallable {
         database.runInTransaction(Callable<T> { transaction.run() })
-    }.subscribeOn(Schedulers.io())
+    }.subscribeOn(Schedulers.io()).doOnSuccess {
+        changeSubject.onNext(transaction.changes)
+    }
 
     fun getLastGlucoseValue(): Maybe<GlucoseValue> = database.glucoseValueDao.getLastGlucoseValue().subscribeOn(Schedulers.io())
 

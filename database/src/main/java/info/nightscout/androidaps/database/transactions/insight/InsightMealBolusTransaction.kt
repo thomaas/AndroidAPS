@@ -31,7 +31,7 @@ class InsightMealBolusTransaction(
             interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
             interfaceIDs.pumpSerial = pumpSerial
             interfaceIDs.pumpId = bolusId
-            inserted.add(this)
+            changes.add(this)
         })
         if (carbs > 0) {
             val carbsDBId = AppRepository.database.carbsDao.insertNewEntry(Carbs(
@@ -40,13 +40,13 @@ class InsightMealBolusTransaction(
                     amount = carbs,
                     duration = 0
             ).apply {
-                inserted.add(this)
+                changes.add(this)
             })
             AppRepository.database.mealLinkDao.insertNewEntry(MealLink(
                     bolusId = bolusDBId,
                     carbsId = carbsDBId
             ).apply {
-                inserted.add(this)
+                changes.add(this)
             })
         }
     }

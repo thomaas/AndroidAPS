@@ -16,19 +16,19 @@ import info.nightscout.androidaps.database.entities.links.MultiwaveBolusLink
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract val glucoseValueDao : GlucoseValueDao
+    abstract val glucoseValueDao: GlucoseValueDao
 
-    abstract val therapyEventDao : TherapyEventDao
+    abstract val therapyEventDao: TherapyEventDao
 
-    abstract val temporaryBasalDao : TemporaryBasalDao
+    abstract val temporaryBasalDao: TemporaryBasalDao
 
-    abstract val bolusDao : BolusDao
+    abstract val bolusDao: BolusDao
 
-    abstract val extendedBolusDao : ExtendedBolusDao
+    abstract val extendedBolusDao: ExtendedBolusDao
 
-    abstract val multiwaveBolusLinkDao : MultiwaveBolusLinkDao
+    abstract val multiwaveBolusLinkDao: MultiwaveBolusLinkDao
 
-    abstract val totalDailyDoseDao : TotalDailyDoseDao
+    abstract val totalDailyDoseDao: TotalDailyDoseDao
 
     abstract val carbsDao: CarbsDao
 

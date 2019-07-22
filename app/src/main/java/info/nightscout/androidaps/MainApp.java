@@ -23,10 +23,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 import info.nightscout.androidaps.data.ConstraintChecker;
 import info.nightscout.androidaps.database.AppRepository;
+import info.nightscout.androidaps.database.entities.GlucoseValue;
+import info.nightscout.androidaps.database.interfaces.DBEntry;
+import info.nightscout.androidaps.database.interfaces.DBEntryWithTime;
 import info.nightscout.androidaps.db.DatabaseHelper;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginType;
@@ -46,10 +48,6 @@ import info.nightscout.androidaps.plugins.general.careportal.CareportalPlugin;
 import info.nightscout.androidaps.plugins.general.food.FoodPlugin;
 import info.nightscout.androidaps.plugins.general.maintenance.LoggerUtils;
 import info.nightscout.androidaps.plugins.general.maintenance.MaintenancePlugin;
-import info.nightscout.androidaps.plugins.general.nsclient.NSClientPlugin;
-import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
-import info.nightscout.androidaps.plugins.general.nsclient.receivers.AckAlarmReceiver;
-import info.nightscout.androidaps.plugins.general.nsclient.receivers.DBAccessReceiver;
 import info.nightscout.androidaps.plugins.general.overview.OverviewPlugin;
 import info.nightscout.androidaps.plugins.general.persistentNotification.PersistentNotificationPlugin;
 import info.nightscout.androidaps.plugins.general.smsCommunicator.SmsCommunicatorPlugin;
@@ -79,7 +77,6 @@ import info.nightscout.androidaps.plugins.source.SourceDexcomPlugin;
 import info.nightscout.androidaps.plugins.source.SourceEversensePlugin;
 import info.nightscout.androidaps.plugins.source.SourceGlimpPlugin;
 import info.nightscout.androidaps.plugins.source.SourceMM640gPlugin;
-import info.nightscout.androidaps.plugins.source.SourceNSClientPlugin;
 import info.nightscout.androidaps.plugins.source.SourcePoctechPlugin;
 import info.nightscout.androidaps.plugins.source.SourceTomatoPlugin;
 import info.nightscout.androidaps.plugins.source.SourceXdripPlugin;
@@ -90,6 +87,7 @@ import info.nightscout.androidaps.receivers.NSAlarmReceiver;
 import info.nightscout.androidaps.services.Intents;
 import info.nightscout.androidaps.utils.FabricPrivacy;
 import io.fabric.sdk.android.Fabric;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
 import static info.nightscout.androidaps.plugins.general.versionChecker.VersionCheckerUtilsKt.triggerCheckVersion;
 
@@ -111,8 +109,8 @@ public class MainApp extends Application {
 
     private static DataReceiver dataReceiver = new DataReceiver();
     private static NSAlarmReceiver alarmReciever = new NSAlarmReceiver();
-    private static AckAlarmReceiver ackAlarmReciever = new AckAlarmReceiver();
-    private static DBAccessReceiver dbAccessReciever = new DBAccessReceiver();
+    //private static AckAlarmReceiver ackAlarmReciever = new AckAlarmReceiver();
+    //private static DBAccessReceiver dbAccessReciever = new DBAccessReceiver();
     private LocalBroadcastManager lbm;
 
     public static boolean devBranch;
@@ -122,9 +120,22 @@ public class MainApp extends Application {
     public void onCreate() {
         super.onCreate();
         AppRepository.INSTANCE.initialize(this);
-        AppRepository.INSTANCE.getProperGlucoseValuesInTimeRange(TimeUnit.DAYS.toMillis(1)).subscribe(values -> {
-            DatabaseHelper.scheduleBgChange();
-        });
+        AppRepository.INSTANCE.getChangeObservable()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(changes -> {
+                    Long earliestDataChange = null;
+                    boolean glucoseValuesChanged = false;
+                    for (DBEntry entry : changes) {
+                        if (entry instanceof DBEntryWithTime) {
+                            if (earliestDataChange == null || earliestDataChange < ((DBEntryWithTime) entry).getTimestamp()) {
+                                earliestDataChange = ((DBEntryWithTime) entry).getTimestamp();
+                            }
+                        }
+                        if (entry instanceof GlucoseValue) glucoseValuesChanged = true;
+                    }
+                    if (earliestDataChange != null) DatabaseHelper.updateEarliestDataChange(earliestDataChange);
+                    if (glucoseValuesChanged) DatabaseHelper.scheduleBgChange();
+                });
         log.debug("onCreate");
         sInstance = this;
         sResources = getResources();
@@ -195,7 +206,6 @@ public class MainApp extends Application {
             if (Config.SAFETY) pluginsList.add(StorageConstraintPlugin.getPlugin());
             if (Config.APS) pluginsList.add(ObjectivesPlugin.getPlugin());
             pluginsList.add(SourceXdripPlugin.INSTANCE);
-            pluginsList.add(SourceNSClientPlugin.INSTANCE);
             pluginsList.add(SourceMM640gPlugin.INSTANCE);
             pluginsList.add(SourceGlimpPlugin.INSTANCE);
             pluginsList.add(SourceDexcomPlugin.INSTANCE);
@@ -208,7 +218,6 @@ public class MainApp extends Application {
             pluginsList.add(WearPlugin.initPlugin(this));
             pluginsList.add(StatuslinePlugin.initPlugin(this));
             pluginsList.add(PersistentNotificationPlugin.getPlugin());
-            pluginsList.add(NSClientPlugin.getPlugin());
             pluginsList.add(MaintenancePlugin.initPlugin(this));
 
             pluginsList.add(ConfigBuilderPlugin.getPlugin());
@@ -219,7 +228,7 @@ public class MainApp extends Application {
             ConfigBuilderPlugin.getPlugin().initialize();
         }
 
-        NSUpload.uploadAppStart();
+        //NSUpload.uploadAppStart();
 
         final PumpInterface pump = ConfigBuilderPlugin.getPlugin().getActivePump();
         if (pump != null) {
@@ -253,10 +262,10 @@ public class MainApp extends Application {
         lbm.registerReceiver(alarmReciever, new IntentFilter(Intents.ACTION_URGENT_ALARM));
 
         //register ack alarm
-        lbm.registerReceiver(ackAlarmReciever, new IntentFilter(Intents.ACTION_ACK_ALARM));
+        //lbm.registerReceiver(ackAlarmReciever, new IntentFilter(Intents.ACTION_ACK_ALARM));
 
         //register dbaccess
-        lbm.registerReceiver(dbAccessReciever, new IntentFilter(Intents.ACTION_DATABASE));
+        //lbm.registerReceiver(dbAccessReciever, new IntentFilter(Intents.ACTION_DATABASE));
     }
 
     private void startKeepAliveService() {
