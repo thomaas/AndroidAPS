@@ -13,6 +13,8 @@ class InsertTemporaryBasalTransaction(val timestamp: Long, val duration: Long, v
                 absolute = absolute,
                 rate = rate,
                 duration = duration
-        ))
+        ).apply {
+            changes.add(this)
+        })
     }
 }

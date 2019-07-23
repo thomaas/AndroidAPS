@@ -332,9 +332,7 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
 
     @Override
     public PumpEnactResult setExtendedBolus(Double insulin, Integer durationInMinutes) {
-        PumpEnactResult result = cancelExtendedBolus();
-        if (!result.success)
-            return result;
+        PumpEnactResult result = new PumpEnactResult();
         result.success = true;
         result.enacted = true;
         result.bolusDelivered = insulin;
@@ -343,7 +341,7 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
         result.comment = MainApp.gs(R.string.virtualpump_resultok);
         long timestamp = System.currentTimeMillis();
         lastDataTime = timestamp;
-        BlockingAppRepository.INSTANCE.runTransaction(new InsertExtendedBolusTransaction(timestamp, durationInMinutes, insulin));
+        BlockingAppRepository.INSTANCE.runTransaction(new InsertExtendedBolusTransaction(timestamp, durationInMinutes * 60000L, insulin));
         return result;
     }
 

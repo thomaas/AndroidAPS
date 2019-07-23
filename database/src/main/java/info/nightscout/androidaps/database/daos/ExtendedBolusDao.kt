@@ -26,6 +26,6 @@ abstract class ExtendedBolusDao : BaseDao<ExtendedBolus>() {
     @Query("SELECT * FROM $TABLE_EXTENDED_BOLUSES WHERE timestamp >= :start AND timestamp <= :end AND referenceId IS NULL AND valid = 1 ORDER BY timestamp ASC")
     abstract fun getExtendedBolusesInTimeRange(start: Long, end: Long): Flowable<List<ExtendedBolus>>
 
-    @Query("SELECT * FROM $TABLE_EXTENDED_BOLUSES WHERE timestamp >= :timestamp AND (timestamp + duration) < :timestamp AND referenceId IS NULL AND valid = 1 ORDER BY timestamp DESC LIMIT 1")
+    @Query("SELECT * FROM $TABLE_EXTENDED_BOLUSES WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND referenceId IS NULL AND valid = 1 ORDER BY timestamp DESC LIMIT 1")
     abstract fun getExtendedBolusActiveAt(timestamp: Long): ExtendedBolus?
 }

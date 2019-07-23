@@ -44,10 +44,11 @@ import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.ProfileStore;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
+import info.nightscout.androidaps.database.entities.TemporaryTarget;
+import info.nightscout.androidaps.database.transactions.CancelTemporaryTargetTransaction;
+import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.ProfileSwitch;
-import info.nightscout.androidaps.db.Source;
-import info.nightscout.androidaps.db.TempTarget;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
 import info.nightscout.androidaps.plugins.general.careportal.OptionsToShow;
@@ -553,10 +554,9 @@ public class NewNSTreatmentDialog extends DialogFragment implements View.OnClick
                 case R.id.careportal_temporarytarget:
                     data.put("eventType", CareportalEvent.TEMPORARYTARGET);
                     if (!reasonSpinner.getSelectedItem().toString().equals(""))
-                        data.put("reason", reasonSpinner.getSelectedItem().toString());
+                        data.put("reason", reasonSpinner.getSelectedItemPosition());
                     if (SafeParse.stringToDouble(editTemptarget.getText()) != 0d) {
-                        data.put("targetBottom", SafeParse.stringToDouble(editTemptarget.getText()));
-                        data.put("targetTop", SafeParse.stringToDouble(editTemptarget.getText()));
+                        data.put("target", SafeParse.stringToDouble(editTemptarget.getText()));
                     }
                     allowZeroDuration = true;
                     break;
@@ -681,12 +681,9 @@ public class NewNSTreatmentDialog extends DialogFragment implements View.OnClick
             ret += JsonHelper.safeGetObject(data, "timeshift", "");
             ret += " h\n";
         }
-        if (data.has("targetBottom") && data.has("targetTop")) {
-            ret += MainApp.gs(R.string.target_range);
-            ret += " ";
-            ret += JsonHelper.safeGetObject(data, "targetBottom", "");
-            ret += " - ";
-            ret += JsonHelper.safeGetObject(data, "targetTop", "");
+        if (data.has("target")) {
+            ret += MainApp.gs(R.string.target);
+            ret += JsonHelper.safeGetObject(data, "target", "");
             ret += "\n";
         }
         if (data.has("created_at")) {
@@ -726,22 +723,35 @@ public class NewNSTreatmentDialog extends DialogFragment implements View.OnClick
             }
         } else if (options.executeTempTarget) {
             final int duration = JsonHelper.safeGetInt(data, "duration");
-            final double targetBottom = JsonHelper.safeGetDouble(data, "targetBottom");
-            final double targetTop = JsonHelper.safeGetDouble(data, "targetTop");
-            final String reason = JsonHelper.safeGetString(data, "reason", "");
-            if ((targetBottom != 0d && targetTop != 0d) || duration == 0) {
-                TempTarget tempTarget = new TempTarget()
-                        .date(eventTime.getTime())
-                        .duration(duration)
-                        .reason(reason)
-                        .source(Source.USER);
-                if (tempTarget.durationInMinutes != 0) {
-                    tempTarget.low(Profile.toMgdl(targetBottom, units))
-                            .high(Profile.toMgdl(targetTop, units));
-                } else {
-                    tempTarget.low(0).high(0);
+            final double target = JsonHelper.safeGetDouble(data, "target");
+            final int reasonPos = JsonHelper.safeGetInt(data, "reason");
+            TemporaryTarget.Reason reason = null;
+            switch (reasonPos) {
+                case 0:
+                    reason = TemporaryTarget.Reason.CUSTOM;
+                    break;
+                case 1:
+                    reason = TemporaryTarget.Reason.EATING_SOON;
+                    break;
+                case 2:
+                    reason = TemporaryTarget.Reason.ACTIVITY;
+                    break;
+                case 3:
+                    reason = TemporaryTarget.Reason.HYPOGLYCEMIA;
+                    break;
+            }
+            if (duration == 0) {
+                try {
+                    BlockingAppRepository.INSTANCE.runTransaction(new CancelTemporaryTargetTransaction());
+                } catch (IllegalStateException ignored) {
                 }
-                TreatmentsPlugin.getPlugin().addToHistoryTempTarget(tempTarget);
+            } else {
+                BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                        System.currentTimeMillis(),
+                        duration * 60000,
+                        reason,
+                        target
+                ));
             }
         } else {
             if (JsonHelper.safeGetString(data, "eventType").equals(CareportalEvent.PROFILESWITCH)) {

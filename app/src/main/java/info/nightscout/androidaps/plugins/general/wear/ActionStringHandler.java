@@ -23,6 +23,9 @@ import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
+import info.nightscout.androidaps.database.entities.TemporaryTarget;
+import info.nightscout.androidaps.database.transactions.CancelTemporaryTargetTransaction;
+import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.ProfileSwitch;
 import info.nightscout.androidaps.db.Source;
@@ -695,17 +698,19 @@ public class ActionStringHandler {
     }
 
     private static void generateTempTarget(int duration, double low, double high) {
-        TempTarget tempTarget = new TempTarget()
-                .date(System.currentTimeMillis())
-                .duration(duration)
-                .reason("WearPlugin")
-                .source(Source.USER);
-        if (tempTarget.durationInMinutes != 0) {
-            tempTarget.low(low).high(high);
+        if (duration == 0) {
+            try {
+                BlockingAppRepository.INSTANCE.runTransaction(new CancelTemporaryTargetTransaction());
+            } catch (IllegalStateException ignored) {
+            }
         } else {
-            tempTarget.low(0).high(0);
+            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                    System.currentTimeMillis(),
+                    duration * 60000,
+                    TemporaryTarget.Reason.EATING_SOON,
+                    high
+            ));
         }
-        TreatmentsPlugin.getPlugin().addToHistoryTempTarget(tempTarget);
     }
 
     private static void doFillBolus(final Double amount) {

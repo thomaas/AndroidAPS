@@ -58,9 +58,11 @@ import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.QuickWizardEntry;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
+import info.nightscout.androidaps.database.entities.TemporaryTarget;
+import info.nightscout.androidaps.database.transactions.CancelTemporaryTargetTransaction;
+import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.ExtendedBolus;
-import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TempTarget;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.events.EventAcceptOpenLoopChange;
@@ -120,8 +122,6 @@ import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.utils.SingleClickButton;
 import info.nightscout.androidaps.utils.T;
 import info.nightscout.androidaps.utils.ToastUtils;
-
-import static info.nightscout.androidaps.utils.DateUtil.now;
 
 public class OverviewFragment extends Fragment implements View.OnClickListener, View.OnLongClickListener {
     private static Logger log = LoggerFactory.getLogger(L.OVERVIEW);
@@ -604,37 +604,28 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
             pvd.show(manager, "ProfileViewDialog");
         } else if (item.getTitle().equals(MainApp.gs(R.string.eatingsoon))) {
             DefaultValueHelper defHelper = new DefaultValueHelper();
-            double target = defHelper.determineEatingSoonTT(profile.getUnits());
-            TempTarget tempTarget = new TempTarget()
-                    .date(System.currentTimeMillis())
-                    .duration(defHelper.determineEatingSoonTTDuration())
-                    .reason(MainApp.gs(R.string.eatingsoon))
-                    .source(Source.USER)
-                    .low(Profile.toMgdl(target, profile.getUnits()))
-                    .high(Profile.toMgdl(target, profile.getUnits()));
-            TreatmentsPlugin.getPlugin().addToHistoryTempTarget(tempTarget);
+            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                    System.currentTimeMillis(),
+                    defHelper.determineEatingSoonTTDuration() * 60000,
+                    TemporaryTarget.Reason.EATING_SOON,
+                    defHelper.determineEatingSoonTT(profile.getUnits())
+            ));
         } else if (item.getTitle().equals(MainApp.gs(R.string.activity))) {
             DefaultValueHelper defHelper = new DefaultValueHelper();
-            double target = defHelper.determineActivityTT(profile.getUnits());
-            TempTarget tempTarget = new TempTarget()
-                    .date(now())
-                    .duration(defHelper.determineActivityTTDuration())
-                    .reason(MainApp.gs(R.string.activity))
-                    .source(Source.USER)
-                    .low(Profile.toMgdl(target, profile.getUnits()))
-                    .high(Profile.toMgdl(target, profile.getUnits()));
-            TreatmentsPlugin.getPlugin().addToHistoryTempTarget(tempTarget);
+            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                    System.currentTimeMillis(),
+                    defHelper.determineActivityTTDuration() * 60000,
+                    TemporaryTarget.Reason.EATING_SOON,
+                    defHelper.determineActivityTT(profile.getUnits())
+            ));
         } else if (item.getTitle().equals(MainApp.gs(R.string.hypo))) {
             DefaultValueHelper defHelper = new DefaultValueHelper();
-            double target = defHelper.determineHypoTT(profile.getUnits());
-            TempTarget tempTarget = new TempTarget()
-                    .date(now())
-                    .duration(defHelper.determineHypoTTDuration())
-                    .reason(MainApp.gs(R.string.hypo))
-                    .source(Source.USER)
-                    .low(Profile.toMgdl(target, profile.getUnits()))
-                    .high(Profile.toMgdl(target, profile.getUnits()));
-            TreatmentsPlugin.getPlugin().addToHistoryTempTarget(tempTarget);
+            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                    System.currentTimeMillis(),
+                    defHelper.determineHypoTTDuration() * 60000,
+                    TemporaryTarget.Reason.EATING_SOON,
+                    defHelper.determineHypoTT(profile.getUnits())
+            ));
         } else if (item.getTitle().equals(MainApp.gs(R.string.custom))) {
             NewNSTreatmentDialog newTTDialog = new NewNSTreatmentDialog();
             final OptionsToShow temptarget = CareportalFragment.TEMPTARGET;
@@ -642,13 +633,10 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
             newTTDialog.setOptions(temptarget, R.string.careportal_temporarytarget);
             newTTDialog.show(getFragmentManager(), "NewNSTreatmentDialog");
         } else if (item.getTitle().equals(MainApp.gs(R.string.cancel))) {
-            TempTarget tempTarget = new TempTarget()
-                    .source(Source.USER)
-                    .date(now())
-                    .duration(0)
-                    .low(0)
-                    .high(0);
-            TreatmentsPlugin.getPlugin().addToHistoryTempTarget(tempTarget);
+            try {
+                BlockingAppRepository.INSTANCE.runTransaction(new CancelTemporaryTargetTransaction());
+            } catch (IllegalStateException ignored) {
+            }
         }
 
         return super.onContextItemSelected(item);

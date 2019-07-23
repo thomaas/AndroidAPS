@@ -3,16 +3,16 @@ package info.nightscout.androidaps.interfaces;
 import java.util.List;
 
 import info.nightscout.androidaps.data.DetailedBolusInfo;
+import info.nightscout.androidaps.data.Intervals;
 import info.nightscout.androidaps.data.IobTotal;
 import info.nightscout.androidaps.data.MealData;
 import info.nightscout.androidaps.data.Profile;
+import info.nightscout.androidaps.data.ProfileIntervals;
 import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.db.ProfileSwitch;
 import info.nightscout.androidaps.db.TempTarget;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.plugins.treatments.Treatment;
-import info.nightscout.androidaps.data.Intervals;
-import info.nightscout.androidaps.data.ProfileIntervals;
 
 /**
  * Created by mike on 14.06.2016.
@@ -55,7 +55,6 @@ public interface TreatmentsInterface {
     TempTarget getTempTargetFromHistory();
     TempTarget getTempTargetFromHistory(long time);
     Intervals<TempTarget> getTempTargetsFromHistory();
-    void addToHistoryTempTarget(TempTarget tempTarget);
 
     ProfileSwitch getProfileSwitchFromHistory(long time);
     ProfileIntervals<ProfileSwitch> getProfileSwitchesFromHistory();

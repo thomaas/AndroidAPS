@@ -35,14 +35,13 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
+import info.nightscout.androidaps.database.entities.TemporaryTarget;
+import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
-import info.nightscout.androidaps.db.Source;
-import info.nightscout.androidaps.db.TempTarget;
 import info.nightscout.androidaps.interfaces.Constraint;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
 import info.nightscout.androidaps.plugins.treatments.CarbsGenerator;
-import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.DecimalFormatter;
 import info.nightscout.androidaps.utils.DefaultValueHelper;
@@ -396,32 +395,26 @@ public class NewCarbsDialog extends DialogFragment implements OnClickListener, C
                         accepted = true;
 
                         if (startActivityTTCheckbox.isChecked()) {
-                            TempTarget tempTarget = new TempTarget()
-                                    .date(System.currentTimeMillis())
-                                    .duration(finalActivityTTDuration)
-                                    .reason(MainApp.gs(R.string.activity))
-                                    .source(Source.USER)
-                                    .low(Profile.toMgdl(finalActivityTT, currentProfile.getUnits()))
-                                    .high(Profile.toMgdl(finalActivityTT, currentProfile.getUnits()));
-                            TreatmentsPlugin.getPlugin().addToHistoryTempTarget(tempTarget);
+                            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                                    System.currentTimeMillis(),
+                                    finalActivityTTDuration * 60000,
+                                    TemporaryTarget.Reason.EATING_SOON,
+                                    Profile.toMgdl(finalActivityTT, currentProfile.getUnits())
+                            ));
                         } else if (startEatingSoonTTCheckbox.isChecked()) {
-                            TempTarget tempTarget = new TempTarget()
-                                    .date(System.currentTimeMillis())
-                                    .duration(finalEatingSoonTTDuration)
-                                    .reason(MainApp.gs(R.string.eatingsoon))
-                                    .source(Source.USER)
-                                    .low(Profile.toMgdl(finalEatigSoonTT, currentProfile.getUnits()))
-                                    .high(Profile.toMgdl(finalEatigSoonTT, currentProfile.getUnits()));
-                            TreatmentsPlugin.getPlugin().addToHistoryTempTarget(tempTarget);
+                            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                                    System.currentTimeMillis(),
+                                    finalEatingSoonTTDuration * 60000,
+                                    TemporaryTarget.Reason.EATING_SOON,
+                                    Profile.toMgdl(finalEatigSoonTT, currentProfile.getUnits())
+                            ));
                         } else if (startHypoTTCheckbox.isChecked()) {
-                            TempTarget tempTarget = new TempTarget()
-                                    .date(System.currentTimeMillis())
-                                    .duration(finalHypoTTDuration)
-                                    .reason(MainApp.gs(R.string.hypo))
-                                    .source(Source.USER)
-                                    .low(Profile.toMgdl(finalHypoTT, currentProfile.getUnits()))
-                                    .high(Profile.toMgdl(finalHypoTT, currentProfile.getUnits()));
-                            TreatmentsPlugin.getPlugin().addToHistoryTempTarget(tempTarget);
+                            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                                    System.currentTimeMillis(),
+                                    finalHypoTTDuration * 60000,
+                                    TemporaryTarget.Reason.EATING_SOON,
+                                    Profile.toMgdl(finalHypoTT, currentProfile.getUnits())
+                            ));
                         }
 
                         if (carbsAfterConstraints > 0) {

@@ -503,7 +503,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
                     converted.reason = MainApp.gs(R.string.hypo);
                     break;
                 case CUSTOM:
-                    converted.reason = MainApp.gs(R.string.custom);
+                    converted.reason = MainApp.gs(R.string.manual);
                     break;
             }
             convertedTTs.add(converted);
