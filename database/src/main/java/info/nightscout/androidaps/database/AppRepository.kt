@@ -2,10 +2,7 @@ package info.nightscout.androidaps.database
 
 import android.content.Context
 import androidx.room.Room
-import info.nightscout.androidaps.database.entities.ExtendedBolus
-import info.nightscout.androidaps.database.entities.GlucoseValue
-import info.nightscout.androidaps.database.entities.TemporaryBasal
-import info.nightscout.androidaps.database.entities.TemporaryTarget
+import info.nightscout.androidaps.database.entities.*
 import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.transactions.Transaction
 import io.reactivex.*
@@ -59,4 +56,6 @@ object AppRepository {
     fun getExtendedBolusesInTimeRange(start: Long, end: Long): Flowable<List<ExtendedBolus>> = database.extendedBolusDao.getExtendedBolusesInTimeRange(start, end).subscribeOn(Schedulers.io())
 
     fun getTemporaryTargetsInTimeRange(start: Long, end: Long): Flowable<List<TemporaryTarget>> = database.temporaryTargetDao.getTemporaryTargetsInTimeRange(start, end).subscribeOn(Schedulers.io())
+
+    fun getTotalDailyDoses(amount: Int): Single<List<TotalDailyDose>> = database.totalDailyDoseDao.getTotalDailyDoses(amount)
 }

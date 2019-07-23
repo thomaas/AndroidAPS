@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -17,6 +16,8 @@ import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.squareup.otto.Subscribe;
 
@@ -36,6 +37,8 @@ import java.util.List;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.Profile;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.TotalDailyDose;
 import info.nightscout.androidaps.db.TDD;
 import info.nightscout.androidaps.events.EventPumpStatusChanged;
 import info.nightscout.androidaps.interfaces.PumpInterface;
@@ -64,8 +67,8 @@ public class TDDStatsActivity extends Activity {
     double magicNumber;
     DecimalFormat decimalFormat;
 
-    List<TDD> historyList = new ArrayList<>();
-    List<TDD> dummies;
+    List<TotalDailyDose> historyList = new ArrayList<>();
+    List<TotalDailyDose> dummies;
 
     public TDDStatsActivity() {
         super();
@@ -286,7 +289,7 @@ public class TDDStatsActivity extends Activity {
     }
 
     private void loadDataFromDB() {
-        historyList = MainApp.getDbHelper().getTDDs();
+        historyList = BlockingAppRepository.INSTANCE.getTotalDailyDoses(10);
 
         //only use newest 10
         historyList = historyList.subList(0, Math.min(10, historyList.size()));
@@ -295,24 +298,34 @@ public class TDDStatsActivity extends Activity {
         dummies = new LinkedList();
         DateFormat df = new SimpleDateFormat("dd.MM.");
         for (int i = 0; i < historyList.size() - 1; i++) {
-            TDD elem1 = historyList.get(i);
-            TDD elem2 = historyList.get(i + 1);
+            TotalDailyDose elem1 = historyList.get(i);
+            TotalDailyDose elem2 = historyList.get(i + 1);
 
-            if (!df.format(new Date(elem1.date)).equals(df.format(new Date(elem2.date + 25 * 60 * 60 * 1000)))) {
+            if (!df.format(new Date(elem1.getTimestamp())).equals(df.format(new Date(elem2.getTimestamp() + 25 * 60 * 60 * 1000)))) {
                 TDD dummy = new TDD();
-                dummy.date = elem1.date - 24 * 60 * 60 * 1000;
-                dummy.basal = elem1.basal / 2;
-                dummy.bolus = elem1.bolus / 2;
-                dummies.add(dummy);
-                elem1.basal /= 2;
-                elem1.bolus /= 2;
+                dummy.date = elem1.getTimestamp() - 24 * 60 * 60 * 1000;
+                dummy.basal = elem1.getBasalAmount() / 2;
+                dummy.bolus = elem1.getBolusAmount() / 2;
+                dummies.add(new TotalDailyDose(
+                        0,
+                        0,
+                        0,
+                        true,
+                        null,
+                        null,
+                        elem1.getTimestamp() - 24 * 60 * 60 * 1000,
+                        0,
+                        elem1.getBasalAmount() / 2,
+                        elem2.getBolusAmount() / 2,
+                        elem1.getBasalAmount() / 2 + elem2.getBolusAmount() / 2
+                ));
             }
         }
         historyList.addAll(dummies);
-        Collections.sort(historyList, new Comparator<TDD>() {
+        Collections.sort(historyList, new Comparator<TotalDailyDose>() {
             @Override
-            public int compare(TDD lhs, TDD rhs) {
-                return (int) (rhs.date - lhs.date);
+            public int compare(TotalDailyDose lhs, TotalDailyDose rhs) {
+                return (int) (rhs.getTimestamp() - lhs.getTimestamp());
             }
         });
 
@@ -342,8 +355,8 @@ public class TDDStatsActivity extends Activity {
 
 
                 //TDD table
-                for (TDD record : historyList) {
-                    double tdd = record.getTotal();
+                for (TotalDailyDose record : historyList) {
+                    double tdd = record.getTotalAmount();
 
                     // Create the table row
                     TableRow tr = new TableRow(TDDStatsActivity.this);
@@ -359,19 +372,19 @@ public class TDDStatsActivity extends Activity {
                     // Here create the TextView dynamically
                     TextView labelDATE = new TextView(TDDStatsActivity.this);
                     labelDATE.setId(200 + i);
-                    labelDATE.setText(df.format(new Date(record.date)));
+                    labelDATE.setText(df.format(new Date(record.getTimestamp())));
                     labelDATE.setTextColor(Color.WHITE);
                     tr.addView(labelDATE);
 
                     TextView labelBASAL = new TextView(TDDStatsActivity.this);
                     labelBASAL.setId(300 + i);
-                    labelBASAL.setText(DecimalFormatter.to2Decimal(record.basal) + " U");
+                    labelBASAL.setText(DecimalFormatter.to2Decimal(record.getBasalAmount()) + " U");
                     labelBASAL.setTextColor(Color.WHITE);
                     tr.addView(labelBASAL);
 
                     TextView labelBOLUS = new TextView(TDDStatsActivity.this);
                     labelBOLUS.setId(400 + i);
-                    labelBOLUS.setText(DecimalFormatter.to2Decimal(record.bolus) + " U");
+                    labelBOLUS.setText(DecimalFormatter.to2Decimal(record.getBolusAmount()) + " U");
                     labelBOLUS.setTextColor(Color.WHITE);
                     tr.addView(labelBOLUS);
 
@@ -398,14 +411,14 @@ public class TDDStatsActivity extends Activity {
                 i = 0;
 
                 //cumulative TDDs
-                for (TDD record : historyList) {
-                    if(!historyList.isEmpty() && df.format(new Date(record.date)).equals(df.format(new Date()))) {
+                for (TotalDailyDose record : historyList) {
+                    if(!historyList.isEmpty() && df.format(new Date(record.getTimestamp())).equals(df.format(new Date()))) {
                         //Today should not be included
                         continue;
                     }
                     i++;
 
-                    sum = sum + record.getTotal();
+                    sum = sum + record.getTotalAmount();
 
                     // Create the cumtable row
                     TableRow ctr = new TableRow(TDDStatsActivity.this);
@@ -448,7 +461,7 @@ public class TDDStatsActivity extends Activity {
                     tl.setBackgroundColor(Color.TRANSPARENT);
                 }
 
-                if(!historyList.isEmpty() && df.format(new Date(historyList.get(0).date)).equals(df.format(new Date()))) {
+                if(!historyList.isEmpty() && df.format(new Date(historyList.get(0).getTimestamp())).equals(df.format(new Date()))) {
                     //Today should not be included
                     historyList.remove(0);
                 }
@@ -457,8 +470,8 @@ public class TDDStatsActivity extends Activity {
 
                 i = 0;
 
-                for (TDD record : historyList) {
-                    double tdd = record.getTotal();
+                for (TotalDailyDose record : historyList) {
+                    double tdd = record.getTotalAmount();
                     if (i == 0) {
                         weighted03 = tdd;
                         weighted05 = tdd;
@@ -544,7 +557,7 @@ public class TDDStatsActivity extends Activity {
     }
 
 
-    public static boolean isOldData(List<TDD> historyList) {
+    public static boolean isOldData(List<TotalDailyDose> historyList) {
         Object activePump = ConfigBuilderPlugin.getPlugin().getActivePump();
         PumpInterface dana = MainApp.getSpecificPlugin(DanaRPlugin.class);
         PumpInterface danaRS = MainApp.getSpecificPlugin(DanaRSPlugin.class);
@@ -555,6 +568,6 @@ public class TDDStatsActivity extends Activity {
         boolean startsYesterday = activePump == dana || activePump == danaRS || activePump == danaV2 || activePump == danaKorean || activePump == insight;
 
         DateFormat df = new SimpleDateFormat("dd.MM.");
-        return (historyList.size() < 3 || !(df.format(new Date(historyList.get(0).date)).equals(df.format(new Date(System.currentTimeMillis() - (startsYesterday?1000 * 60 * 60 * 24:0))))));
+        return (historyList.size() < 3 || !(df.format(new Date(historyList.get(0).getTimestamp())).equals(df.format(new Date(System.currentTimeMillis() - (startsYesterday?1000 * 60 * 60 * 24:0))))));
     }
 }

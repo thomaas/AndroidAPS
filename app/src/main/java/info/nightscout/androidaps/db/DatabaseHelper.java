@@ -51,12 +51,10 @@ import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventNewHistoryData;
 import info.nightscout.androidaps.plugins.pump.danaR.activities.DanaRNSHistorySync;
-import info.nightscout.androidaps.plugins.pump.danaR.comm.RecordTypes;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightBolusID;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightHistoryOffset;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightPumpID;
 import info.nightscout.androidaps.utils.PercentageSplitter;
-import info.nightscout.androidaps.utils.ToastUtils;
 
 /**
  * This Helper contains all resource to provide a central DB management functionality. Only methods handling
@@ -207,10 +205,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         return getDao(DanaRHistoryRecord.class);
     }
 
-    private Dao<TDD, String> getDaoTDD() throws SQLException {
-        return getDao(TDD.class);
-    }
-
     private Dao<DbRequest, String> getDaoDbRequest() throws SQLException {
         return getDao(DbRequest.class);
     }
@@ -253,28 +247,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     // -------------------  TDD handling -----------------------
     public void createOrUpdateTDD(TDD tdd) {
-        try {
-            Dao<TDD, String> dao = getDaoTDD();
-            dao.createOrUpdate(tdd);
-        } catch (SQLException e) {
-            ToastUtils.showToastInUiThread(MainApp.instance(), "createOrUpdate-Exception");
-            log.error("Unhandled exception", e);
-        }
-    }
-
-    public List<TDD> getTDDs() {
-        List<TDD> tddList;
-        try {
-            QueryBuilder<TDD, String> queryBuilder = getDaoTDD().queryBuilder();
-            queryBuilder.orderBy("date", false);
-            queryBuilder.limit(10L);
-            PreparedQuery<TDD> preparedQuery = queryBuilder.prepare();
-            tddList = getDaoTDD().query(preparedQuery);
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-            tddList = new ArrayList<>();
-        }
-        return tddList;
     }
 
 
@@ -406,12 +378,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     public void createOrUpdate(DanaRHistoryRecord record) {
         try {
             getDaoDanaRHistory().createOrUpdate(record);
-
-            //If it is a TDD, store it for stats also.
-            if (record.recordCode == RecordTypes.RECORD_TYPE_DAILY) {
-                createOrUpdateTDD(new TDD(record.recordDate, record.recordDailyBolus, record.recordDailyBasal, 0));
-            }
-
         } catch (SQLException e) {
             log.error("Unhandled exception", e);
         }

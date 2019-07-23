@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import info.nightscout.androidaps.database.TABLE_TOTAL_DAILY_DOSE
 import info.nightscout.androidaps.database.entities.TotalDailyDose
+import io.reactivex.Single
 
 @Suppress("FunctionName")
 @Dao
@@ -14,4 +15,7 @@ abstract class TotalDailyDoseDao : BaseDao<TotalDailyDose>() {
 
     @Query("DELETE FROM $TABLE_TOTAL_DAILY_DOSE")
     abstract override fun deleteAllEntries()
+
+    @Query("SELECT * FROM $TABLE_TOTAL_DAILY_DOSE ORDER BY timestamp DESC LIMIT :amount")
+    abstract fun getTotalDailyDoses(amount: Int): Single<List<TotalDailyDose>>
 }
