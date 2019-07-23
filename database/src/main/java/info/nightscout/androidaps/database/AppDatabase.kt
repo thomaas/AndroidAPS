@@ -34,4 +34,6 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract val mealLinkDao: MealLinkDao
 
+    abstract val temporaryTargetDao: TemporaryTargetDao
+
 }

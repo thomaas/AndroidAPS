@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 
 import info.nightscout.androidaps.Constants;
+import info.nightscout.androidaps.database.entities.TemporaryTarget;
 import info.nightscout.androidaps.interfaces.Interval;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.utils.DateUtil;
@@ -17,6 +18,8 @@ import info.nightscout.androidaps.utils.DecimalFormatter;
 @DatabaseTable(tableName = DatabaseHelper.DATABASE_TEMPTARGETS)
 public class TempTarget implements Interval {
     private static Logger log = LoggerFactory.getLogger(L.DATABASE);
+
+    public TemporaryTarget backing;
 
     @DatabaseField(id = true)
     public long date;

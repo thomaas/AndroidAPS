@@ -29,6 +29,7 @@ import info.nightscout.androidaps.database.AppRepository;
 import info.nightscout.androidaps.database.entities.ExtendedBolus;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.database.entities.TemporaryBasal;
+import info.nightscout.androidaps.database.entities.TemporaryTarget;
 import info.nightscout.androidaps.database.interfaces.DBEntry;
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTime;
 import info.nightscout.androidaps.db.DatabaseHelper;
@@ -129,6 +130,7 @@ public class MainApp extends Application {
                     boolean glucoseValuesChanged = false;
                     boolean temporaryBasalsChanged = false;
                     boolean extendedBolusesChanged = false;
+                    boolean temporaryTargetChanged = false;
                     for (DBEntry entry : changes) {
                         if (entry instanceof DBEntryWithTime) {
                             if (earliestDataChange == null || earliestDataChange < ((DBEntryWithTime) entry).getTimestamp()) {
@@ -138,11 +140,13 @@ public class MainApp extends Application {
                         if (entry instanceof GlucoseValue) glucoseValuesChanged = true;
                         else if (entry instanceof TemporaryBasal) temporaryBasalsChanged = true;
                         else if (entry instanceof ExtendedBolus) extendedBolusesChanged = true;
+                        else if (entry instanceof TemporaryTarget) temporaryTargetChanged = true;
                     }
                     if (earliestDataChange != null) DatabaseHelper.updateEarliestDataChange(earliestDataChange);
                     if (glucoseValuesChanged) DatabaseHelper.scheduleBgChange();
                     if (temporaryBasalsChanged) DatabaseHelper.scheduleTemporaryBasalChange();
                     if (extendedBolusesChanged) DatabaseHelper.scheduleExtendedBolusChange();
+                    if (temporaryTargetChanged) DatabaseHelper.scheduleTemporaryTargetChange();
                 });
         log.debug("onCreate");
         sInstance = this;

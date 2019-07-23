@@ -29,12 +29,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import info.nightscout.androidaps.Constants;
 import info.nightscout.androidaps.MainApp;
+import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.OverlappingIntervals;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.ProfileStore;
 import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.TemporaryTarget;
 import info.nightscout.androidaps.events.EventCareportalEventChange;
 import info.nightscout.androidaps.events.EventExtendedBolusChange;
 import info.nightscout.androidaps.events.EventNewBG;
@@ -56,7 +57,6 @@ import info.nightscout.androidaps.plugins.pump.insight.database.InsightBolusID;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightHistoryOffset;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightPumpID;
 import info.nightscout.androidaps.plugins.pump.virtual.VirtualPumpPlugin;
-import info.nightscout.androidaps.utils.JsonHelper;
 import info.nightscout.androidaps.utils.PercentageSplitter;
 import info.nightscout.androidaps.utils.ToastUtils;
 
@@ -484,90 +484,35 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     // ---------------- TempTargets handling ---------------
 
     public List<TempTarget> getTemptargetsDataFromTime(long mills, boolean ascending) {
-        try {
-            Dao<TempTarget, Long> daoTempTargets = getDaoTempTargets();
-            List<TempTarget> tempTargets;
-            QueryBuilder<TempTarget, Long> queryBuilder = daoTempTargets.queryBuilder();
-            queryBuilder.orderBy("date", ascending);
-            Where where = queryBuilder.where();
-            where.ge("date", mills);
-            PreparedQuery<TempTarget> preparedQuery = queryBuilder.prepare();
-            tempTargets = daoTempTargets.query(preparedQuery);
-            return tempTargets;
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return new ArrayList<TempTarget>();
-    }
-
-    public boolean createOrUpdate(TempTarget tempTarget) {
-        try {
-            TempTarget old;
-            tempTarget.date = roundDateToSec(tempTarget.date);
-
-            if (tempTarget.source == Source.NIGHTSCOUT) {
-                old = getDaoTempTargets().queryForId(tempTarget.date);
-                if (old != null) {
-                    if (!old.isEqual(tempTarget)) {
-                        getDaoTempTargets().delete(old); // need to delete/create because date may change too
-                        old.copyFrom(tempTarget);
-                        getDaoTempTargets().create(old);
-                        if (L.isEnabled(L.DATABASE))
-                            log.debug("TEMPTARGET: Updating record by date from: " + Source.getString(tempTarget.source) + " " + old.toString());
-                        scheduleTemporaryTargetChange();
-                        return true;
-                    }
-                    return false;
-                }
-                // find by NS _id
-                if (tempTarget._id != null) {
-                    QueryBuilder<TempTarget, Long> queryBuilder = getDaoTempTargets().queryBuilder();
-                    Where where = queryBuilder.where();
-                    where.eq("_id", tempTarget._id);
-                    PreparedQuery<TempTarget> preparedQuery = queryBuilder.prepare();
-                    List<TempTarget> trList = getDaoTempTargets().query(preparedQuery);
-                    if (trList.size() > 0) {
-                        old = trList.get(0);
-                        if (!old.isEqual(tempTarget)) {
-                            getDaoTempTargets().delete(old); // need to delete/create because date may change too
-                            old.copyFrom(tempTarget);
-                            getDaoTempTargets().create(old);
-                            if (L.isEnabled(L.DATABASE))
-                                log.debug("TEMPTARGET: Updating record by _id from: " + Source.getString(tempTarget.source) + " " + old.toString());
-                            scheduleTemporaryTargetChange();
-                            return true;
-                        }
-                    }
-                }
-                getDaoTempTargets().create(tempTarget);
-                if (L.isEnabled(L.DATABASE))
-                    log.debug("TEMPTARGET: New record from: " + Source.getString(tempTarget.source) + " " + tempTarget.toString());
-                scheduleTemporaryTargetChange();
-                return true;
+        List<TempTarget> convertedTTs = new ArrayList<>();
+        for (TemporaryTarget temporaryTarget : BlockingAppRepository.INSTANCE.getTemporaryTargetsInTimeRange(mills, Long.MAX_VALUE)) {
+            TempTarget converted = new TempTarget();
+            converted.backing = temporaryTarget;
+            converted.date = temporaryTarget.getTimestamp();
+            converted.durationInMinutes = (int) Math.round(temporaryTarget.getDuration() / 60000D);
+            converted.high = temporaryTarget.getTarget();
+            converted.low = temporaryTarget.getTarget();
+            switch (temporaryTarget.getReason()) {
+                case ACTIVITY:
+                    converted.reason = MainApp.gs(R.string.activity);
+                    break;
+                case EATING_SOON:
+                    converted.reason = MainApp.gs(R.string.eatingsoon);
+                    break;
+                case HYPOGLYCEMIA:
+                    converted.reason = MainApp.gs(R.string.hypo);
+                    break;
+                case CUSTOM:
+                    converted.reason = MainApp.gs(R.string.custom);
+                    break;
             }
-            if (tempTarget.source == Source.USER) {
-                getDaoTempTargets().create(tempTarget);
-                if (L.isEnabled(L.DATABASE))
-                    log.debug("TEMPTARGET: New record from: " + Source.getString(tempTarget.source) + " " + tempTarget.toString());
-                scheduleTemporaryTargetChange();
-                return true;
-            }
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
+            convertedTTs.add(converted);
         }
-        return false;
+        if (!ascending) Collections.shuffle(convertedTTs);
+        return convertedTTs;
     }
 
-    public void delete(TempTarget tempTarget) {
-        try {
-            getDaoTempTargets().delete(tempTarget);
-            scheduleTemporaryTargetChange();
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-    }
-
-    private static void scheduleTemporaryTargetChange() {
+    public static void scheduleTemporaryTargetChange() {
         class PostRunnable implements Runnable {
             public void run() {
                 if (L.isEnabled(L.DATABASE))
@@ -584,66 +529,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         final int sec = 1;
         scheduledTemTargetPost = tempTargetWorker.schedule(task, sec, TimeUnit.SECONDS);
 
-    }
-
- /*
- {
-    "_id": "58795998aa86647ba4d68ce7",
-    "enteredBy": "",
-    "eventType": "Temporary Target",
-    "reason": "Eating Soon",
-    "targetTop": 80,
-    "targetBottom": 80,
-    "duration": 120,
-    "created_at": "2017-01-13T22:50:00.782Z",
-    "carbs": null,
-    "insulin": null
-}
-  */
-
-    public void createTemptargetFromJsonIfNotExists(JSONObject trJson) {
-        try {
-            String units = JsonHelper.safeGetString(trJson, "units", Constants.MGDL);
-            TempTarget tempTarget = new TempTarget()
-                    .date(trJson.getLong("mills"))
-                    .duration(JsonHelper.safeGetInt(trJson, "duration"))
-                    .low(Profile.toMgdl(trJson.getDouble("targetBottom"), units))
-                    .high(Profile.toMgdl(trJson.getDouble("targetTop"), units))
-                    .reason(JsonHelper.safeGetString(trJson, "reason", ""))
-                    ._id(trJson.getString("_id"))
-                    .source(Source.NIGHTSCOUT);
-            createOrUpdate(tempTarget);
-        } catch (JSONException e) {
-            log.error("Unhandled exception: " + trJson.toString(), e);
-        }
-    }
-
-    public void deleteTempTargetById(String _id) {
-        TempTarget stored = findTempTargetById(_id);
-        if (stored != null) {
-            log.debug("TEMPTARGET: Removing TempTarget record from database: " + stored.toString());
-            delete(stored);
-            scheduleTemporaryTargetChange();
-        }
-    }
-
-    public TempTarget findTempTargetById(String _id) {
-        try {
-            QueryBuilder<TempTarget, Long> queryBuilder = getDaoTempTargets().queryBuilder();
-            Where where = queryBuilder.where();
-            where.eq("_id", _id);
-            PreparedQuery<TempTarget> preparedQuery = queryBuilder.prepare();
-            List<TempTarget> list = getDaoTempTargets().query(preparedQuery);
-
-            if (list.size() == 1) {
-                return list.get(0);
-            } else {
-                return null;
-            }
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return null;
     }
 
     // ----------------- DanaRHistory handling --------------------

@@ -201,7 +201,7 @@ public class DataService extends IntentService {
         MainApp.bus().post(evtTreatment);
         // old DB model
         String _id = JsonHelper.safeGetString(json, "_id");
-        MainApp.getDbHelper().deleteTempTargetById(_id);
+        //MainApp.getDbHelper().deleteTempTargetById(_id);
         //MainApp.getDbHelper().deleteTempBasalById(_id);
         //MainApp.getDbHelper().deleteExtendedBolusById(_id);
         MainApp.getDbHelper().deleteCareportalEventById(_id);
@@ -225,7 +225,7 @@ public class DataService extends IntentService {
             // old DB model
             MainApp.getDbHelper().updateDanaRHistoryRecordId(json);
         } else if (eventType.equals(CareportalEvent.TEMPORARYTARGET)) {
-            MainApp.getDbHelper().createTemptargetFromJsonIfNotExists(json);
+            //MainApp.getDbHelper().createTemptargetFromJsonIfNotExists(json);
         } else if (eventType.equals(CareportalEvent.TEMPBASAL)) {
             //MainApp.getDbHelper().createTempBasalFromJsonIfNotExists(json);
         } else if (eventType.equals(CareportalEvent.COMBOBOLUS)) {
