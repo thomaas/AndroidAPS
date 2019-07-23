@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -82,7 +84,6 @@ import info.nightscout.androidaps.plugins.pump.insight.app_layer.status.GetPumpS
 import info.nightscout.androidaps.plugins.pump.insight.app_layer.status.GetTotalDailyDoseMessage;
 import info.nightscout.androidaps.plugins.pump.insight.app_layer.status.ResetPumpStatusRegisterMessage;
 import info.nightscout.androidaps.plugins.pump.insight.connection_service.InsightConnectionService;
-import info.nightscout.androidaps.plugins.pump.insight.database.InsightHistoryOffset;
 import info.nightscout.androidaps.plugins.pump.insight.descriptors.ActiveBasalRate;
 import info.nightscout.androidaps.plugins.pump.insight.descriptors.ActiveBolus;
 import info.nightscout.androidaps.plugins.pump.insight.descriptors.ActiveTBR;
@@ -155,6 +156,7 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
     private List<ActiveBolus> activeBoluses;
     private boolean statusLoaded;
     private TBROverNotificationBlock tbrOverNotificationBlock;
+    private SharedPreferences historyOffsets;
 
     public static LocalInsightPlugin getPlugin() {
         if (instance == null) instance = new LocalInsightPlugin();
@@ -220,6 +222,7 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
         super.onStart();
         MainApp.instance().bindService(new Intent(MainApp.instance(), InsightConnectionService.class), serviceConnection, Context.BIND_AUTO_CREATE);
         MainApp.instance().bindService(new Intent(MainApp.instance(), InsightAlertService.class), serviceConnection, Context.BIND_AUTO_CREATE);
+        historyOffsets = MainApp.instance().getSharedPreferences("InsightHistoryOffsets", Context.MODE_PRIVATE);
     }
 
     @Override
@@ -1056,10 +1059,9 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
             String pumpSerial = connectionService.getPumpSystemIdentification().getSerialNumber();
             timeOffset = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis() - parseDate(pumpTime.getYear(),
                     pumpTime.getMonth(), pumpTime.getDay(), pumpTime.getHour(), pumpTime.getMinute(), pumpTime.getSecond());
-            InsightHistoryOffset historyOffset = MainApp.getDbHelper().getInsightHistoryOffset(pumpSerial);
             try {
                 List<HistoryEvent> historyEvents = new ArrayList<>();
-                if (historyOffset == null) {
+                if (!historyOffsets.contains(pumpSerial)) {
                     StartReadingHistoryMessage startMessage = new StartReadingHistoryMessage();
                     startMessage.setDirection(HistoryReadingDirection.BACKWARD);
                     startMessage.setOffset(0xFFFFFFFF);
@@ -1068,7 +1070,7 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
                 } else {
                     StartReadingHistoryMessage startMessage = new StartReadingHistoryMessage();
                     startMessage.setDirection(HistoryReadingDirection.FORWARD);
-                    startMessage.setOffset(historyOffset.offset + 1);
+                    startMessage.setOffset(historyOffsets.getLong(pumpSerial, 0) + 1);
                     connectionService.requestMessage(startMessage).await();
                     while (true) {
                         List<HistoryEvent> newEvents = connectionService.requestMessage(new ReadHistoryEventsMessage()).await().getHistoryEvents();
@@ -1076,6 +1078,8 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
                         historyEvents.addAll(newEvents);
                     }
                 }
+                Collections.sort(historyEvents);
+                historyOffsets.edit().putLong(pumpSerial, historyEvents.get(historyEvents.size() - 1).getEventPosition()).apply();
                 new InsightHistoryProcessor(pumpSerial, timeOffset, historyEvents).processHistoryEvents();
             } catch (AppLayerErrorException e) {
                 log.info("Exception while reading history: " + e.getClass().getCanonicalName() + " (" + e.getErrorCode() + ")");
