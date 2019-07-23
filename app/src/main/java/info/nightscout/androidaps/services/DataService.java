@@ -203,7 +203,7 @@ public class DataService extends IntentService {
         String _id = JsonHelper.safeGetString(json, "_id");
         MainApp.getDbHelper().deleteTempTargetById(_id);
         //MainApp.getDbHelper().deleteTempBasalById(_id);
-        MainApp.getDbHelper().deleteExtendedBolusById(_id);
+        //MainApp.getDbHelper().deleteExtendedBolusById(_id);
         MainApp.getDbHelper().deleteCareportalEventById(_id);
         MainApp.getDbHelper().deleteProfileSwitchById(_id);
     }
@@ -229,7 +229,7 @@ public class DataService extends IntentService {
         } else if (eventType.equals(CareportalEvent.TEMPBASAL)) {
             //MainApp.getDbHelper().createTempBasalFromJsonIfNotExists(json);
         } else if (eventType.equals(CareportalEvent.COMBOBOLUS)) {
-            MainApp.getDbHelper().createExtendedBolusFromJsonIfNotExists(json);
+            //MainApp.getDbHelper().createExtendedBolusFromJsonIfNotExists(json);
         } else if (eventType.equals(CareportalEvent.PROFILESWITCH)) {
             MainApp.getDbHelper().createProfileSwitchFromJsonIfNotExists(json);
         } else if (eventType.equals(CareportalEvent.SITECHANGE) ||

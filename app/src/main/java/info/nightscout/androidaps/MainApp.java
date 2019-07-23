@@ -26,6 +26,7 @@ import java.util.ArrayList;
 
 import info.nightscout.androidaps.data.ConstraintChecker;
 import info.nightscout.androidaps.database.AppRepository;
+import info.nightscout.androidaps.database.entities.ExtendedBolus;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.database.entities.TemporaryBasal;
 import info.nightscout.androidaps.database.interfaces.DBEntry;
@@ -127,6 +128,7 @@ public class MainApp extends Application {
                     Long earliestDataChange = null;
                     boolean glucoseValuesChanged = false;
                     boolean temporaryBasalsChanged = false;
+                    boolean extendedBolusesChanged = false;
                     for (DBEntry entry : changes) {
                         if (entry instanceof DBEntryWithTime) {
                             if (earliestDataChange == null || earliestDataChange < ((DBEntryWithTime) entry).getTimestamp()) {
@@ -135,10 +137,12 @@ public class MainApp extends Application {
                         }
                         if (entry instanceof GlucoseValue) glucoseValuesChanged = true;
                         else if (entry instanceof TemporaryBasal) temporaryBasalsChanged = true;
+                        else if (entry instanceof ExtendedBolus) extendedBolusesChanged = true;
                     }
                     if (earliestDataChange != null) DatabaseHelper.updateEarliestDataChange(earliestDataChange);
                     if (glucoseValuesChanged) DatabaseHelper.scheduleBgChange();
                     if (temporaryBasalsChanged) DatabaseHelper.scheduleTemporaryBasalChange();
+                    if (extendedBolusesChanged) DatabaseHelper.scheduleExtendedBolusChange();
                 });
         log.debug("onCreate");
         sInstance = this;

@@ -454,20 +454,7 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
 
     @Override
     public boolean addToHistoryExtendedBolus(ExtendedBolus extendedBolus) {
-        //log.debug("Adding new ExtentedBolus record" + extendedBolusDao.log());
-        boolean newRecordCreated = MainApp.getDbHelper().createOrUpdate(extendedBolus);
-        if (newRecordCreated) {
-            if (extendedBolus.durationInMinutes == 0) {
-                if (ConfigBuilderPlugin.getPlugin().getActivePump().isFakingTempsByExtendedBoluses())
-                    NSUpload.uploadTempBasalEnd(extendedBolus.date, true, extendedBolus.pumpId);
-                else
-                    NSUpload.uploadExtendedBolusEnd(extendedBolus.date, extendedBolus.pumpId);
-            } else if (ConfigBuilderPlugin.getPlugin().getActivePump().isFakingTempsByExtendedBoluses())
-                NSUpload.uploadTempBasalStartAbsolute(new TemporaryBasal(extendedBolus), extendedBolus.insulin);
-            else
-                NSUpload.uploadExtendedBolus(extendedBolus);
-        }
-        return newRecordCreated;
+        return false;
     }
 
     @Override

@@ -2,6 +2,7 @@ package info.nightscout.androidaps.database
 
 import android.content.Context
 import androidx.room.Room
+import info.nightscout.androidaps.database.entities.ExtendedBolus
 import info.nightscout.androidaps.database.entities.GlucoseValue
 import info.nightscout.androidaps.database.entities.TemporaryBasal
 import info.nightscout.androidaps.database.interfaces.DBEntry
@@ -53,4 +54,6 @@ object AppRepository {
     fun getProperGlucoseValuesInTimeRange(timeRange: Long): Flowable<List<GlucoseValue>> = database.glucoseValueDao.getProperGlucoseValuesInTimeRange(timeRange).subscribeOn(Schedulers.io())
 
     fun getTemporaryBasalsInTimeRange(start: Long, end: Long): Flowable<List<TemporaryBasal>> = database.temporaryBasalDao.getTemporaryBasalsInTimeRange(start, end).subscribeOn(Schedulers.io())
+
+    fun getExtendedBolusesInTimeRange(start: Long, end: Long): Flowable<List<ExtendedBolus>> = database.extendedBolusDao.getExtendedBolusesInTimeRange(start, end).subscribeOn(Schedulers.io())
 }
