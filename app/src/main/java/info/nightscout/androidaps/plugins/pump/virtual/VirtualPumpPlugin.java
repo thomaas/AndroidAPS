@@ -18,6 +18,8 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.transactions.InsertTemporaryBasalTransaction;
 import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
@@ -241,10 +243,14 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
 
 
     @Override
-    public double getReservoirLevel() { return reservoirInUnits; }
+    public double getReservoirLevel() {
+        return reservoirInUnits;
+    }
 
     @Override
-    public int getBatteryLevel() { return batteryPercent; }
+    public int getBatteryLevel() {
+        return batteryPercent;
+    }
 
     @Override
     public PumpEnactResult deliverTreatment(DetailedBolusInfo detailedBolusInfo) {
@@ -286,34 +292,25 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
 
     @Override
     public PumpEnactResult setTempBasalAbsolute(Double absoluteRate, Integer durationInMinutes, Profile profile, boolean enforceNew) {
-
-        TemporaryBasal tempBasal = new TemporaryBasal()
-                .date(System.currentTimeMillis())
-                .absolute(absoluteRate)
-                .duration(durationInMinutes)
-                .source(Source.USER);
         PumpEnactResult result = new PumpEnactResult();
         result.success = true;
         result.enacted = true;
-        result.isTempCancel = false;
         result.absolute = absoluteRate;
+        result.isPercent = false;
+        result.isTempCancel = false;
         result.duration = durationInMinutes;
         result.comment = MainApp.gs(R.string.virtualpump_resultok);
-        TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
+        long timestamp = System.currentTimeMillis();
+        lastDataTime = timestamp;
+        BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryBasalTransaction(timestamp, durationInMinutes * 60000, true, absoluteRate));
         if (L.isEnabled(L.PUMPCOMM))
-            log.debug("Setting temp basal absolute: " + result);
+            log.debug("Settings temp basal absolute: " + result);
         MainApp.bus().post(new EventVirtualPumpUpdateGui());
-        lastDataTime = System.currentTimeMillis();
         return result;
     }
 
     @Override
     public PumpEnactResult setTempBasalPercent(Integer percent, Integer durationInMinutes, Profile profile, boolean enforceNew) {
-        TemporaryBasal tempBasal = new TemporaryBasal()
-                .date(System.currentTimeMillis())
-                .percent(percent)
-                .duration(durationInMinutes)
-                .source(Source.USER);
         PumpEnactResult result = new PumpEnactResult();
         result.success = true;
         result.enacted = true;
@@ -322,11 +319,12 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
         result.isTempCancel = false;
         result.duration = durationInMinutes;
         result.comment = MainApp.gs(R.string.virtualpump_resultok);
-        TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
+        long timestamp = System.currentTimeMillis();
+        lastDataTime = timestamp;
+        BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryBasalTransaction(timestamp, durationInMinutes * 60000, false, percent));
         if (L.isEnabled(L.PUMPCOMM))
             log.debug("Settings temp basal percent: " + result);
         MainApp.bus().post(new EventVirtualPumpUpdateGui());
-        lastDataTime = System.currentTimeMillis();
         return result;
     }
 

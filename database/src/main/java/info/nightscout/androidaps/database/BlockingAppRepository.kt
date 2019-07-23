@@ -1,6 +1,7 @@
 package info.nightscout.androidaps.database
 
 import info.nightscout.androidaps.database.entities.GlucoseValue
+import info.nightscout.androidaps.database.entities.TemporaryBasal
 import info.nightscout.androidaps.database.transactions.Transaction
 
 @Deprecated(
@@ -20,4 +21,6 @@ object BlockingAppRepository {
     fun <T> runTransaction(transaction: Transaction<T>) = AppRepository.runTransaction(transaction).blockingAwait()
 
     fun <T> runTransactionForResult(transaction: Transaction<T>): T = AppRepository.runTransactionForResult(transaction).blockingGet()
+
+    fun getTemporaryBasalsInTimeRange(start: Long, end: Long): List<TemporaryBasal> = AppRepository.getTemporaryBasalsInTimeRange(start, end).blockingFirst()
 }

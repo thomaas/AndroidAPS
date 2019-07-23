@@ -487,7 +487,7 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
     @Override
     public boolean addToHistoryTempBasal(TemporaryBasal tempBasal) {
         //log.debug("Adding new TemporaryBasal record" + tempBasal.toString());
-        boolean newRecordCreated = MainApp.getDbHelper().createOrUpdate(tempBasal);
+        /*boolean newRecordCreated = MainApp.getDbHelper().createOrUpdate(tempBasal);
         if (newRecordCreated) {
             if (tempBasal.durationInMinutes == 0)
                 NSUpload.uploadTempBasalEnd(tempBasal.date, false, tempBasal.pumpId);
@@ -495,8 +495,8 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
                 NSUpload.uploadTempBasalStartAbsolute(tempBasal, null);
             else
                 NSUpload.uploadTempBasalStartPercent(tempBasal);
-        }
-        return newRecordCreated;
+        }*/
+        return false;
     }
 
     // return true if new record is created

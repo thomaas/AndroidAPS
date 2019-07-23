@@ -5,6 +5,7 @@ import androidx.room.Query
 import info.nightscout.androidaps.database.TABLE_TEMPORARY_BASALS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.TemporaryBasal
+import io.reactivex.Flowable
 
 @Suppress("FunctionName")
 @Dao
@@ -16,4 +17,6 @@ abstract class TemporaryBasalDao : BaseDao<TemporaryBasal>() {
     @Query("SELECT * FROM $TABLE_TEMPORARY_BASALS WHERE pumpType = :pumpType AND pumpSerial = :pumpSerial AND startId < :endId AND pumpId IS NULL AND endId IS NULL AND ABS(timestamp - :timestamp) <= 86400000 ORDER BY startId DESC LIMIT 1")
     abstract fun getWithSmallerStartId_Within24Hours_WithPumpSerial_PumpAndEndIdAreNull(pumpType: InterfaceIDs.PumpType, pumpSerial: String, timestamp: Long, endId: Long): TemporaryBasal?
 
+    @Query("SELECT * FROM $TABLE_TEMPORARY_BASALS WHERE timestamp >= :start AND timestamp <= :end AND referenceId IS NULL AND valid = 1 ORDER BY timestamp ASC")
+    abstract fun getTemporaryBasalsInTimeRange(start: Long, end: Long): Flowable<List<TemporaryBasal>>
 }
