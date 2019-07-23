@@ -11,4 +11,7 @@ abstract class CarbsDao : BaseDao<Carbs>() {
 
     @Query("SELECT * FROM $TABLE_CARBS WHERE id = :id")
     abstract override fun findById(id: Long): Carbs?
+
+    @Query("DELETE FROM $TABLE_CARBS")
+    abstract override fun deleteAllEntries()
 }

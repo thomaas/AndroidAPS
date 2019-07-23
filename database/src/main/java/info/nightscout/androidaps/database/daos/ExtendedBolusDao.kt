@@ -14,6 +14,9 @@ abstract class ExtendedBolusDao : BaseDao<ExtendedBolus>() {
     @Query("SELECT * FROM $TABLE_EXTENDED_BOLUSES WHERE id = :id")
     abstract override fun findById(id: Long): ExtendedBolus?
 
+    @Query("DELETE FROM $TABLE_EXTENDED_BOLUSES")
+    abstract override fun deleteAllEntries()
+
     @Query("SELECT * FROM $TABLE_EXTENDED_BOLUSES WHERE pumpType = :pumpType AND pumpSerial = :pumpSerial AND pumpId = :pumpId AND startId IS NULL AND endId IS NULL AND referenceId IS NULL ORDER BY timestamp DESC LIMIT 1")
     abstract fun findByPumpId_StartAndEndIDsAreNull(pumpType: InterfaceIDs.PumpType, pumpSerial: String, pumpId: Long?): ExtendedBolus?
 

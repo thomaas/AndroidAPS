@@ -245,73 +245,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         );
     }
 
-    public void resetTempTargets() {
-        try {
-            TableUtils.dropTable(connectionSource, TempTarget.class, true);
-            TableUtils.createTableIfNotExists(connectionSource, TempTarget.class);
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        scheduleTemporaryTargetChange();
-    }
-
-    public void resetTemporaryBasals() {
-        try {
-            TableUtils.dropTable(connectionSource, TemporaryBasal.class, true);
-            TableUtils.createTableIfNotExists(connectionSource, TemporaryBasal.class);
-            updateEarliestDataChange(0);
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        VirtualPumpPlugin.getPlugin().setFakingStatus(false);
-        scheduleTemporaryBasalChange();
-    }
-
-    public void resetExtededBoluses() {
-        try {
-            TableUtils.dropTable(connectionSource, ExtendedBolus.class, true);
-            TableUtils.createTableIfNotExists(connectionSource, ExtendedBolus.class);
-            updateEarliestDataChange(0);
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        scheduleExtendedBolusChange();
-    }
-
-    public void resetCareportalEvents() {
-        try {
-            TableUtils.dropTable(connectionSource, CareportalEvent.class, true);
-            TableUtils.createTableIfNotExists(connectionSource, CareportalEvent.class);
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        scheduleCareportalEventChange();
-    }
-
-    public void resetProfileSwitch() {
-        try {
-            TableUtils.dropTable(connectionSource, ProfileSwitch.class, true);
-            TableUtils.createTableIfNotExists(connectionSource, ProfileSwitch.class);
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        scheduleProfileSwitchChange();
-    }
-
-    public void resetTDDs() {
-        try {
-            TableUtils.dropTable(connectionSource, TDD.class, true);
-            TableUtils.createTableIfNotExists(connectionSource, TDD.class);
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-    }
-
     // ------------------ getDao -------------------------------------------
-
-    private Dao<TempTarget, Long> getDaoTempTargets() throws SQLException {
-        return getDao(TempTarget.class);
-    }
 
     private Dao<DanaRHistoryRecord, String> getDaoDanaRHistory() throws SQLException {
         return getDao(DanaRHistoryRecord.class);
@@ -590,11 +524,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     }
 
     // ------------ TemporaryBasal handling ---------------
-
-    //return true if new record was created
-    public boolean createOrUpdate(TemporaryBasal tempBasal) {
-        return false;
-    }
 
     public List<TemporaryBasal> getTemporaryBasalsDataFromTime(long mills, boolean ascending) {
         List<TemporaryBasal> convertedTBRs = new ArrayList<>();

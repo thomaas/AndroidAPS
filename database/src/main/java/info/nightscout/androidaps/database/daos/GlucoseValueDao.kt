@@ -14,21 +14,24 @@ abstract class GlucoseValueDao : BaseDao<GlucoseValue>() {
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE id = :id")
     abstract override fun findById(id: Long): GlucoseValue?
 
+    @Query("DELETE FROM $TABLE_GLUCOSE_VALUES")
+    abstract override fun deleteAllEntries()
+
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE timestamp = :timestamp AND referenceId IS NULL")
     abstract fun findByTimestamp(timestamp: Long): GlucoseValue?
 
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE referenceId IS NULL AND valid = 1 ORDER BY timestamp DESC LIMIT 1")
-    abstract fun getLastGlucoseValue() : Maybe<GlucoseValue>
+    abstract fun getLastGlucoseValue(): Maybe<GlucoseValue>
 
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE timestamp >= :start AND timestamp <= :end AND referenceId IS NULL AND valid = 1 ORDER BY timestamp DESC LIMIT 1")
-    abstract fun getLastGlucoseValueInTimeRange(start: Long, end: Long) : Maybe<GlucoseValue>
+    abstract fun getLastGlucoseValueInTimeRange(start: Long, end: Long): Maybe<GlucoseValue>
 
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE timestamp >= :start AND timestamp <= :end AND referenceId IS NULL AND valid = 1 ORDER BY timestamp ASC")
-    abstract fun getGlucoseValuesInTimeRange(start: Long, end: Long) : Single<List<GlucoseValue>>
+    abstract fun getGlucoseValuesInTimeRange(start: Long, end: Long): Single<List<GlucoseValue>>
 
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE timestamp >= :start AND timestamp <= :end AND value >= 39 AND referenceId IS NULL AND valid = 1 ORDER BY timestamp ASC")
-    abstract fun getProperGlucoseValuesInTimeRange(start: Long, end: Long) : Single<List<GlucoseValue>>
+    abstract fun getProperGlucoseValuesInTimeRange(start: Long, end: Long): Single<List<GlucoseValue>>
 
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE timestamp >= (julianday('now') - 2440587.5) * 86400000.0 - :timeRange AND timestamp < (julianday('now') - 2440587.5) * 86400000.0 AND referenceId IS NULL AND valid = 1 ORDER BY timestamp ASC")
-    abstract fun getProperGlucoseValuesInTimeRange(timeRange: Long) : Flowable<List<GlucoseValue>>
+    abstract fun getProperGlucoseValuesInTimeRange(timeRange: Long): Flowable<List<GlucoseValue>>
 }

@@ -36,4 +36,12 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract val temporaryTargetDao: TemporaryTargetDao
 
+    abstract val apsResultLinkDao: APSResultLinkDao
+
+    abstract val bolusCalculatorResultDao: BolusCalculatorResultDao
+
+    abstract val effectiveProfileSwitchDao: EffectiveProfileSwitchDao
+
+    abstract val profileSwitchDao: ProfileSwitchDao
+
 }

@@ -9,6 +9,8 @@ abstract class BaseDao<T : DBEntry> {
 
     abstract fun findById(id: Long): T?
 
+    abstract fun deleteAllEntries()
+
     @Insert
     protected abstract fun insert(entry: T): Long
 

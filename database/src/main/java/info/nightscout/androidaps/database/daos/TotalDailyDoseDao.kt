@@ -11,4 +11,7 @@ abstract class TotalDailyDoseDao : BaseDao<TotalDailyDose>() {
 
     @Query("SELECT * FROM $TABLE_TOTAL_DAILY_DOSE WHERE id = :id")
     abstract override fun findById(id: Long): TotalDailyDose?
+
+    @Query("DELETE FROM $TABLE_TOTAL_DAILY_DOSE")
+    abstract override fun deleteAllEntries()
 }

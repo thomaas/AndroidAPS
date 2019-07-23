@@ -191,7 +191,7 @@ public class TreatmentsTempTargetFragment extends SubscriberFragment implements 
                 builder.setMessage(MainApp.gs(R.string.refresheventsfromnightscout) + " ?");
                 builder.setPositiveButton(MainApp.gs(R.string.ok), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        MainApp.getDbHelper().resetTempTargets();
+                        //MainApp.getDbHelper().resetTempTargets();
                         Intent restartNSClient = new Intent(Intents.ACTION_RESTART);
                         MainApp.instance().getApplicationContext().sendBroadcast(restartNSClient);
                     }
