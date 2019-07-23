@@ -40,7 +40,6 @@ import info.nightscout.androidaps.events.EventCareportalEventChange;
 import info.nightscout.androidaps.events.EventExtendedBolusChange;
 import info.nightscout.androidaps.events.EventNewBG;
 import info.nightscout.androidaps.events.EventProfileNeedsUpdate;
-import info.nightscout.androidaps.events.EventRefreshOverview;
 import info.nightscout.androidaps.events.EventReloadProfileSwitchData;
 import info.nightscout.androidaps.events.EventReloadTempBasalData;
 import info.nightscout.androidaps.events.EventReloadTreatmentData;
@@ -56,7 +55,6 @@ import info.nightscout.androidaps.plugins.pump.danaR.comm.RecordTypes;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightBolusID;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightHistoryOffset;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightPumpID;
-import info.nightscout.androidaps.plugins.pump.virtual.VirtualPumpPlugin;
 import info.nightscout.androidaps.utils.PercentageSplitter;
 import info.nightscout.androidaps.utils.ToastUtils;
 
@@ -203,48 +201,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         return DatabaseUtils.queryNumEntries(getReadableDatabase(), database);
     }
 
-    // --------------------- DB resets ---------------------
-
-    public void resetDatabases() {
-        try {
-            TableUtils.dropTable(connectionSource, TempTarget.class, true);
-            TableUtils.dropTable(connectionSource, DanaRHistoryRecord.class, true);
-            TableUtils.dropTable(connectionSource, DbRequest.class, true);
-            TableUtils.dropTable(connectionSource, TemporaryBasal.class, true);
-            TableUtils.dropTable(connectionSource, ExtendedBolus.class, true);
-            TableUtils.dropTable(connectionSource, CareportalEvent.class, true);
-            TableUtils.dropTable(connectionSource, ProfileSwitch.class, true);
-            TableUtils.dropTable(connectionSource, TDD.class, true);
-            TableUtils.createTableIfNotExists(connectionSource, TempTarget.class);
-            TableUtils.createTableIfNotExists(connectionSource, DanaRHistoryRecord.class);
-            TableUtils.createTableIfNotExists(connectionSource, DbRequest.class);
-            TableUtils.createTableIfNotExists(connectionSource, TemporaryBasal.class);
-            TableUtils.createTableIfNotExists(connectionSource, ExtendedBolus.class);
-            TableUtils.createTableIfNotExists(connectionSource, CareportalEvent.class);
-            TableUtils.createTableIfNotExists(connectionSource, ProfileSwitch.class);
-            TableUtils.createTableIfNotExists(connectionSource, TDD.class);
-            updateEarliestDataChange(0);
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        VirtualPumpPlugin.getPlugin().setFakingStatus(true);
-        scheduleBgChange(); // trigger refresh
-        scheduleTemporaryBasalChange();
-        scheduleExtendedBolusChange();
-        scheduleTemporaryTargetChange();
-        scheduleCareportalEventChange();
-        scheduleProfileSwitchChange();
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        MainApp.bus().post(new EventRefreshOverview("resetDatabases"));
-                    }
-                },
-                3000
-        );
-    }
-
     // ------------------ getDao -------------------------------------------
 
     private Dao<DanaRHistoryRecord, String> getDaoDanaRHistory() throws SQLException {
@@ -259,32 +215,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         return getDao(DbRequest.class);
     }
 
-    private Dao<TemporaryBasal, Long> getDaoTemporaryBasal() throws SQLException {
-        return getDao(TemporaryBasal.class);
-    }
-
-    private Dao<ExtendedBolus, Long> getDaoExtendedBolus() throws SQLException {
-        return getDao(ExtendedBolus.class);
-    }
-
     private Dao<CareportalEvent, Long> getDaoCareportalEvents() throws SQLException {
         return getDao(CareportalEvent.class);
     }
 
     private Dao<ProfileSwitch, Long> getDaoProfileSwitch() throws SQLException {
         return getDao(ProfileSwitch.class);
-    }
-
-    private Dao<InsightPumpID, Long> getDaoInsightPumpID() throws SQLException {
-        return getDao(InsightPumpID.class);
-    }
-
-    private Dao<InsightBolusID, Long> getDaoInsightBolusID() throws SQLException {
-        return getDao(InsightBolusID.class);
-    }
-
-    private Dao<InsightHistoryOffset, String> getDaoInsightHistoryOffset() throws SQLException {
-        return getDao(InsightHistoryOffset.class);
     }
 
     public static long roundDateToSec(long date) {
