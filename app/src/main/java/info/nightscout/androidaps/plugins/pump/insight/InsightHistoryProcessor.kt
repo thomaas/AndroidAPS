@@ -116,7 +116,7 @@ class InsightHistoryProcessor(pumpSerial: String, private var timeOffset: Long, 
     private fun processTotalDailyDoseEvent(event: TotalDailyDoseEvent) {
         transaction.totalDailyDoses.add(InsightHistoryTransaction.TotalDailyDose(
                 event.eventPosition,
-                event.adjustedTimestamp,
+                parseDate(event.totalYear, event.totalMonth, event.totalDay, 0, 0, 0, false),
                 event.bolusTotal,
                 event.basalTotal
         ))
@@ -147,8 +147,8 @@ class InsightHistoryProcessor(pumpSerial: String, private var timeOffset: Long, 
 
     private val HistoryEvent.adjustedTimestamp: Long get() = parseDate(eventYear, eventMonth, eventDay, eventHour, eventMinute, eventSecond) + timeOffset
 
-    private fun parseDate(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int): Long {
-        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+    private fun parseDate(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, utc: Boolean = true): Long {
+        val calendar = Calendar.getInstance(if (utc) TimeZone.getTimeZone("UTC") else TimeZone.getDefault())
         calendar.set(Calendar.YEAR, year)
         calendar.set(Calendar.MONTH, month - 1)
         calendar.set(Calendar.DAY_OF_MONTH, day)
