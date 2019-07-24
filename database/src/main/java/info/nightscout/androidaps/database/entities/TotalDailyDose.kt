@@ -1,12 +1,12 @@
 package info.nightscout.androidaps.database.entities
 
 import androidx.room.*
-import info.nightscout.androidaps.database.TABLE_TOTAL_DAILY_DOSE
+import info.nightscout.androidaps.database.TABLE_TOTAL_DAILY_DOSES
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTime
 
-@Entity(tableName = TABLE_TOTAL_DAILY_DOSE,
+@Entity(tableName = TABLE_TOTAL_DAILY_DOSES,
         foreignKeys = [ForeignKey(
                 entity = TotalDailyDose::class,
                 parentColumns = ["id"],
