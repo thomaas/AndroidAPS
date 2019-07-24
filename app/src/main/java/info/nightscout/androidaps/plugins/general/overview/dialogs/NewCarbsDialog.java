@@ -36,7 +36,7 @@ import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
-import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetTransaction;
+import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetAndCancelCurrentTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.interfaces.Constraint;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
@@ -395,21 +395,21 @@ public class NewCarbsDialog extends DialogFragment implements OnClickListener, C
                         accepted = true;
 
                         if (startActivityTTCheckbox.isChecked()) {
-                            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                                     System.currentTimeMillis(),
                                     finalActivityTTDuration * 60000,
                                     TemporaryTarget.Reason.EATING_SOON,
                                     Profile.toMgdl(finalActivityTT, currentProfile.getUnits())
                             ));
                         } else if (startEatingSoonTTCheckbox.isChecked()) {
-                            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                                     System.currentTimeMillis(),
                                     finalEatingSoonTTDuration * 60000,
                                     TemporaryTarget.Reason.EATING_SOON,
                                     Profile.toMgdl(finalEatigSoonTT, currentProfile.getUnits())
                             ));
                         } else if (startHypoTTCheckbox.isChecked()) {
-                            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                                     System.currentTimeMillis(),
                                     finalHypoTTDuration * 60000,
                                     TemporaryTarget.Reason.EATING_SOON,

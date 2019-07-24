@@ -37,7 +37,7 @@ import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
-import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetTransaction;
+import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetAndCancelCurrentTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.interfaces.Constraint;
@@ -272,7 +272,7 @@ public class NewInsulinDialog extends DialogFragment implements OnClickListener 
                         accepted = true;
 
                         if (startEatingSoonTTCheckbox.isChecked()) {
-                            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                                     System.currentTimeMillis(),
                                     finalEatingSoonTTDuration * 60000,
                                     TemporaryTarget.Reason.EATING_SOON,

@@ -2,13 +2,12 @@ package info.nightscout.androidaps.database.transactions
 
 import info.nightscout.androidaps.database.AppRepository
 
-class CancelTemporaryTargetTransaction : Transaction<Unit>() {
+class CancelTemporaryTargetTransaction(val timestamp: Long = System.currentTimeMillis()) : Transaction<Unit>() {
 
     override fun run() {
-        val currentTimeMillis = System.currentTimeMillis()
-        val currentlyActive = AppRepository.database.temporaryTargetDao.getTemporaryTargetActiveAt(currentTimeMillis)
+        val currentlyActive = AppRepository.database.temporaryTargetDao.getTemporaryTargetActiveAt(timestamp)
                 ?: throw IllegalStateException("There is currently no TemporaryTarget active.")
-        currentlyActive.duration = currentTimeMillis - currentlyActive.timestamp
+        currentlyActive.duration = timestamp - currentlyActive.timestamp
         AppRepository.database.temporaryTargetDao.updateExistingEntry(currentlyActive)
         changes.add(currentlyActive)
     }

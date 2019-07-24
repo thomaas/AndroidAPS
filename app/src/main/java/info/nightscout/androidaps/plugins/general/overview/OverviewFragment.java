@@ -60,7 +60,7 @@ import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
 import info.nightscout.androidaps.database.transactions.CancelTemporaryTargetTransaction;
-import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetTransaction;
+import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetAndCancelCurrentTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.db.TempTarget;
@@ -604,7 +604,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
             pvd.show(manager, "ProfileViewDialog");
         } else if (item.getTitle().equals(MainApp.gs(R.string.eatingsoon))) {
             DefaultValueHelper defHelper = new DefaultValueHelper();
-            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                     System.currentTimeMillis(),
                     defHelper.determineEatingSoonTTDuration() * 60000,
                     TemporaryTarget.Reason.EATING_SOON,
@@ -612,7 +612,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
             ));
         } else if (item.getTitle().equals(MainApp.gs(R.string.activity))) {
             DefaultValueHelper defHelper = new DefaultValueHelper();
-            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                     System.currentTimeMillis(),
                     defHelper.determineActivityTTDuration() * 60000,
                     TemporaryTarget.Reason.EATING_SOON,
@@ -620,7 +620,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
             ));
         } else if (item.getTitle().equals(MainApp.gs(R.string.hypo))) {
             DefaultValueHelper defHelper = new DefaultValueHelper();
-            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                     System.currentTimeMillis(),
                     defHelper.determineHypoTTDuration() * 60000,
                     TemporaryTarget.Reason.EATING_SOON,

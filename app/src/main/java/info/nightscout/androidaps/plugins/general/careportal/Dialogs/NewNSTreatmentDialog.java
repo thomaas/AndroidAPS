@@ -46,7 +46,7 @@ import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
 import info.nightscout.androidaps.database.transactions.CancelTemporaryTargetTransaction;
-import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetTransaction;
+import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetAndCancelCurrentTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.ProfileSwitch;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
@@ -55,6 +55,7 @@ import info.nightscout.androidaps.plugins.general.careportal.OptionsToShow;
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatus;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
+import info.nightscout.androidaps.utils.CareportalUtilKt;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.DefaultValueHelper;
 import info.nightscout.androidaps.utils.HardLimits;
@@ -721,7 +722,10 @@ public class NewNSTreatmentDialog extends DialogFragment implements View.OnClick
             if (data.has("profile")) {
                 ProfileFunctions.doProfileSwitch(profileStore, JsonHelper.safeGetString(data, "profile"), JsonHelper.safeGetInt(data, "duration"), JsonHelper.safeGetInt(data, "percentage"), JsonHelper.safeGetInt(data, "timeshift"));
             }
-        } else if (options.executeTempTarget) {
+        } else if (options.executeTempTarget || options.tempTarget) {
+            if (!data.has("duration")) return;
+            if (!data.has("target")) return;
+            if (!data.has("reason")) return;
             final int duration = JsonHelper.safeGetInt(data, "duration");
             final double target = JsonHelper.safeGetDouble(data, "target");
             final int reasonPos = JsonHelper.safeGetInt(data, "reason");
@@ -746,7 +750,7 @@ public class NewNSTreatmentDialog extends DialogFragment implements View.OnClick
                 } catch (IllegalStateException ignored) {
                 }
             } else {
-                BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+                BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                         System.currentTimeMillis(),
                         duration * 60000,
                         reason,
@@ -765,7 +769,7 @@ public class NewNSTreatmentDialog extends DialogFragment implements View.OnClick
                 );
                 NSUpload.uploadProfileSwitch(profileSwitch);
             } else {
-                NSUpload.uploadCareportalEntryToNS(data);
+                CareportalUtilKt.saveCareportalJSON(data);
             }
         }
     }

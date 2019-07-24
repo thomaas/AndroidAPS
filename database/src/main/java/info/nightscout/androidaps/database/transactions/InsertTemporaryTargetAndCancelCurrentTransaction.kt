@@ -4,13 +4,19 @@ import info.nightscout.androidaps.database.AppRepository
 import info.nightscout.androidaps.database.entities.TemporaryTarget
 import java.util.*
 
-class InsertTemporaryTargetTransaction(
+class InsertTemporaryTargetAndCancelCurrentTransaction(
         val timestamp: Long,
         val duration: Long,
         val reason: TemporaryTarget.Reason,
         val target: Double
 ) : Transaction<Unit>() {
     override fun run() {
+        val currentlyActive = AppRepository.database.temporaryTargetDao.getTemporaryTargetActiveAt(timestamp)
+        if (currentlyActive != null) {
+            currentlyActive.duration = timestamp - currentlyActive.timestamp
+            AppRepository.database.temporaryTargetDao.updateExistingEntry(currentlyActive)
+            changes.add(currentlyActive)
+        }
         AppRepository.database.temporaryTargetDao.insertNewEntry(TemporaryTarget(
                 timestamp = timestamp,
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),

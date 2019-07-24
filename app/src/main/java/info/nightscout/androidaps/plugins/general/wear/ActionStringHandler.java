@@ -25,7 +25,7 @@ import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
 import info.nightscout.androidaps.database.entities.TotalDailyDose;
 import info.nightscout.androidaps.database.transactions.CancelTemporaryTargetTransaction;
-import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetTransaction;
+import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetAndCancelCurrentTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.ProfileSwitch;
 import info.nightscout.androidaps.db.Source;
@@ -702,7 +702,7 @@ public class ActionStringHandler {
             } catch (IllegalStateException ignored) {
             }
         } else {
-            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetTransaction(
+            BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                     System.currentTimeMillis(),
                     duration * 60000,
                     TemporaryTarget.Reason.EATING_SOON,

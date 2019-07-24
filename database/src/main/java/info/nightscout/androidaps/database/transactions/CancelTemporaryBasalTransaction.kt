@@ -2,13 +2,12 @@ package info.nightscout.androidaps.database.transactions
 
 import info.nightscout.androidaps.database.AppRepository
 
-class CancelTemporaryBasalTransaction: Transaction<Unit>() {
+class CancelTemporaryBasalTransaction(val timestamp: Long = System.currentTimeMillis()): Transaction<Unit>() {
 
     override fun run() {
-        val currentTimeMillis = System.currentTimeMillis()
-        val currentlyActive = AppRepository.database.temporaryBasalDao.getTemporaryBasalActiveAt(currentTimeMillis)
+        val currentlyActive = AppRepository.database.temporaryBasalDao.getTemporaryBasalActiveAt(timestamp)
                 ?: throw IllegalStateException("There is currently no TemporaryBasal active.")
-        currentlyActive.duration = currentTimeMillis - currentlyActive.timestamp
+        currentlyActive.duration = timestamp - currentlyActive.timestamp
         AppRepository.database.temporaryBasalDao.updateExistingEntry(currentlyActive)
         changes.add(currentlyActive)
     }
