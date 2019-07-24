@@ -26,10 +26,14 @@ import java.util.ArrayList;
 
 import info.nightscout.androidaps.data.ConstraintChecker;
 import info.nightscout.androidaps.database.AppRepository;
+import info.nightscout.androidaps.database.entities.Bolus;
+import info.nightscout.androidaps.database.entities.BolusCalculatorResult;
+import info.nightscout.androidaps.database.entities.Carbs;
 import info.nightscout.androidaps.database.entities.ExtendedBolus;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.database.entities.TemporaryBasal;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
+import info.nightscout.androidaps.database.entities.links.MealLink;
 import info.nightscout.androidaps.database.interfaces.DBEntry;
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTime;
 import info.nightscout.androidaps.db.DatabaseHelper;
@@ -83,6 +87,7 @@ import info.nightscout.androidaps.plugins.source.SourceMM640gPlugin;
 import info.nightscout.androidaps.plugins.source.SourcePoctechPlugin;
 import info.nightscout.androidaps.plugins.source.SourceTomatoPlugin;
 import info.nightscout.androidaps.plugins.source.SourceXdripPlugin;
+import info.nightscout.androidaps.plugins.treatments.TreatmentService;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.receivers.DataReceiver;
 import info.nightscout.androidaps.receivers.KeepAliveReceiver;
@@ -131,6 +136,7 @@ public class MainApp extends Application {
                     boolean temporaryBasalsChanged = false;
                     boolean extendedBolusesChanged = false;
                     boolean temporaryTargetChanged = false;
+                    boolean treatmentsChanged = false;
                     for (DBEntry entry : changes) {
                         if (entry instanceof DBEntryWithTime) {
                             if (earliestDataChange == null || earliestDataChange < ((DBEntryWithTime) entry).getTimestamp()) {
@@ -141,12 +147,17 @@ public class MainApp extends Application {
                         else if (entry instanceof TemporaryBasal) temporaryBasalsChanged = true;
                         else if (entry instanceof ExtendedBolus) extendedBolusesChanged = true;
                         else if (entry instanceof TemporaryTarget) temporaryTargetChanged = true;
+                        else if (entry instanceof Bolus
+                                || entry instanceof Carbs
+                                || entry instanceof BolusCalculatorResult
+                                || entry instanceof MealLink) treatmentsChanged = true;
                     }
                     if (earliestDataChange != null) DatabaseHelper.updateEarliestDataChange(earliestDataChange);
                     if (glucoseValuesChanged) DatabaseHelper.scheduleBgChange();
                     if (temporaryBasalsChanged) DatabaseHelper.scheduleTemporaryBasalChange();
                     if (extendedBolusesChanged) DatabaseHelper.scheduleExtendedBolusChange();
                     if (temporaryTargetChanged) DatabaseHelper.scheduleTemporaryTargetChange();
+                    if (treatmentsChanged) TreatmentService.scheduleTreatmentChange(null);
                 });
         log.debug("onCreate");
         sInstance = this;

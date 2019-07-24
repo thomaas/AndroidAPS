@@ -21,6 +21,7 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.Bolus;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
 import info.nightscout.androidaps.database.entities.TotalDailyDose;
@@ -746,7 +747,7 @@ public class ActionStringHandler {
                 }
             });
         } else {
-            BlockingAppRepository.INSTANCE.runTransaction(new MealBolusTransaction(System.currentTimeMillis(), detailedBolusInfo.insulin, detailedBolusInfo.carbs, false, 0, null));
+            BlockingAppRepository.INSTANCE.runTransaction(new MealBolusTransaction(System.currentTimeMillis(), detailedBolusInfo.insulin, detailedBolusInfo.carbs, Bolus.Type.NORMAL, 0, null));
         }
     }
 

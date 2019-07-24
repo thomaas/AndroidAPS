@@ -15,7 +15,7 @@ class InsightMealBolusTransaction(
         val insulin: Double,
         val carbs: Double,
         bolusId: Int,
-        val smb: Boolean,
+        val type: Bolus.Type,
         val bolusCalculatorResult: MealBolusTransaction.BolusCalculatorResult?
 ) : Transaction<Unit>() {
 
@@ -28,7 +28,7 @@ class InsightMealBolusTransaction(
                 timestamp = timestamp,
                 utcOffset = utcOffset,
                 amount = insulin,
-                type = if (smb) Bolus.Type.SMB else Bolus.Type.NORMAL,
+                type = type,
                 basalInsulin = false
         ).apply {
             interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
@@ -38,6 +38,7 @@ class InsightMealBolusTransaction(
         })
         val bolusCalculatorResultDBId = if (bolusCalculatorResult != null) {
             entries += 1
+
             AppRepository.database.bolusCalculatorResultDao.insertNewEntry(info.nightscout.androidaps.database.entities.BolusCalculatorResult(
                     timestamp = timestamp,
                     utcOffset = utcOffset,
@@ -60,7 +61,13 @@ class InsightMealBolusTransaction(
                     carbsUsed = bolusCalculatorResult.carbsUsed,
                     carbsInsulin = bolusCalculatorResult.carbsInsulin,
                     otherCorrection = bolusCalculatorResult.otherCorrection,
-                    totalInsulin = bolusCalculatorResult.totalInsulin
+                    superbolusUsed = bolusCalculatorResult.superbolusUsed,
+                    superbolusInsulin = bolusCalculatorResult.superbolusInsulin,
+                    tempTargetUsed = bolusCalculatorResult.tempTargetUsed,
+                    totalInsulin = bolusCalculatorResult.totalInsulin,
+                    cob = bolusCalculatorResult.cob,
+                    cobUsed = bolusCalculatorResult.cobUsed,
+                    cobInsulin = bolusCalculatorResult.cobInsulin
             ).apply {
                 changes.add(this)
             })

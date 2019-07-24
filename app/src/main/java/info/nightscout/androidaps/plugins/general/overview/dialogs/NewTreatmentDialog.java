@@ -28,6 +28,7 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.Bolus;
 import info.nightscout.androidaps.database.transactions.MealBolusTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.Source;
@@ -191,7 +192,7 @@ public class NewTreatmentDialog extends DialogFragment implements OnClickListene
                                             }
                                         });
                                     } else {
-                                        BlockingAppRepository.INSTANCE.runTransaction(new MealBolusTransaction(System.currentTimeMillis(), finalInsulinAfterConstraints, finalCarbsAfterConstraints, false, 0, null));
+                                        BlockingAppRepository.INSTANCE.runTransaction(new MealBolusTransaction(System.currentTimeMillis(), finalInsulinAfterConstraints, finalCarbsAfterConstraints, Bolus.Type.NORMAL, 0, null));
                                     }
                                 }
                             }

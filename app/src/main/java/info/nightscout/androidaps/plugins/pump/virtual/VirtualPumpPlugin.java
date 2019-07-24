@@ -19,6 +19,7 @@ import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.Bolus;
 import info.nightscout.androidaps.database.transactions.CancelExtendedBolusTransaction;
 import info.nightscout.androidaps.database.transactions.CancelTemporaryBasalTransaction;
 import info.nightscout.androidaps.database.transactions.InsertExtendedBolusTransaction;
@@ -285,8 +286,12 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
             log.debug("Delivering treatment insulin: " + detailedBolusInfo.insulin + "U carbs: " + detailedBolusInfo.carbs + "g " + result);
         MainApp.bus().post(new EventVirtualPumpUpdateGui());
         lastDataTime = System.currentTimeMillis();
+        Bolus.Type type;
+        if (!detailedBolusInfo.isValid) type = Bolus.Type.PRIMING;
+        else if (detailedBolusInfo.isSMB) type = Bolus.Type.SMB;
+        else type = Bolus.Type.NORMAL;
         BlockingAppRepository.INSTANCE.runTransaction(new MealBolusTransaction(System.currentTimeMillis(),
-                detailedBolusInfo.insulin, detailedBolusInfo.carbs, detailedBolusInfo.isSMB, 0, detailedBolusInfo.bolusCalculatorResult));
+                detailedBolusInfo.insulin, detailedBolusInfo.carbs, type, 0, detailedBolusInfo.bolusCalculatorResult));
         return result;
     }
 

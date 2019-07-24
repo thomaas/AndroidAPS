@@ -1,6 +1,7 @@
 package info.nightscout.androidaps.utils
 
 import info.nightscout.androidaps.database.BlockingAppRepository
+import info.nightscout.androidaps.database.entities.Bolus
 import info.nightscout.androidaps.database.entities.TherapyEvent
 import info.nightscout.androidaps.database.transactions.CancelTemporaryBasalTransaction
 import info.nightscout.androidaps.database.transactions.InsertTemporaryBasalAndCancelCurrentTransaction
@@ -62,7 +63,7 @@ fun saveCareportalJSON(json: JSONObject) {
                 val insulin = json.getDouble("insulin")
                 if (insulin != 0.0) {
                     BlockingAppRepository.runTransaction(MealBolusTransaction(timestamp,
-                            insulin, 0.0, false))
+                            insulin, 0.0, Bolus.Type.NORMAL))
                 }
             }
         }
@@ -71,7 +72,7 @@ fun saveCareportalJSON(json: JSONObject) {
                 val carbs = json.getDouble("carbs")
                 if (carbs != 0.0) {
                     BlockingAppRepository.runTransaction(MealBolusTransaction(timestamp,
-                            0.0, carbs, false))
+                            0.0, carbs, Bolus.Type.NORMAL))
                 }
             }
         }
@@ -93,7 +94,7 @@ fun saveCareportalJSON(json: JSONObject) {
             }
             if (!(carbs == 0.0 && insulin == 0.0)) {
                 BlockingAppRepository.runTransaction(MealBolusTransaction(timestamp,
-                        insulin, carbs, false, carbTime))
+                        insulin, carbs, Bolus.Type.NORMAL, carbTime))
             }
         }
         CareportalEvent.TEMPBASAL -> {

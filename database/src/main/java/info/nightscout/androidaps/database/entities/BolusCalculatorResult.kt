@@ -38,9 +38,15 @@ data class BolusCalculatorResult(
         var glucoseTrend: Double,
         var trendUsed: Boolean,
         var trendInsulin: Double,
+        var cob: Double,
+        var cobUsed: Boolean,
+        var cobInsulin: Double,
         var carbs: Double,
         var carbsUsed: Boolean,
         var carbsInsulin: Double,
         var otherCorrection: Double,
+        var superbolusUsed: Boolean,
+        var superbolusInsulin: Double,
+        var tempTargetUsed: Boolean,
         var totalInsulin: Double
 ) : DBEntry, DBEntryWithTime

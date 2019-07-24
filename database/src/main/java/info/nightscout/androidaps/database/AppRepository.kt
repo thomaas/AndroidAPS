@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import info.nightscout.androidaps.database.entities.*
 import info.nightscout.androidaps.database.interfaces.DBEntry
+import info.nightscout.androidaps.database.transactions.MergedBolus
 import info.nightscout.androidaps.database.transactions.Transaction
 import io.reactivex.*
 import io.reactivex.schedulers.Schedulers
@@ -58,4 +59,63 @@ object AppRepository {
     fun getTemporaryTargetsInTimeRange(start: Long, end: Long): Flowable<List<TemporaryTarget>> = database.temporaryTargetDao.getTemporaryTargetsInTimeRange(start, end).subscribeOn(Schedulers.io())
 
     fun getTotalDailyDoses(amount: Int): Single<List<TotalDailyDose>> = database.totalDailyDoseDao.getTotalDailyDoses(amount)
+
+    fun getMergedBolusData(start: Long, end: Long) = Single.fromCallable {
+        val boluses = database.bolusDao.getBolusesInTimeRange(start, end)
+        val carbs = database.carbsDao.getCarbsInTimeRange(start, end).toMutableList()
+        val mergedBoluses = mutableListOf<MergedBolus>()
+        boluses.forEach {
+            val mealLink = database.mealLinkDao.findByBolusId(it.id)
+            if (mealLink != null) {
+                var carbEntry = mealLink.carbsId?.run { carbs.find { it.id == this } ?: AppRepository.database.carbsDao.findById(this) }
+                if (carbEntry != null) {
+                    carbs.remove(carbEntry)
+                    if (carbEntry.timestamp != it.timestamp) {
+                        mergedBoluses.add(MergedBolus(
+                                null,
+                                null,
+                                carbEntry,
+                                null
+                        ))
+                        carbEntry = null
+                    }
+                }
+                val bolusCalculatorResult = mealLink.bolusCalcResultId?.run { AppRepository.database.bolusCalculatorResultDao.findById(this) }
+                mergedBoluses.add(MergedBolus(
+                        mealLink,
+                        it,
+                        carbEntry,
+                        bolusCalculatorResult
+                ))
+            } else {
+                mergedBoluses.add(MergedBolus(
+                        null,
+                        it,
+                        null,
+                        null
+                ))
+            }
+        }
+        carbs.forEach {
+            val mealLink = database.mealLinkDao.findByCarbsId(it.id)
+            if (mealLink != null) {
+                val bolus = mealLink.bolusId?.run { AppRepository.database.bolusDao.findById(this) }
+                val bolusCalculatorResult = mealLink.bolusCalcResultId?.run { AppRepository.database.bolusCalculatorResultDao.findById(this) }
+                mergedBoluses.add(MergedBolus(
+                        mealLink,
+                        bolus,
+                        it,
+                        bolusCalculatorResult
+                ))
+            } else {
+                mergedBoluses.add(MergedBolus(
+                        null,
+                        null,
+                        it,
+                        null
+                ))
+            }
+        }
+        mergedBoluses
+    }.subscribeOn(Schedulers.io())
 }

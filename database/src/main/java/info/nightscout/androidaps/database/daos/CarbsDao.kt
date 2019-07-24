@@ -14,4 +14,7 @@ abstract class CarbsDao : BaseDao<Carbs>() {
 
     @Query("DELETE FROM $TABLE_CARBS")
     abstract override fun deleteAllEntries()
+
+    @Query("SELECT * FROM $TABLE_CARBS WHERE timestamp >= :start AND timestamp <= :end AND referenceId IS NULL AND valid = 1 ORDER BY timestamp ASC")
+    abstract fun getCarbsInTimeRange(start: Long, end: Long): List<Carbs>
 }

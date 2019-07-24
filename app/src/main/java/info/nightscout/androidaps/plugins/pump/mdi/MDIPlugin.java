@@ -14,6 +14,7 @@ import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.Bolus;
 import info.nightscout.androidaps.database.transactions.MealBolusTransaction;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginDescription;
@@ -155,7 +156,11 @@ public class MDIPlugin extends PluginBase implements PumpInterface {
         result.bolusDelivered = detailedBolusInfo.insulin;
         result.carbsDelivered = detailedBolusInfo.carbs;
         result.comment = MainApp.gs(R.string.virtualpump_resultok);
-        BlockingAppRepository.INSTANCE.runTransaction(new MealBolusTransaction(System.currentTimeMillis(), detailedBolusInfo.insulin, detailedBolusInfo.carbs, false, 0, detailedBolusInfo.bolusCalculatorResult));
+        Bolus.Type type;
+        if (!detailedBolusInfo.isValid) type = Bolus.Type.PRIMING;
+        else if (detailedBolusInfo.isSMB) type = Bolus.Type.SMB;
+        else type = Bolus.Type.NORMAL;
+        BlockingAppRepository.INSTANCE.runTransaction(new MealBolusTransaction(System.currentTimeMillis(), detailedBolusInfo.insulin, detailedBolusInfo.carbs, type, 0, detailedBolusInfo.bolusCalculatorResult));
         return result;
     }
 

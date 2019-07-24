@@ -2,7 +2,6 @@ package info.nightscout.androidaps.database.transactions
 
 import info.nightscout.androidaps.database.AppRepository
 import info.nightscout.androidaps.database.entities.Bolus
-import info.nightscout.androidaps.database.entities.BolusCalculatorResult
 import info.nightscout.androidaps.database.entities.Carbs
 import info.nightscout.androidaps.database.entities.links.MealLink
 import java.util.*
@@ -11,7 +10,7 @@ class MealBolusTransaction(
         val timestamp: Long,
         val insulin: Double,
         val carbs: Double,
-        val smb: Boolean,
+        val type: Bolus.Type,
         val carbTime: Long = 0,
         val bolusCalculatorResult: BolusCalculatorResult? = null
 ) : Transaction<Unit>() {
@@ -25,7 +24,7 @@ class MealBolusTransaction(
                     timestamp = timestamp,
                     utcOffset = utcOffset,
                     amount = insulin,
-                    type = if (smb) Bolus.Type.SMB else Bolus.Type.NORMAL,
+                    type = type,
                     basalInsulin = false
             ).apply {
                 changes.add(this)
@@ -48,7 +47,7 @@ class MealBolusTransaction(
         }
         val bolusCalculatorResultDBId = if (bolusCalculatorResult != null) {
             entries += 1
-            AppRepository.database.bolusCalculatorResultDao.insertNewEntry(BolusCalculatorResult(
+            AppRepository.database.bolusCalculatorResultDao.insertNewEntry(info.nightscout.androidaps.database.entities.BolusCalculatorResult(
                     timestamp = timestamp,
                     utcOffset = utcOffset,
                     targetBGLow = bolusCalculatorResult.targetBGLow,
@@ -70,7 +69,13 @@ class MealBolusTransaction(
                     carbsUsed = bolusCalculatorResult.carbsUsed,
                     carbsInsulin = bolusCalculatorResult.carbsInsulin,
                     otherCorrection = bolusCalculatorResult.otherCorrection,
-                    totalInsulin = bolusCalculatorResult.totalInsulin
+                    superbolusUsed = bolusCalculatorResult.superbolusUsed,
+                    superbolusInsulin = bolusCalculatorResult.superbolusInsulin,
+                    tempTargetUsed = bolusCalculatorResult.tempTargetUsed,
+                    totalInsulin = bolusCalculatorResult.totalInsulin,
+                    cob = bolusCalculatorResult.cob,
+                    cobUsed = bolusCalculatorResult.cobUsed,
+                    cobInsulin = bolusCalculatorResult.cobInsulin
             ).apply {
                 changes.add(this)
             })
@@ -104,10 +109,16 @@ class MealBolusTransaction(
             var glucoseTrend: Double,
             var trendUsed: Boolean,
             var trendInsulin: Double,
+            var cob: Double,
+            var cobUsed: Boolean,
+            var cobInsulin: Double,
             var carbs: Double,
             var carbsUsed: Boolean,
             var carbsInsulin: Double,
             var otherCorrection: Double,
+            var superbolusUsed: Boolean,
+            var superbolusInsulin: Double,
+            var tempTargetUsed: Boolean,
             var totalInsulin: Double
     )
 }

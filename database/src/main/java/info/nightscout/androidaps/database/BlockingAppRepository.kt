@@ -1,6 +1,7 @@
 package info.nightscout.androidaps.database
 
 import info.nightscout.androidaps.database.entities.*
+import info.nightscout.androidaps.database.transactions.MergedBolus
 import info.nightscout.androidaps.database.transactions.Transaction
 
 @Deprecated(
@@ -28,4 +29,6 @@ object BlockingAppRepository {
     fun getTemporaryTargetsInTimeRange(start: Long, end: Long): List<TemporaryTarget> = AppRepository.getTemporaryTargetsInTimeRange(start, end).blockingFirst()
 
     fun getTotalDailyDoses(amount: Int): List<TotalDailyDose> = AppRepository.getTotalDailyDoses(amount).blockingGet()
+
+    fun getMergedBolusData(start: Long, end: Long): List<MergedBolus> = AppRepository.getMergedBolusData(start, end).blockingGet()
 }

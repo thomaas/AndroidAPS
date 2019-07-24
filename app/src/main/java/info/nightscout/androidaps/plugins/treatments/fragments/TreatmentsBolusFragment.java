@@ -6,17 +6,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
-import androidx.fragment.app.FragmentManager;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AlertDialog;
-import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.otto.Subscribe;
 
@@ -26,7 +27,9 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.Iob;
 import info.nightscout.androidaps.data.Profile;
-import info.nightscout.androidaps.db.Source;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.embedments.InterfaceIDs;
+import info.nightscout.androidaps.database.transactions.InvalidateMergedBolusTransaction;
 import info.nightscout.androidaps.events.EventTreatmentChange;
 import info.nightscout.androidaps.plugins.common.SubscriberFragment;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
@@ -80,8 +83,11 @@ public class TreatmentsBolusFragment extends SubscriberFragment implements View.
             Iob iob = t.iobCalc(System.currentTimeMillis(), profile.getDia());
             holder.iob.setText(DecimalFormatter.to2Decimal(iob.iobContrib) + " U");
             holder.mealOrCorrection.setText(t.isSMB ? "SMB" : t.mealBolus ? MainApp.gs(R.string.mealbolus) : MainApp.gs(R.string.correctionbous));
-            holder.ph.setVisibility(t.source == Source.PUMP ? View.VISIBLE : View.GONE);
-            holder.ns.setVisibility(NSUpload.isIdValid(t._id) ? View.VISIBLE : View.GONE);
+            InterfaceIDs interfaceIDs;
+            if (t.backing.getBolus() != null) interfaceIDs = t.backing.getBolus().getInterfaceIDs();
+            else interfaceIDs = t.backing.getCarbs().getInterfaceIDs();
+            holder.ph.setVisibility(interfaceIDs.getPumpType() != null ? View.VISIBLE : View.GONE);
+            holder.ns.setVisibility(interfaceIDs.getNightscoutId() != null ? View.VISIBLE : View.GONE);
             holder.invalid.setVisibility(t.isValid ? View.GONE : View.VISIBLE);
             if (iob.iobContrib != 0)
                 holder.iob.setTextColor(ContextCompat.getColor(MainApp.instance(), R.color.colorActive));
@@ -150,18 +156,7 @@ public class TreatmentsBolusFragment extends SubscriberFragment implements View.
                         builder.setMessage(MainApp.gs(R.string.removerecord) + "\n" + DateUtil.dateAndTimeString(treatment.date));
                         builder.setPositiveButton(MainApp.gs(R.string.ok), new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                final String _id = treatment._id;
-                                if (treatment.source == Source.PUMP) {
-                                    treatment.isValid = false;
-                                    TreatmentsPlugin.getPlugin().getService().update(treatment);
-                                } else {
-                                    if (NSUpload.isIdValid(_id)) {
-                                        NSUpload.removeCareportalEntryFromNS(_id);
-                                    } else {
-                                        UploadQueue.removeID("dbAdd", _id);
-                                    }
-                                    TreatmentsPlugin.getPlugin().getService().delete(treatment);
-                                }
+                                BlockingAppRepository.INSTANCE.runTransaction(new InvalidateMergedBolusTransaction(treatment.backing));
                                 updateGUI();
                             }
                         });
@@ -247,7 +242,7 @@ public class TreatmentsBolusFragment extends SubscriberFragment implements View.
                         } else {
                             UploadQueue.removeID("dbAdd", _id);
                         }
-                        TreatmentsPlugin.getPlugin().getService().delete(treatment);
+                        //TreatmentsPlugin.getPlugin().getService().delete(treatment);
                     }
                     updateGUI();
                 });

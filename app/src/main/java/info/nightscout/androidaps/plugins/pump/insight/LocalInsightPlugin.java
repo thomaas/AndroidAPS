@@ -28,6 +28,7 @@ import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.Bolus;
 import info.nightscout.androidaps.database.transactions.insight.InsightExtendedBolusTransaction;
 import info.nightscout.androidaps.database.transactions.insight.InsightMealBolusTransaction;
 import info.nightscout.androidaps.db.ExtendedBolus;
@@ -536,13 +537,17 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
                 bolusingEvent.percent = 0;
                 MainApp.bus().post(bolusingEvent);
                 int trials = 0;
+                Bolus.Type type;
+                if (!detailedBolusInfo.isValid) type = Bolus.Type.PRIMING;
+                else if (detailedBolusInfo.isSMB) type = Bolus.Type.SMB;
+                else type = Bolus.Type.NORMAL;
                 BlockingAppRepository.INSTANCE.runTransaction(new InsightMealBolusTransaction(
                         connectionService.getPumpSystemIdentification().getSerialNumber(),
                         System.currentTimeMillis(),
                         insulin,
                         detailedBolusInfo.carbs,
                         bolusID,
-                        detailedBolusInfo.isSMB,
+                        type,
                         detailedBolusInfo.bolusCalculatorResult
                 ));
                 while (true) {

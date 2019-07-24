@@ -9,6 +9,7 @@ import info.nightscout.androidaps.R
 import info.nightscout.androidaps.data.DetailedBolusInfo
 import info.nightscout.androidaps.data.Profile
 import info.nightscout.androidaps.database.BlockingAppRepository
+import info.nightscout.androidaps.database.entities.Bolus
 import info.nightscout.androidaps.database.transactions.MealBolusTransaction
 import info.nightscout.androidaps.db.CareportalEvent
 import info.nightscout.androidaps.db.Source
@@ -214,10 +215,16 @@ class BolusWizard @JvmOverloads constructor(val profile: Profile,
             trend,
             useTrend,
             insulinFromTrend,
+            cob,
+            useCob,
+            insulinFromCOB,
             carbs.toDouble(),
             true,
             insulinFromCarbs,
             correction,
+            useSuperBolus,
+            insulinFromSuperBolus,
+            useTT,
             calculatedTotalInsulin
     )
 
@@ -358,7 +365,7 @@ class BolusWizard @JvmOverloads constructor(val profile: Profile,
                                 }
                             })
                         } else {
-                            BlockingAppRepository.runTransaction(MealBolusTransaction(System.currentTimeMillis(), insulinAfterConstraints, carbs.toDouble(), false, 0, getBolusCalculatorResult()))
+                            BlockingAppRepository.runTransaction(MealBolusTransaction(System.currentTimeMillis(), insulinAfterConstraints, carbs.toDouble(), Bolus.Type.NORMAL, 0, getBolusCalculatorResult()))
                         }
                     }
                 }

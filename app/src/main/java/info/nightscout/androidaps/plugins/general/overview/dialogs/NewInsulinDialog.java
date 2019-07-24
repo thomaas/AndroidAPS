@@ -36,6 +36,7 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.entities.Bolus;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
 import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetAndCancelCurrentTransaction;
 import info.nightscout.androidaps.database.transactions.MealBolusTransaction;
@@ -288,7 +289,7 @@ public class NewInsulinDialog extends DialogFragment implements OnClickListener 
                             detailedBolusInfo.source = Source.USER;
                             detailedBolusInfo.notes = notes;
                             if (recordOnlyCheckbox.isChecked()) {
-                                BlockingAppRepository.INSTANCE.runTransaction(new MealBolusTransaction(time, finalInsulinAfterConstraints, 0, false, 0, null));
+                                BlockingAppRepository.INSTANCE.runTransaction(new MealBolusTransaction(time, finalInsulinAfterConstraints, 0, Bolus.Type.NORMAL, 0, null));
                             } else {
                                 detailedBolusInfo.date = now();
                                 ConfigBuilderPlugin.getPlugin().getCommandQueue().bolus(detailedBolusInfo, new Callback() {
