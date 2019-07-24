@@ -26,6 +26,7 @@ import info.nightscout.androidaps.database.entities.TemporaryTarget;
 import info.nightscout.androidaps.database.entities.TotalDailyDose;
 import info.nightscout.androidaps.database.transactions.CancelTemporaryTargetTransaction;
 import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetAndCancelCurrentTransaction;
+import info.nightscout.androidaps.database.transactions.MealBolusTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.ProfileSwitch;
 import info.nightscout.androidaps.db.Source;
@@ -745,7 +746,7 @@ public class ActionStringHandler {
                 }
             });
         } else {
-            TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false);
+            BlockingAppRepository.INSTANCE.runTransaction(new MealBolusTransaction(System.currentTimeMillis(), detailedBolusInfo.insulin, detailedBolusInfo.carbs, false, 0, null));
         }
     }
 

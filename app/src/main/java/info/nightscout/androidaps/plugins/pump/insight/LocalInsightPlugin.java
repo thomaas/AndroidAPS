@@ -542,7 +542,8 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
                         insulin,
                         detailedBolusInfo.carbs,
                         bolusID,
-                        detailedBolusInfo.isSMB
+                        detailedBolusInfo.isSMB,
+                        detailedBolusInfo.bolusCalculatorResult
                 ));
                 while (true) {
                     synchronized ($bolusLock) {

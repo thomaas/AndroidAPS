@@ -8,6 +8,8 @@ import info.nightscout.androidaps.MainApp
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.data.DetailedBolusInfo
 import info.nightscout.androidaps.data.Profile
+import info.nightscout.androidaps.database.BlockingAppRepository
+import info.nightscout.androidaps.database.transactions.MealBolusTransaction
 import info.nightscout.androidaps.db.CareportalEvent
 import info.nightscout.androidaps.db.Source
 import info.nightscout.androidaps.db.TempTarget
@@ -196,6 +198,29 @@ class BolusWizard @JvmOverloads constructor(val profile: Profile,
         log.debug(this.toString())
     }
 
+    fun getBolusCalculatorResult() = MealBolusTransaction.BolusCalculatorResult(
+        targetBGLow,
+            targetBGHigh,
+            sens,
+            ic,
+            insulinFromBolusIOB,
+            includeBolusIOB,
+            insulinFromBasalsIOB,
+            includeBasalIOB,
+            bg,
+            useBg,
+            bgDiff,
+            insulinFromCorrection,
+            trend,
+            useTrend,
+            insulinFromTrend,
+            carbs.toDouble(),
+            true,
+            insulinFromCarbs,
+            correction,
+            calculatedTotalInsulin
+    )
+
     fun nsJSON(): JSONObject {
         val boluscalcJSON = JSONObject()
         try {
@@ -318,6 +343,7 @@ class BolusWizard @JvmOverloads constructor(val profile: Profile,
                         detailedBolusInfo.boluscalc = nsJSON()
                         detailedBolusInfo.source = Source.USER
                         detailedBolusInfo.notes = notes
+                        detailedBolusInfo.bolusCalculatorResult = getBolusCalculatorResult()
                         if (detailedBolusInfo.insulin > 0 || ConfigBuilderPlugin.getPlugin().activePump.pumpDescription.storesCarbInfo) {
                             ConfigBuilderPlugin.getPlugin().commandQueue.bolus(detailedBolusInfo, object : Callback() {
                                 override fun run() {
@@ -332,7 +358,7 @@ class BolusWizard @JvmOverloads constructor(val profile: Profile,
                                 }
                             })
                         } else {
-                            TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false)
+                            BlockingAppRepository.runTransaction(MealBolusTransaction(System.currentTimeMillis(), insulinAfterConstraints, carbs.toDouble(), false, 0, getBolusCalculatorResult()))
                         }
                     }
                 }

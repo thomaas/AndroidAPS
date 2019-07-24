@@ -1,44 +1,54 @@
-package info.nightscout.androidaps.database.transactions.insight
+package info.nightscout.androidaps.database.transactions
 
 import info.nightscout.androidaps.database.AppRepository
-import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.Bolus
+import info.nightscout.androidaps.database.entities.BolusCalculatorResult
 import info.nightscout.androidaps.database.entities.Carbs
 import info.nightscout.androidaps.database.entities.links.MealLink
-import info.nightscout.androidaps.database.transactions.MealBolusTransaction
-import info.nightscout.androidaps.database.transactions.Transaction
 import java.util.*
 
-class InsightMealBolusTransaction(
-        val pumpSerial: String,
+class MealBolusTransaction(
         val timestamp: Long,
         val insulin: Double,
         val carbs: Double,
-        bolusId: Int,
         val smb: Boolean,
-        val bolusCalculatorResult: MealBolusTransaction.BolusCalculatorResult?
+        val carbTime: Long = 0,
+        val bolusCalculatorResult: BolusCalculatorResult? = null
 ) : Transaction<Unit>() {
 
-    val bolusId = bolusId.toLong()
-
     override fun run() {
+        var entries = 0
         val utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong()
-        var entries = 1
-        val bolusDBId = AppRepository.database.bolusDao.insertNewEntry(Bolus(
-                timestamp = timestamp,
-                utcOffset = utcOffset,
-                amount = insulin,
-                type = if (smb) Bolus.Type.SMB else Bolus.Type.NORMAL,
-                basalInsulin = false
-        ).apply {
-            interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
-            interfaceIDs.pumpSerial = pumpSerial
-            interfaceIDs.pumpId = bolusId
-            changes.add(this)
-        })
+        val bolusDBId = if (insulin > 0) {
+            entries += 1
+            AppRepository.database.bolusDao.insertNewEntry(Bolus(
+                    timestamp = timestamp,
+                    utcOffset = utcOffset,
+                    amount = insulin,
+                    type = if (smb) Bolus.Type.SMB else Bolus.Type.NORMAL,
+                    basalInsulin = false
+            ).apply {
+                changes.add(this)
+            })
+        } else {
+            null
+        }
+        val carbsDBId = if (carbs > 0) {
+            entries += 1
+            AppRepository.database.carbsDao.insertNewEntry(Carbs(
+                    timestamp = timestamp + carbTime,
+                    utcOffset = utcOffset,
+                    amount = carbs,
+                    duration = 0
+            ).apply {
+                changes.add(this)
+            })
+        } else {
+            null
+        }
         val bolusCalculatorResultDBId = if (bolusCalculatorResult != null) {
             entries += 1
-            AppRepository.database.bolusCalculatorResultDao.insertNewEntry(info.nightscout.androidaps.database.entities.BolusCalculatorResult(
+            AppRepository.database.bolusCalculatorResultDao.insertNewEntry(BolusCalculatorResult(
                     timestamp = timestamp,
                     utcOffset = utcOffset,
                     targetBGLow = bolusCalculatorResult.targetBGLow,
@@ -67,19 +77,6 @@ class InsightMealBolusTransaction(
         } else {
             null
         }
-        val carbsDBId = if (carbs > 0) {
-            entries += 1
-            AppRepository.database.carbsDao.insertNewEntry(Carbs(
-                    timestamp = timestamp,
-                    utcOffset = utcOffset,
-                    amount = carbs,
-                    duration = 0
-            ).apply {
-                changes.add(this)
-            })
-        } else {
-            null
-        }
         if (entries > 1) {
             AppRepository.database.mealLinkDao.insertNewEntry(MealLink(
                     bolusId = bolusDBId,
@@ -90,4 +87,27 @@ class InsightMealBolusTransaction(
             })
         }
     }
+
+    data class BolusCalculatorResult(
+            var targetBGLow: Double,
+            var targetBGHigh: Double,
+            var isf: Double,
+            var ic: Double,
+            var bolusIOB: Double,
+            var bolusIOBUsed: Boolean,
+            var basalIOB: Double,
+            var basalIOBUsed: Boolean,
+            var glucoseValue: Double,
+            var glucoseUsed: Boolean,
+            var glucoseDifference: Double,
+            var glucoseInsulin: Double,
+            var glucoseTrend: Double,
+            var trendUsed: Boolean,
+            var trendInsulin: Double,
+            var carbs: Double,
+            var carbsUsed: Boolean,
+            var carbsInsulin: Double,
+            var otherCorrection: Double,
+            var totalInsulin: Double
+    )
 }

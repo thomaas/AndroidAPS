@@ -4,6 +4,7 @@ import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.TherapyEvent
 import info.nightscout.androidaps.database.transactions.CancelTemporaryBasalTransaction
 import info.nightscout.androidaps.database.transactions.InsertTemporaryBasalAndCancelCurrentTransaction
+import info.nightscout.androidaps.database.transactions.MealBolusTransaction
 import info.nightscout.androidaps.database.transactions.TherapyEventTransaction
 import info.nightscout.androidaps.db.CareportalEvent
 import org.json.JSONObject
@@ -54,6 +55,45 @@ fun saveCareportalJSON(json: JSONObject) {
             if (json.has("duration")) {
                 val jsonDuration = json.getDouble("duration")
                 duration = (jsonDuration * 60000).toLong()
+            }
+        }
+        CareportalEvent.CORRECTIONBOLUS -> {
+            if (json.has("insulin")) {
+                val insulin = json.getDouble("insulin")
+                if (insulin != 0.0) {
+                    BlockingAppRepository.runTransaction(MealBolusTransaction(timestamp,
+                            insulin, 0.0, false))
+                }
+            }
+        }
+        CareportalEvent.CARBCORRECTION -> {
+            if (json.has("carbs")) {
+                val carbs = json.getDouble("carbs")
+                if (carbs != 0.0) {
+                    BlockingAppRepository.runTransaction(MealBolusTransaction(timestamp,
+                            0.0, carbs, false))
+                }
+            }
+        }
+        CareportalEvent.MEALBOLUS, "Snack Bolus" -> {
+            val carbs = if (json.has("carbs")) {
+                json.getDouble("carbs")
+            } else {
+                0.0
+            }
+            val carbTime = if (json.has("preBolus")) {
+                (json.getDouble("preBolus") * 60000).toLong()
+            } else {
+                0L
+            }
+            val insulin = if (json.has("insulin")) {
+                json.getDouble("insulin")
+            } else {
+                0.0
+            }
+            if (!(carbs == 0.0 && insulin == 0.0)) {
+                BlockingAppRepository.runTransaction(MealBolusTransaction(timestamp,
+                        insulin, carbs, false, carbTime))
             }
         }
         CareportalEvent.TEMPBASAL -> {

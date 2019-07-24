@@ -38,13 +38,13 @@ import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
 import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetAndCancelCurrentTransaction;
+import info.nightscout.androidaps.database.transactions.MealBolusTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.interfaces.Constraint;
 import info.nightscout.androidaps.interfaces.PumpInterface;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
-import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.queue.Callback;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.DecimalFormatter;
@@ -288,8 +288,7 @@ public class NewInsulinDialog extends DialogFragment implements OnClickListener 
                             detailedBolusInfo.source = Source.USER;
                             detailedBolusInfo.notes = notes;
                             if (recordOnlyCheckbox.isChecked()) {
-                                detailedBolusInfo.date = time;
-                                TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false);
+                                BlockingAppRepository.INSTANCE.runTransaction(new MealBolusTransaction(time, finalInsulinAfterConstraints, 0, false, 0, null));
                             } else {
                                 detailedBolusInfo.date = now();
                                 ConfigBuilderPlugin.getPlugin().getCommandQueue().bolus(detailedBolusInfo, new Callback() {
