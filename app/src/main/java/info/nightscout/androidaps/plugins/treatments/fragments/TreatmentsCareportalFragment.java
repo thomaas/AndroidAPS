@@ -23,6 +23,8 @@ import java.util.List;
 
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
+import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.transactions.InvalidateTherapyEventTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.events.EventCareportalEventChange;
 import info.nightscout.androidaps.plugins.common.SubscriberFragment;
@@ -109,13 +111,7 @@ public class TreatmentsCareportalFragment extends SubscriberFragment implements 
                         builder.setTitle(MainApp.gs(R.string.confirmation));
                         builder.setMessage(MainApp.gs(R.string.removerecord) + "\n" + DateUtil.dateAndTimeString(careportalEvent.date));
                         builder.setPositiveButton(MainApp.gs(R.string.ok), (dialog, id) -> {
-                            final String _id = careportalEvent._id;
-                            if (NSUpload.isIdValid(_id)) {
-                                NSUpload.removeCareportalEntryFromNS(_id);
-                            } else {
-                                UploadQueue.removeID("dbAdd", _id);
-                            }
-                            MainApp.getDbHelper().delete(careportalEvent);
+                            BlockingAppRepository.INSTANCE.runTransaction(new InvalidateTherapyEventTransaction(careportalEvent.backing.getId()));
                         });
                         builder.setNegativeButton(MainApp.gs(R.string.cancel), null);
                         builder.show();
@@ -212,7 +208,7 @@ public class TreatmentsCareportalFragment extends SubscriberFragment implements 
                 } else {
                     UploadQueue.removeID("dbAdd", _id);
                 }
-                MainApp.getDbHelper().delete(careportalEvent);
+                //MainApp.getDbHelper().delete(careportalEvent);
             }
         }
     }

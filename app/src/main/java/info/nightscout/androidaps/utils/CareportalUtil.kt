@@ -51,6 +51,8 @@ fun saveCareportalJSON(json: JSONObject) {
             }
         }
         CareportalEvent.SITECHANGE -> type = TherapyEvent.Type.CANNULA_CHANGED
+        CareportalEvent.INSULINCHANGE -> type = TherapyEvent.Type.RESERVOIR_CHANGED
+        CareportalEvent.PUMPBATTERYCHANGE -> type = TherapyEvent.Type.BATTERY_CHANGED
         CareportalEvent.OPENAPSOFFLINE -> {
             type = TherapyEvent.Type.APS_OFFLINE
             if (json.has("duration")) {

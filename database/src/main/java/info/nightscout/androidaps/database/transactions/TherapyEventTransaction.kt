@@ -13,7 +13,7 @@ class TherapyEventTransaction(
 ) : Transaction<Unit>() {
     override fun run() {
         if (type == TherapyEvent.Type.ACTIVITY || type == TherapyEvent.Type.APS_OFFLINE) {
-            val currentlyActive = AppRepository.database.therapyEventDao.getTemporaryTargetActiveAt(type, timestamp)
+            val currentlyActive = AppRepository.database.therapyEventDao.getTherapyEventActiveAt(type, timestamp)
             if (currentlyActive != null) {
                 currentlyActive.duration = timestamp - currentlyActive.timestamp
                 AppRepository.database.therapyEventDao.updateExistingEntry(currentlyActive)

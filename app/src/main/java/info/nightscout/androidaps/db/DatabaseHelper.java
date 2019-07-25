@@ -29,6 +29,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import info.nightscout.androidaps.Constants;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.OverlappingIntervals;
@@ -36,6 +37,7 @@ import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.ProfileStore;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
+import info.nightscout.androidaps.database.entities.TherapyEvent;
 import info.nightscout.androidaps.events.EventCareportalEventChange;
 import info.nightscout.androidaps.events.EventExtendedBolusChange;
 import info.nightscout.androidaps.events.EventNewBG;
@@ -510,70 +512,85 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     // ------------ CareportalEvent handling ---------------
 
-    public void createOrUpdate(CareportalEvent careportalEvent) {
-        careportalEvent.date = careportalEvent.date - careportalEvent.date % 1000;
+    private CareportalEvent convertTherapyEvent(TherapyEvent therapyEvent) {
+        if (therapyEvent == null) return null;
         try {
-            getDaoCareportalEvents().createOrUpdate(careportalEvent);
-        } catch (SQLException e) {
+            CareportalEvent careportalEvent = new CareportalEvent();
+            careportalEvent.backing = therapyEvent;
+            careportalEvent.date = therapyEvent.getTimestamp();
+            JSONObject jsonObject = new JSONObject();
+            switch (therapyEvent.getType()) {
+                case FINGER_STICK_BG_VALUE:
+                    careportalEvent.eventType = CareportalEvent.BGCHECK;
+                    jsonObject.put("units", Constants.MGDL);
+                    jsonObject.put("glucose", therapyEvent.getAmount());
+                    break;
+                case ANNOUNCEMENT:
+                    careportalEvent.eventType = CareportalEvent.ANNOUNCEMENT;
+                    jsonObject.put("notes", therapyEvent.getNote());
+                    break;
+                case QUESTION:
+                    careportalEvent.eventType = CareportalEvent.QUESTION;
+                    jsonObject.put("notes", therapyEvent.getNote());
+                    break;
+                case NOTE:
+                    careportalEvent.eventType = CareportalEvent.NOTE;
+                    jsonObject.put("notes", therapyEvent.getNote());
+                    break;
+                case ACTIVITY:
+                    careportalEvent.eventType = CareportalEvent.EXERCISE;
+                    jsonObject.put("duration", Math.round(therapyEvent.getDuration() / 1000D));
+                    break;
+                case SENSOR_INSERTED:
+                    careportalEvent.eventType = CareportalEvent.SENSORCHANGE;
+                    break;
+                case CANNULA_CHANGED:
+                    careportalEvent.eventType = CareportalEvent.SITECHANGE;
+                    break;
+                case APS_OFFLINE:
+                    careportalEvent.eventType = CareportalEvent.OPENAPSOFFLINE;
+                    break;
+                case RESERVOIR_CHANGED:
+                    careportalEvent.eventType = CareportalEvent.INSULINCHANGE;
+                    break;
+                case BATTERY_CHANGED:
+                    careportalEvent.eventType = CareportalEvent.PUMPBATTERYCHANGE;
+                    break;
+            }
+            careportalEvent.json = jsonObject.toString();
+            return careportalEvent;
+        } catch (JSONException e) {
             log.error("Unhandled exception", e);
         }
-        scheduleCareportalEventChange();
+        return null;
     }
 
-    public void delete(CareportalEvent careportalEvent) {
-        try {
-            getDaoCareportalEvents().delete(careportalEvent);
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        scheduleCareportalEventChange();
-    }
-
-    public CareportalEvent getCareportalEventFromTimestamp(long timestamp) {
-        try {
-            return getDaoCareportalEvents().queryForId(timestamp);
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
+    private TherapyEvent.Type convertType(String type) {
+        switch (type) {
+            case CareportalEvent.INSULINCHANGE:
+                return TherapyEvent.Type.RESERVOIR_CHANGED;
+            case CareportalEvent.PUMPBATTERYCHANGE:
+                return TherapyEvent.Type.BATTERY_CHANGED;
+            case CareportalEvent.SITECHANGE:
+                return TherapyEvent.Type.CANNULA_CHANGED;
+            case CareportalEvent.SENSORCHANGE:
+                return TherapyEvent.Type.SENSOR_INSERTED;
         }
         return null;
     }
 
     @Nullable
     public CareportalEvent getLastCareportalEvent(String event) {
-        try {
-            List<CareportalEvent> careportalEvents;
-            QueryBuilder<CareportalEvent, Long> queryBuilder = getDaoCareportalEvents().queryBuilder();
-            queryBuilder.orderBy("date", false);
-            Where where = queryBuilder.where();
-            where.eq("eventType", event);
-            queryBuilder.limit(1L);
-            PreparedQuery<CareportalEvent> preparedQuery = queryBuilder.prepare();
-            careportalEvents = getDaoCareportalEvents().query(preparedQuery);
-            if (careportalEvents.size() == 1)
-                return careportalEvents.get(0);
-            else
-                return null;
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return null;
+        return convertTherapyEvent(BlockingAppRepository.INSTANCE.getLastTherapyEventByType(convertType(event)));
     }
 
     public List<CareportalEvent> getCareportalEventsFromTime(long mills, boolean ascending) {
-        try {
-            List<CareportalEvent> careportalEvents;
-            QueryBuilder<CareportalEvent, Long> queryBuilder = getDaoCareportalEvents().queryBuilder();
-            queryBuilder.orderBy("date", ascending);
-            Where where = queryBuilder.where();
-            where.ge("date", mills);
-            PreparedQuery<CareportalEvent> preparedQuery = queryBuilder.prepare();
-            careportalEvents = getDaoCareportalEvents().query(preparedQuery);
-            preprocessOpenAPSOfflineEvents(careportalEvents);
-            return careportalEvents;
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return new ArrayList<>();
+        List<CareportalEvent> converted = new ArrayList<>();
+        for (TherapyEvent therapyEvent : BlockingAppRepository.INSTANCE.getTherapyEventsInTimeRange(mills, Long.MAX_VALUE))
+            converted.add(convertTherapyEvent(therapyEvent));
+        if (!ascending) Collections.reverse(converted);
+        preprocessOpenAPSOfflineEvents(converted);
+        return converted;
     }
 
     public void preprocessOpenAPSOfflineEvents(List<CareportalEvent> list) {
@@ -587,94 +604,24 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     }
 
     public List<CareportalEvent> getCareportalEventsFromTime(long mills, String type, boolean ascending) {
-        try {
-            List<CareportalEvent> careportalEvents;
-            QueryBuilder<CareportalEvent, Long> queryBuilder = getDaoCareportalEvents().queryBuilder();
-            queryBuilder.orderBy("date", ascending);
-            Where where = queryBuilder.where();
-            where.ge("date", mills).and().eq("eventType", type);
-            PreparedQuery<CareportalEvent> preparedQuery = queryBuilder.prepare();
-            careportalEvents = getDaoCareportalEvents().query(preparedQuery);
-            preprocessOpenAPSOfflineEvents(careportalEvents);
-            return careportalEvents;
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return new ArrayList<>();
+        List<CareportalEvent> converted = new ArrayList<>();
+        for (TherapyEvent therapyEvent : BlockingAppRepository.INSTANCE.getTherapyEventsInTimeRange(convertType(type), mills, Long.MAX_VALUE))
+            converted.add(convertTherapyEvent(therapyEvent));
+        if (!ascending) Collections.reverse(converted);
+        preprocessOpenAPSOfflineEvents(converted);
+        return converted;
     }
 
     public List<CareportalEvent> getCareportalEvents(boolean ascending) {
-        try {
-            List<CareportalEvent> careportalEvents;
-            QueryBuilder<CareportalEvent, Long> queryBuilder = getDaoCareportalEvents().queryBuilder();
-            queryBuilder.orderBy("date", ascending);
-            PreparedQuery<CareportalEvent> preparedQuery = queryBuilder.prepare();
-            careportalEvents = getDaoCareportalEvents().query(preparedQuery);
-            preprocessOpenAPSOfflineEvents(careportalEvents);
-            return careportalEvents;
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return new ArrayList<>();
+        List<CareportalEvent> converted = new ArrayList<>();
+        for (TherapyEvent therapyEvent : BlockingAppRepository.INSTANCE.getAllTherapyEvents())
+            converted.add(convertTherapyEvent(therapyEvent));
+        if (!ascending) Collections.reverse(converted);
+        preprocessOpenAPSOfflineEvents(converted);
+        return converted;
     }
 
-    public void deleteCareportalEventById(String _id) {
-        try {
-            QueryBuilder<CareportalEvent, Long> queryBuilder;
-            queryBuilder = getDaoCareportalEvents().queryBuilder();
-            Where where = queryBuilder.where();
-            where.eq("_id", _id);
-            PreparedQuery<CareportalEvent> preparedQuery = queryBuilder.prepare();
-            List<CareportalEvent> list = getDaoCareportalEvents().query(preparedQuery);
-
-            if (list.size() == 1) {
-                CareportalEvent record = list.get(0);
-                if (L.isEnabled(L.DATABASE))
-                    log.debug("Removing CareportalEvent record from database: " + record.toString());
-                delete(record);
-            } else {
-                if (L.isEnabled(L.DATABASE))
-                    log.debug("CareportalEvent not found database: " + _id);
-            }
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-    }
-
-    public void createCareportalEventFromJsonIfNotExists(JSONObject trJson) {
-        try {
-            QueryBuilder<CareportalEvent, Long> queryBuilder;
-            queryBuilder = getDaoCareportalEvents().queryBuilder();
-            Where where = queryBuilder.where();
-            where.eq("_id", trJson.getString("_id")).or().eq("date", trJson.getLong("mills"));
-            PreparedQuery<CareportalEvent> preparedQuery = queryBuilder.prepare();
-            List<CareportalEvent> list = getDaoCareportalEvents().query(preparedQuery);
-            CareportalEvent careportalEvent;
-            if (list.size() == 0) {
-                careportalEvent = new CareportalEvent();
-                careportalEvent.source = Source.NIGHTSCOUT;
-                if (L.isEnabled(L.DATABASE))
-                    log.debug("Adding CareportalEvent record to database: " + trJson.toString());
-                // Record does not exists. add
-            } else if (list.size() == 1) {
-                careportalEvent = list.get(0);
-                if (L.isEnabled(L.DATABASE))
-                    log.debug("Updating CareportalEvent record in database: " + trJson.toString());
-            } else {
-                log.error("Something went wrong");
-                return;
-            }
-            careportalEvent.date = trJson.getLong("mills");
-            careportalEvent.eventType = trJson.getString("eventType");
-            careportalEvent.json = trJson.toString();
-            careportalEvent._id = trJson.getString("_id");
-            createOrUpdate(careportalEvent);
-        } catch (SQLException | JSONException e) {
-            log.error("Unhandled exception: " + trJson.toString(), e);
-        }
-    }
-
-    private static void scheduleCareportalEventChange() {
+    public static void scheduleCareportalEventChange() {
         class PostRunnable implements Runnable {
             public void run() {
                 if (L.isEnabled(L.DATABASE))

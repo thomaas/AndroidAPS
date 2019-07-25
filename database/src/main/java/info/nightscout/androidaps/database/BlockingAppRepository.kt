@@ -31,4 +31,12 @@ object BlockingAppRepository {
     fun getTotalDailyDoses(amount: Int): List<TotalDailyDose> = AppRepository.getTotalDailyDoses(amount).blockingGet()
 
     fun getMergedBolusData(start: Long, end: Long): List<MergedBolus> = AppRepository.getMergedBolusData(start, end).blockingGet()
+
+    fun getLastTherapyEventByType(type: TherapyEvent.Type): TherapyEvent? = AppRepository.getLastTherapyEventByType(type).blockingGet()
+
+    fun getTherapyEventsInTimeRange(start: Long, end: Long): List<TherapyEvent> = AppRepository.getTherapyEventsInTimeRange(start, end).blockingFirst()
+
+    fun getTherapyEventsInTimeRange(type: TherapyEvent.Type, start: Long, end: Long): List<TherapyEvent> = AppRepository.getTherapyEventsInTimeRange(type, start, end).blockingFirst()
+
+    fun getAllTherapyEvents(): List<TherapyEvent> = AppRepository.getAllTherapyEvents().blockingFirst()
 }

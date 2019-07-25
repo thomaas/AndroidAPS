@@ -60,6 +60,14 @@ object AppRepository {
 
     fun getTotalDailyDoses(amount: Int): Single<List<TotalDailyDose>> = database.totalDailyDoseDao.getTotalDailyDoses(amount)
 
+    fun getLastTherapyEventByType(type: TherapyEvent.Type): Maybe<TherapyEvent> = database.therapyEventDao.getLastTherapyEventByType(type).subscribeOn(Schedulers.io())
+
+    fun getTherapyEventsInTimeRange(start: Long, end: Long): Flowable<List<TherapyEvent>> = database.therapyEventDao.getTherapyEventsInTimeRange(start, end).subscribeOn(Schedulers.io())
+
+    fun getTherapyEventsInTimeRange(type: TherapyEvent.Type, start: Long, end: Long): Flowable<List<TherapyEvent>> = database.therapyEventDao.getTherapyEventsInTimeRange(type, start, end).subscribeOn(Schedulers.io())
+
+    fun getAllTherapyEvents(): Flowable<List<TherapyEvent>> = database.therapyEventDao.getAllTherapyEvents().subscribeOn(Schedulers.io())
+
     fun getMergedBolusData(start: Long, end: Long) = Single.fromCallable {
         val boluses = database.bolusDao.getBolusesInTimeRange(start, end)
         val carbs = database.carbsDao.getCarbsInTimeRange(start, end).toMutableList()

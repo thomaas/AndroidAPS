@@ -33,6 +33,7 @@ import info.nightscout.androidaps.database.entities.ExtendedBolus;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.database.entities.TemporaryBasal;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
+import info.nightscout.androidaps.database.entities.TherapyEvent;
 import info.nightscout.androidaps.database.entities.links.MealLink;
 import info.nightscout.androidaps.database.interfaces.DBEntry;
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTime;
@@ -137,6 +138,7 @@ public class MainApp extends Application {
                     boolean extendedBolusesChanged = false;
                     boolean temporaryTargetChanged = false;
                     boolean treatmentsChanged = false;
+                    boolean therapyEventsChanged = false;
                     for (DBEntry entry : changes) {
                         if (entry instanceof DBEntryWithTime) {
                             if (earliestDataChange == null || earliestDataChange < ((DBEntryWithTime) entry).getTimestamp()) {
@@ -151,6 +153,7 @@ public class MainApp extends Application {
                                 || entry instanceof Carbs
                                 || entry instanceof BolusCalculatorResult
                                 || entry instanceof MealLink) treatmentsChanged = true;
+                        else if (entry instanceof TherapyEvent) therapyEventsChanged = true;
                     }
                     if (earliestDataChange != null) DatabaseHelper.updateEarliestDataChange(earliestDataChange);
                     if (glucoseValuesChanged) DatabaseHelper.scheduleBgChange();
@@ -158,6 +161,7 @@ public class MainApp extends Application {
                     if (extendedBolusesChanged) DatabaseHelper.scheduleExtendedBolusChange();
                     if (temporaryTargetChanged) DatabaseHelper.scheduleTemporaryTargetChange();
                     if (treatmentsChanged) TreatmentService.scheduleTreatmentChange(null);
+                    if (therapyEventsChanged) DatabaseHelper.scheduleCareportalEventChange();
                 });
         log.debug("onCreate");
         sInstance = this;

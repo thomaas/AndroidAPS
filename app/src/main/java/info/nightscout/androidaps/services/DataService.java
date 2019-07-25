@@ -204,7 +204,7 @@ public class DataService extends IntentService {
         //MainApp.getDbHelper().deleteTempTargetById(_id);
         //MainApp.getDbHelper().deleteTempBasalById(_id);
         //MainApp.getDbHelper().deleteExtendedBolusById(_id);
-        MainApp.getDbHelper().deleteCareportalEventById(_id);
+        //MainApp.getDbHelper().deleteCareportalEventById(_id);
         MainApp.getDbHelper().deleteProfileSwitchById(_id);
     }
 
@@ -243,7 +243,7 @@ public class DataService extends IntentService {
                 eventType.equals(CareportalEvent.EXERCISE) ||
                 eventType.equals(CareportalEvent.OPENAPSOFFLINE) ||
                 eventType.equals(CareportalEvent.PUMPBATTERYCHANGE)) {
-            MainApp.getDbHelper().createCareportalEventFromJsonIfNotExists(json);
+            //MainApp.getDbHelper().createCareportalEventFromJsonIfNotExists(json);
         }
 
         if (eventType.equals(CareportalEvent.ANNOUNCEMENT)) {
@@ -262,7 +262,7 @@ public class DataService extends IntentService {
     private void storeMbg(JSONObject mbgJson) {
         NSMbg nsMbg = new NSMbg(mbgJson);
         CareportalEvent careportalEvent = new CareportalEvent(nsMbg);
-        MainApp.getDbHelper().createOrUpdate(careportalEvent);
+        //MainApp.getDbHelper().createOrUpdate(careportalEvent);
         if (L.isEnabled(L.DATASERVICE))
             log.debug("Adding/Updating new MBG: " + careportalEvent.toString());
     }
