@@ -6,7 +6,7 @@ import java.util.*
 
 class InsertExtendedBolusTransaction(val timestamp: Long, val duration: Long, val amount: Double) : Transaction<Unit>() {
     override fun run() {
-        AppRepository.database.extendedBolusDao.insertNewEntry(ExtendedBolus(
+        database.extendedBolusDao.insertNewEntry(ExtendedBolus(
                 timestamp = timestamp,
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                 amount = amount,

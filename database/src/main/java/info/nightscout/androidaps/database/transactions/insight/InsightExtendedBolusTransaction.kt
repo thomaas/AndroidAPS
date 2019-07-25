@@ -18,7 +18,7 @@ class InsightExtendedBolusTransaction(
     val bolusId = bolusId.toLong()
 
     override fun run() {
-        AppRepository.database.extendedBolusDao.insertNewEntry(ExtendedBolus(
+        database.extendedBolusDao.insertNewEntry(ExtendedBolus(
                 timestamp = timestamp,
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                 amount = amount,

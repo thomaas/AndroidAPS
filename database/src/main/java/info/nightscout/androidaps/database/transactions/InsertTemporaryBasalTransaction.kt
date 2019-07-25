@@ -6,7 +6,7 @@ import java.util.*
 
 class InsertTemporaryBasalTransaction(val timestamp: Long, val duration: Long, val absolute: Boolean, val rate: Double) : Transaction<Unit>() {
     override fun run() {
-        AppRepository.database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
+        database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
                 timestamp = timestamp,
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                 type = TemporaryBasal.Type.NORMAL,

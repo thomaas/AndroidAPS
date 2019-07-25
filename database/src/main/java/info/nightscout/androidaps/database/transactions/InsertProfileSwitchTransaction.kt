@@ -23,7 +23,7 @@ class InsertProfileSwitchTransaction(
         var duration: Long
 ) : Transaction<Unit>() {
     override fun run() {
-        AppRepository.database.profileSwitchDao.insertNewEntry(ProfileSwitch(
+        database.profileSwitchDao.insertNewEntry(ProfileSwitch(
                 timestamp = timestamp,
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                 glucoseUnit = glucoseUnit,

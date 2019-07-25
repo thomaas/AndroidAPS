@@ -11,13 +11,13 @@ class InsertTemporaryTargetAndCancelCurrentTransaction(
         val target: Double
 ) : Transaction<Unit>() {
     override fun run() {
-        val currentlyActive = AppRepository.database.temporaryTargetDao.getTemporaryTargetActiveAt(timestamp)
+        val currentlyActive = database.temporaryTargetDao.getTemporaryTargetActiveAt(timestamp)
         if (currentlyActive != null) {
             currentlyActive.duration = timestamp - currentlyActive.timestamp
-            AppRepository.database.temporaryTargetDao.updateExistingEntry(currentlyActive)
+            database.temporaryTargetDao.updateExistingEntry(currentlyActive)
             changes.add(currentlyActive)
         }
-        AppRepository.database.temporaryTargetDao.insertNewEntry(TemporaryTarget(
+        database.temporaryTargetDao.insertNewEntry(TemporaryTarget(
                 timestamp = timestamp,
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                 reason = reason,

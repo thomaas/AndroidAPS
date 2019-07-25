@@ -24,7 +24,7 @@ class InsightMealBolusTransaction(
     override fun run() {
         val utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong()
         var entries = 1
-        val bolusDBId = AppRepository.database.bolusDao.insertNewEntry(Bolus(
+        val bolusDBId = database.bolusDao.insertNewEntry(Bolus(
                 timestamp = timestamp,
                 utcOffset = utcOffset,
                 amount = insulin,
@@ -39,7 +39,7 @@ class InsightMealBolusTransaction(
         val bolusCalculatorResultDBId = if (bolusCalculatorResult != null) {
             entries += 1
 
-            AppRepository.database.bolusCalculatorResultDao.insertNewEntry(info.nightscout.androidaps.database.entities.BolusCalculatorResult(
+            database.bolusCalculatorResultDao.insertNewEntry(info.nightscout.androidaps.database.entities.BolusCalculatorResult(
                     timestamp = timestamp,
                     utcOffset = utcOffset,
                     targetBGLow = bolusCalculatorResult.targetBGLow,
@@ -76,7 +76,7 @@ class InsightMealBolusTransaction(
         }
         val carbsDBId = if (carbs > 0) {
             entries += 1
-            AppRepository.database.carbsDao.insertNewEntry(Carbs(
+            database.carbsDao.insertNewEntry(Carbs(
                     timestamp = timestamp,
                     utcOffset = utcOffset,
                     amount = carbs,
@@ -88,7 +88,7 @@ class InsightMealBolusTransaction(
             null
         }
         if (entries > 1) {
-            AppRepository.database.mealLinkDao.insertNewEntry(MealLink(
+            database.mealLinkDao.insertNewEntry(MealLink(
                     bolusId = bolusDBId,
                     carbsId = carbsDBId,
                     bolusCalcResultId = bolusCalculatorResultDBId

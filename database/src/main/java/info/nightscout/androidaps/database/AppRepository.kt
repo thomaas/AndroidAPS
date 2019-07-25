@@ -28,6 +28,7 @@ object AppRepository {
 
     fun <T> runTransaction(transaction: Transaction<T>): Completable = Completable.fromCallable {
         database.runInTransaction {
+            transaction.database = database
             transaction.run()
         }
     }.subscribeOn(Schedulers.io()).doOnComplete {
@@ -35,7 +36,10 @@ object AppRepository {
     }
 
     fun <T> runTransactionForResult(transaction: Transaction<T>): Single<T> = Single.fromCallable {
-        database.runInTransaction(Callable<T> { transaction.run() })
+        database.runInTransaction(Callable<T> {
+            transaction.database = database
+            transaction.run()
+        })
     }.subscribeOn(Schedulers.io()).doOnSuccess {
         changeSubject.onNext(transaction.changes)
     }

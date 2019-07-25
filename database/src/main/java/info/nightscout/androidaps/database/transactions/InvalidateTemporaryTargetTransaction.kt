@@ -5,10 +5,10 @@ import info.nightscout.androidaps.database.AppRepository
 class InvalidateTemporaryTargetTransaction(val id: Long) : Transaction<Unit>() {
 
     override fun run() {
-        val tempBasal = AppRepository.database.temporaryTargetDao.findById(id)
+        val tempBasal = database.temporaryTargetDao.findById(id)
                 ?: throw IllegalArgumentException("There is no such TemporaryTarget with the specified ID.")
         tempBasal.valid = false
-        AppRepository.database.temporaryTargetDao.updateExistingEntry(tempBasal)
+        database.temporaryTargetDao.updateExistingEntry(tempBasal)
         changes.add(tempBasal)
     }
 }

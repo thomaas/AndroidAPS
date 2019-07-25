@@ -14,7 +14,7 @@ class GlucoseValuesTransaction(
     override fun run(): List<info.nightscout.androidaps.database.entities.GlucoseValue> {
         val insertedGlucoseValues = mutableListOf<info.nightscout.androidaps.database.entities.GlucoseValue>()
         glucoseValues.forEach {
-            val current = AppRepository.database.glucoseValueDao.findByTimestamp(it.timestamp)
+            val current = database.glucoseValueDao.findByTimestamp(it.timestamp)
             val glucoseValue = GlucoseValue(
                     utcOffset = TimeZone.getDefault().getOffset(it.timestamp).toLong(),
                     timestamp = it.timestamp,
@@ -27,21 +27,21 @@ class GlucoseValuesTransaction(
             glucoseValue.interfaceIDs.nightscoutId = it.nightscoutId
             when {
                 current == null -> {
-                    AppRepository.database.glucoseValueDao.insertNewEntry(glucoseValue)
+                    database.glucoseValueDao.insertNewEntry(glucoseValue)
                     changes.add(glucoseValue)
                     insertedGlucoseValues.add(glucoseValue)
                 }
                 current.contentEqualsTo(glucoseValue) -> return@forEach
                 else -> {
                     glucoseValue.id = current.id
-                    AppRepository.database.glucoseValueDao.updateExistingEntry(glucoseValue)
+                    database.glucoseValueDao.updateExistingEntry(glucoseValue)
                     changes.add(glucoseValue)
                 }
             }
         }
         calibrations.forEach {
-            if (AppRepository.database.therapyEventDao.findByTimestamp(TherapyEvent.Type.FINGER_STICK_BG_VALUE, it.timestamp) == null) {
-                AppRepository.database.therapyEventDao.insertNewEntry(TherapyEvent(
+            if (database.therapyEventDao.findByTimestamp(TherapyEvent.Type.FINGER_STICK_BG_VALUE, it.timestamp) == null) {
+                database.therapyEventDao.insertNewEntry(TherapyEvent(
                         timestamp = it.timestamp,
                         utcOffset = TimeZone.getDefault().getOffset(it.timestamp).toLong(),
                         type = TherapyEvent.Type.FINGER_STICK_BG_VALUE,
@@ -50,8 +50,8 @@ class GlucoseValuesTransaction(
             }
         }
         sensorInsertionTime?.let {
-            if (AppRepository.database.therapyEventDao.findByTimestamp(TherapyEvent.Type.SENSOR_INSERTED, it) == null) {
-                AppRepository.database.therapyEventDao.insertNewEntry(TherapyEvent(
+            if (database.therapyEventDao.findByTimestamp(TherapyEvent.Type.SENSOR_INSERTED, it) == null) {
+                database.therapyEventDao.insertNewEntry(TherapyEvent(
                         timestamp = it,
                         utcOffset = TimeZone.getDefault().getOffset(it).toLong(),
                         type = TherapyEvent.Type.SENSOR_INSERTED

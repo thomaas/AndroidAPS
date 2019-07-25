@@ -6,13 +6,13 @@ import java.util.*
 
 class InsertTemporaryBasalAndCancelCurrentTransaction(val timestamp: Long, val duration: Long, val absolute: Boolean, val rate: Double) : Transaction<Unit>() {
     override fun run() {
-        val currentlyActive = AppRepository.database.temporaryBasalDao.getTemporaryBasalActiveAt(timestamp)
+        val currentlyActive = database.temporaryBasalDao.getTemporaryBasalActiveAt(timestamp)
         if (currentlyActive != null) {
             currentlyActive.duration = timestamp - currentlyActive.timestamp
-            AppRepository.database.temporaryBasalDao.updateExistingEntry(currentlyActive)
+            database.temporaryBasalDao.updateExistingEntry(currentlyActive)
             changes.add(currentlyActive)
         }
-        AppRepository.database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
+        database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
                 timestamp = timestamp,
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                 type = TemporaryBasal.Type.NORMAL,

@@ -4,6 +4,6 @@ import info.nightscout.androidaps.database.AppRepository
 
 class ResetDatabaseTransaction : Transaction<Unit>() {
     override fun run() {
-        AppRepository.database.clearAllTables()
+        database.clearAllTables()
     }
 }

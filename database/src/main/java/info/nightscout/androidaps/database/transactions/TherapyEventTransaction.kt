@@ -13,14 +13,14 @@ class TherapyEventTransaction(
 ) : Transaction<Unit>() {
     override fun run() {
         if (type == TherapyEvent.Type.ACTIVITY || type == TherapyEvent.Type.APS_OFFLINE) {
-            val currentlyActive = AppRepository.database.therapyEventDao.getTherapyEventActiveAt(type, timestamp)
+            val currentlyActive = database.therapyEventDao.getTherapyEventActiveAt(type, timestamp)
             if (currentlyActive != null) {
                 currentlyActive.duration = timestamp - currentlyActive.timestamp
-                AppRepository.database.therapyEventDao.updateExistingEntry(currentlyActive)
+                database.therapyEventDao.updateExistingEntry(currentlyActive)
                 changes.add(currentlyActive)
             }
             if (duration != 0L) {
-                AppRepository.database.therapyEventDao.insertNewEntry(TherapyEvent(
+                database.therapyEventDao.insertNewEntry(TherapyEvent(
                         timestamp = timestamp,
                         utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                         duration = duration,
@@ -30,7 +30,7 @@ class TherapyEventTransaction(
                 })
             }
         } else {
-            AppRepository.database.therapyEventDao.insertNewEntry(TherapyEvent(
+            database.therapyEventDao.insertNewEntry(TherapyEvent(
                     timestamp = timestamp,
                     utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                     duration = 0,

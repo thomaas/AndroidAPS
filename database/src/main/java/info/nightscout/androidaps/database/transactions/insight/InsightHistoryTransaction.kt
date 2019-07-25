@@ -26,7 +26,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
 
     private fun processTotalDailyDoses() {
         totalDailyDoses.forEach {
-            AppRepository.database.totalDailyDoseDao.insertNewEntry(TotalDailyDose(
+            database.totalDailyDoseDao.insertNewEntry(TotalDailyDose(
                     utcOffset = TimeZone.getDefault().getOffset(it.timestamp).toLong(),
                     timestamp = it.timestamp,
                     bolusAmount = it.bolusAmount,
@@ -53,7 +53,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
                 TherapyEvent.Type.RESERVOIR_EMPTY -> info.nightscout.androidaps.database.entities.TherapyEvent.Type.RESERVOIR_EMPTY
                 TherapyEvent.Type.BATTERY_CHANGED -> info.nightscout.androidaps.database.entities.TherapyEvent.Type.BATTERY_CHANGED
             }
-            AppRepository.database.therapyEventDao.insertNewEntry(TherapyEvent(
+            database.therapyEventDao.insertNewEntry(TherapyEvent(
                     utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                     timestamp = timestamp,
                     type = type
@@ -67,9 +67,9 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
     }
 
     private fun getDateStopped(eventId: Long): Long? {
-        val stopEvent = AppRepository.database.therapyEventDao.getOperatingModeEventForPumpWithSmallerPumpId(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, eventId)
+        val stopEvent = database.therapyEventDao.getOperatingModeEventForPumpWithSmallerPumpId(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, eventId)
         if (stopEvent?.type == info.nightscout.androidaps.database.entities.TherapyEvent.Type.PUMP_STOPPED) {
-            val pauseEvent = AppRepository.database.therapyEventDao.getOperatingModeEventForPumpWithSmallerPumpId(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, stopEvent.interfaceIDs.pumpId!!)
+            val pauseEvent = database.therapyEventDao.getOperatingModeEventForPumpWithSmallerPumpId(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, stopEvent.interfaceIDs.pumpId!!)
             if (pauseEvent?.type == info.nightscout.androidaps.database.entities.TherapyEvent.Type.PUMP_PAUSED
                     && stopEvent.timestamp - pauseEvent.timestamp < TimeUnit.MINUTES.toMillis(20)) {
                 return pauseEvent.timestamp
@@ -86,7 +86,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             lastPausedEvent?.timestamp ?: lastStoppedEvent.timestamp
         }
         if (dateStopped != null) {
-            AppRepository.database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
+            database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
                     utcOffset = TimeZone.getDefault().getOffset(dateStopped).toLong(),
                     timestamp = dateStopped,
                     duration = startEvent.timestamp - dateStopped,
@@ -123,7 +123,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
                     info.nightscout.androidaps.database.entities.TherapyEvent.Type.PUMP_STOPPED
                 }
             }
-            AppRepository.database.therapyEventDao.insertNewEntry(TherapyEvent(
+            database.therapyEventDao.insertNewEntry(TherapyEvent(
                     utcOffset = TimeZone.getDefault().getOffset(it.timestamp).toLong(),
                     timestamp = it.timestamp,
                     type = therapyEventType
@@ -137,11 +137,11 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
     }
 
     private fun updateExistingTemporaryBasal(temporaryBasal: TemporaryBasal) {
-        var dbTBR = AppRepository.database.temporaryBasalDao.getWithSmallerStartId_Within24Hours_WithPumpSerial_PumpAndEndIdAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, temporaryBasal.timestamp, temporaryBasal.eventId)
+        var dbTBR = database.temporaryBasalDao.getWithSmallerStartId_Within24Hours_WithPumpSerial_PumpAndEndIdAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, temporaryBasal.timestamp, temporaryBasal.eventId)
         if (dbTBR != null) {
             dbTBR.duration = temporaryBasal.duration
             dbTBR.interfaceIDs.endId = temporaryBasal.eventId
-            AppRepository.database.temporaryBasalDao.updateExistingEntry(dbTBR)
+            database.temporaryBasalDao.updateExistingEntry(dbTBR)
             changes.add(dbTBR)
         } else {
             dbTBR = TemporaryBasal(
@@ -154,7 +154,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             )
             dbTBR.interfaceIDs.pumpSerial = pumpSerial
             dbTBR.interfaceIDs.endId = temporaryBasal.eventId
-            AppRepository.database.temporaryBasalDao.insertNewEntry(dbTBR)
+            database.temporaryBasalDao.insertNewEntry(dbTBR)
             changes.add(dbTBR)
         }
     }
@@ -178,7 +178,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             val percentage = it.first.percentage
             val duration = it.second?.duration ?: it.first.duration
             val timestamp = it.first.timestamp
-            val id = AppRepository.database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
+            val id = database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
                     utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                     timestamp = timestamp,
                     absolute = false,
@@ -197,15 +197,15 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
 
     private fun saveStandardBolus(timestamp: Long, utcOffset: Long, amount: Double, bolusId: Long, startId: Long?, endId: Long?): Pair<Long, Boolean> {
         var bolus = if (startId == null && endId != null) {
-            AppRepository.database.bolusDao.findByPumpId_StartIdIsNotNull_EndIdIsNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
+            database.bolusDao.findByPumpId_StartIdIsNotNull_EndIdIsNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
         } else {
-            AppRepository.database.bolusDao.findByPumpId_StartAndEndIDsAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
+            database.bolusDao.findByPumpId_StartAndEndIDsAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
         }
         if (bolus != null) {
             bolus.amount = amount
             if (startId != null) bolus.interfaceIDs.startId = startId
             if (endId != null) bolus.interfaceIDs.endId = endId
-            AppRepository.database.bolusDao.updateExistingEntry(bolus)
+            database.bolusDao.updateExistingEntry(bolus)
             changes.add(bolus)
             return bolus.id to false
         } else {
@@ -222,22 +222,22 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             bolus.interfaceIDs.pumpSerial = pumpSerial
             bolus.interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
             changes.add(bolus)
-            return AppRepository.database.bolusDao.insertNewEntry(bolus) to true
+            return database.bolusDao.insertNewEntry(bolus) to true
         }
     }
 
     private fun saveExtendedBolus(timestamp: Long, utcOffset: Long, amount: Double, duration: Long, bolusId: Long, startId: Long?, endId: Long?): Pair<Long, Boolean> {
         var extendedBolus = if (startId == null && endId != null) {
-            AppRepository.database.extendedBolusDao.findByPumpId_StartIdIsNotNull_EndIdIsNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
+            database.extendedBolusDao.findByPumpId_StartIdIsNotNull_EndIdIsNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
         } else {
-            AppRepository.database.extendedBolusDao.findByPumpId_StartAndEndIDsAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
+            database.extendedBolusDao.findByPumpId_StartAndEndIDsAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, bolusId)
         }
         if (extendedBolus != null) {
             extendedBolus.amount = amount
             extendedBolus.duration = duration
             if (startId != null) extendedBolus.interfaceIDs.startId = startId
             if (endId != null) extendedBolus.interfaceIDs.endId = endId
-            AppRepository.database.extendedBolusDao.updateExistingEntry(extendedBolus)
+            database.extendedBolusDao.updateExistingEntry(extendedBolus)
             changes.add(extendedBolus)
             return extendedBolus.id to false
         } else {
@@ -254,13 +254,13 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             extendedBolus.interfaceIDs.pumpSerial = pumpSerial
             extendedBolus.interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
             changes.add(extendedBolus)
-            return AppRepository.database.extendedBolusDao.insertNewEntry(extendedBolus) to true
+            return database.extendedBolusDao.insertNewEntry(extendedBolus) to true
         }
     }
 
     private fun saveMultiwaveBolusLink(create: Boolean, bolusId: Long, startId: Long?, endId: Long?, standardBolusId: Long, extendedBolusId: Long): Long {
         if (create) {
-            return AppRepository.database.multiwaveBolusLinkDao.insertNewEntry(MultiwaveBolusLink(
+            return database.multiwaveBolusLinkDao.insertNewEntry(MultiwaveBolusLink(
                     bolusId = standardBolusId,
                     extendedBolusId = extendedBolusId
             ).apply {
@@ -272,10 +272,10 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
                 changes.add(this)
             })
         } else {
-            val multiwaveBolusLink = AppRepository.database.multiwaveBolusLinkDao.findByBolusIDs(standardBolusId, extendedBolusId)!!
+            val multiwaveBolusLink = database.multiwaveBolusLinkDao.findByBolusIDs(standardBolusId, extendedBolusId)!!
             if (startId != null) multiwaveBolusLink.interfaceIDs.startId = startId
             if (endId != null) multiwaveBolusLink.interfaceIDs.endId = endId
-            AppRepository.database.multiwaveBolusLinkDao.updateExistingEntry(multiwaveBolusLink)
+            database.multiwaveBolusLinkDao.updateExistingEntry(multiwaveBolusLink)
             changes.add(multiwaveBolusLink)
             return multiwaveBolusLink.id
         }
