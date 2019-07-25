@@ -81,4 +81,32 @@ class Converters {
         return list
     }
 
+    @TypeConverter
+    fun fromListOfTargetBlocks(blocks: List<TargetBlock>?): String? {
+        if (blocks == null) return null;
+        val jsonArray = JSONArray()
+        blocks.forEach {
+            val jsonObject = JSONObject()
+            jsonObject.put("duration", it.duration)
+            jsonObject.put("lowTarget", it.lowTarget)
+            jsonObject.put("highTarget", it.highTarget)
+            jsonArray.put(jsonObject)
+        }
+        return jsonArray.toString()
+    }
+
+    @TypeConverter
+    fun toListOfTargetBlocks(jsonString: String?) : List<TargetBlock>? {
+        if (jsonString == null) return null
+        val jsonArray = JSONArray(jsonString)
+        val list = mutableListOf<TargetBlock>()
+        for (i in 0 until jsonArray.length()) {
+            val jsonObject = jsonArray.getJSONObject(i)
+            list.add(TargetBlock(jsonObject.getLong("duration"),
+                    jsonObject.getDouble("lowTarget"),
+                    jsonObject.getDouble("highTarget")))
+        }
+        return list
+    }
+
 }

@@ -33,8 +33,6 @@ import info.nightscout.androidaps.Constants;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.OverlappingIntervals;
-import info.nightscout.androidaps.data.Profile;
-import info.nightscout.androidaps.data.ProfileStore;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
 import info.nightscout.androidaps.database.entities.TherapyEvent;
@@ -47,16 +45,13 @@ import info.nightscout.androidaps.events.EventReloadTempBasalData;
 import info.nightscout.androidaps.events.EventReloadTreatmentData;
 import info.nightscout.androidaps.events.EventTempBasalChange;
 import info.nightscout.androidaps.events.EventTempTargetChange;
-import info.nightscout.androidaps.interfaces.ProfileInterface;
 import info.nightscout.androidaps.logging.L;
-import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
-import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventNewHistoryData;
 import info.nightscout.androidaps.plugins.pump.danaR.activities.DanaRNSHistorySync;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightBolusID;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightHistoryOffset;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightPumpID;
-import info.nightscout.androidaps.utils.PercentageSplitter;
+import info.nightscout.androidaps.utils.ProfileSwitchUtilKt;
 
 /**
  * This Helper contains all resource to provide a central DB management functionality. Only methods handling
@@ -209,10 +204,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     private Dao<DbRequest, String> getDaoDbRequest() throws SQLException {
         return getDao(DbRequest.class);
-    }
-
-    private Dao<CareportalEvent, Long> getDaoCareportalEvents() throws SQLException {
-        return getDao(CareportalEvent.class);
     }
 
     private Dao<ProfileSwitch, Long> getDaoProfileSwitch() throws SQLException {
@@ -643,110 +634,23 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     // ---------------- ProfileSwitch handling ---------------
 
     public List<ProfileSwitch> getProfileSwitchData(boolean ascending) {
-        try {
-            Dao<ProfileSwitch, Long> daoProfileSwitch = getDaoProfileSwitch();
-            List<ProfileSwitch> profileSwitches;
-            QueryBuilder<ProfileSwitch, Long> queryBuilder = daoProfileSwitch.queryBuilder();
-            queryBuilder.orderBy("date", ascending);
-            queryBuilder.limit(100L);
-            PreparedQuery<ProfileSwitch> preparedQuery = queryBuilder.prepare();
-            profileSwitches = daoProfileSwitch.query(preparedQuery);
-            return profileSwitches;
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return new ArrayList<>();
+        List<ProfileSwitch> converted = new ArrayList<>();
+        for (info.nightscout.androidaps.database.entities.ProfileSwitch profileSwitch : BlockingAppRepository.INSTANCE.getAllProfileSwitches())
+            converted.add(ProfileSwitchUtilKt.convert(profileSwitch));
+        if (!ascending) Collections.reverse(converted);
+        return converted;
     }
 
     public List<ProfileSwitch> getProfileSwitchEventsFromTime(long mills, boolean ascending) {
-        try {
-            Dao<ProfileSwitch, Long> daoProfileSwitch = getDaoProfileSwitch();
-            List<ProfileSwitch> profileSwitches;
-            QueryBuilder<ProfileSwitch, Long> queryBuilder = daoProfileSwitch.queryBuilder();
-            queryBuilder.orderBy("date", ascending);
-            queryBuilder.limit(100L);
-            Where where = queryBuilder.where();
-            where.ge("date", mills);
-            PreparedQuery<ProfileSwitch> preparedQuery = queryBuilder.prepare();
-            profileSwitches = daoProfileSwitch.query(preparedQuery);
-            return profileSwitches;
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return new ArrayList<>();
+        List<ProfileSwitch> converted = new ArrayList<>();
+        for (info.nightscout.androidaps.database.entities.ProfileSwitch profileSwitch : BlockingAppRepository.INSTANCE.getProfileSwitchesInTimeRange(mills, Long.MAX_VALUE))
+            converted.add(ProfileSwitchUtilKt.convert(profileSwitch));
+        if (!ascending) Collections.reverse(converted);
+        return converted;
     }
 
-    public boolean createOrUpdate(ProfileSwitch profileSwitch) {
-        try {
-            ProfileSwitch old;
-            profileSwitch.date = roundDateToSec(profileSwitch.date);
 
-            if (profileSwitch.source == Source.NIGHTSCOUT) {
-                old = getDaoProfileSwitch().queryForId(profileSwitch.date);
-                if (old != null) {
-                    if (!old.isEqual(profileSwitch)) {
-                        profileSwitch.source = old.source;
-                        profileSwitch.profileName = old.profileName; // preserver profileName to prevent multiple CPP extension
-                        getDaoProfileSwitch().delete(old); // need to delete/create because date may change too
-                        getDaoProfileSwitch().create(profileSwitch);
-                        if (L.isEnabled(L.DATABASE))
-                            log.debug("PROFILESWITCH: Updating record by date from: " + Source.getString(profileSwitch.source) + " " + old.toString());
-                        scheduleProfileSwitchChange();
-                        return true;
-                    }
-                    return false;
-                }
-                // find by NS _id
-                if (profileSwitch._id != null) {
-                    QueryBuilder<ProfileSwitch, Long> queryBuilder = getDaoProfileSwitch().queryBuilder();
-                    Where where = queryBuilder.where();
-                    where.eq("_id", profileSwitch._id);
-                    PreparedQuery<ProfileSwitch> preparedQuery = queryBuilder.prepare();
-                    List<ProfileSwitch> trList = getDaoProfileSwitch().query(preparedQuery);
-                    if (trList.size() > 0) {
-                        old = trList.get(0);
-                        if (!old.isEqual(profileSwitch)) {
-                            getDaoProfileSwitch().delete(old); // need to delete/create because date may change too
-                            old.copyFrom(profileSwitch);
-                            getDaoProfileSwitch().create(old);
-                            if (L.isEnabled(L.DATABASE))
-                                log.debug("PROFILESWITCH: Updating record by _id from: " + Source.getString(profileSwitch.source) + " " + old.toString());
-                            scheduleProfileSwitchChange();
-                            return true;
-                        }
-                    }
-                }
-                // look for already added percentage from NS
-                profileSwitch.profileName = PercentageSplitter.pureName(profileSwitch.profileName);
-                getDaoProfileSwitch().create(profileSwitch);
-                if (L.isEnabled(L.DATABASE))
-                    log.debug("PROFILESWITCH: New record from: " + Source.getString(profileSwitch.source) + " " + profileSwitch.toString());
-                scheduleProfileSwitchChange();
-                return true;
-            }
-            if (profileSwitch.source == Source.USER) {
-                getDaoProfileSwitch().create(profileSwitch);
-                if (L.isEnabled(L.DATABASE))
-                    log.debug("PROFILESWITCH: New record from: " + Source.getString(profileSwitch.source) + " " + profileSwitch.toString());
-                scheduleProfileSwitchChange();
-                return true;
-            }
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return false;
-    }
-
-    public void delete(ProfileSwitch profileSwitch) {
-        try {
-            getDaoProfileSwitch().delete(profileSwitch);
-            scheduleProfileSwitchChange();
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-    }
-
-    private static void scheduleProfileSwitchChange() {
+    public static void scheduleProfileSwitchChange() {
         class PostRunnable implements Runnable {
             public void run() {
                 if (L.isEnabled(L.DATABASE))
@@ -764,98 +668,5 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         final int sec = 1;
         scheduledProfileSwitchEventPost = profileSwitchEventWorker.schedule(task, sec, TimeUnit.SECONDS);
 
-    }
-
- /*
-{
-    "_id":"592fa43ed97496a80da913d2",
-    "created_at":"2017-06-01T05:20:06Z",
-    "eventType":"Profile Switch",
-    "profile":"2016 +30%",
-    "units":"mmol",
-    "enteredBy":"sony",
-    "NSCLIENT_ID":1496294454309,
-}
-  */
-
-    public void createProfileSwitchFromJsonIfNotExists(JSONObject trJson) {
-        try {
-            ProfileSwitch profileSwitch = new ProfileSwitch();
-            profileSwitch.date = trJson.getLong("mills");
-            if (trJson.has("duration"))
-                profileSwitch.durationInMinutes = trJson.getInt("duration");
-            profileSwitch._id = trJson.getString("_id");
-            profileSwitch.profileName = trJson.getString("profile");
-            profileSwitch.isCPP = trJson.has("CircadianPercentageProfile");
-            profileSwitch.source = Source.NIGHTSCOUT;
-            if (trJson.has("timeshift"))
-                profileSwitch.timeshift = trJson.getInt("timeshift");
-            if (trJson.has("percentage"))
-                profileSwitch.percentage = trJson.getInt("percentage");
-            if (trJson.has("profileJson"))
-                profileSwitch.profileJson = trJson.getString("profileJson");
-            else {
-                ProfileInterface profileInterface = ConfigBuilderPlugin.getPlugin().getActiveProfileInterface();
-                if (profileInterface != null) {
-                    ProfileStore store = profileInterface.getProfile();
-                    if (store != null) {
-                        Profile profile = store.getSpecificProfile(profileSwitch.profileName);
-                        if (profile != null) {
-                            profileSwitch.profileJson = profile.getData().toString();
-                            if (L.isEnabled(L.DATABASE))
-                                log.debug("Profile switch prefilled with JSON from local store");
-                            // Update data in NS
-                            NSUpload.updateProfileSwitch(profileSwitch);
-                        } else {
-                            if (L.isEnabled(L.DATABASE))
-                                log.debug("JSON for profile switch doesn't exist. Ignoring: " + trJson.toString());
-                            return;
-                        }
-                    } else {
-                        if (L.isEnabled(L.DATABASE))
-                            log.debug("Store for profile switch doesn't exist. Ignoring: " + trJson.toString());
-                        return;
-                    }
-                } else {
-                    if (L.isEnabled(L.DATABASE))
-                        log.debug("No active profile interface. Ignoring: " + trJson.toString());
-                    return;
-                }
-            }
-            if (trJson.has("profilePlugin"))
-                profileSwitch.profilePlugin = trJson.getString("profilePlugin");
-            createOrUpdate(profileSwitch);
-        } catch (JSONException e) {
-            log.error("Unhandled exception: " + trJson.toString(), e);
-        }
-    }
-
-    public void deleteProfileSwitchById(String _id) {
-        ProfileSwitch stored = findProfileSwitchById(_id);
-        if (stored != null) {
-            if (L.isEnabled(L.DATABASE))
-                log.debug("PROFILESWITCH: Removing ProfileSwitch record from database: " + stored.toString());
-            delete(stored);
-            scheduleTemporaryTargetChange();
-        }
-    }
-
-    public ProfileSwitch findProfileSwitchById(String _id) {
-        try {
-            QueryBuilder<ProfileSwitch, Long> queryBuilder = getDaoProfileSwitch().queryBuilder();
-            Where where = queryBuilder.where();
-            where.eq("_id", _id);
-            PreparedQuery<ProfileSwitch> preparedQuery = queryBuilder.prepare();
-            List<ProfileSwitch> list = getDaoProfileSwitch().query(preparedQuery);
-
-            if (list.size() == 1) {
-                return list.get(0);
-            } else {
-                return null;
-            }
-        } catch (SQLException e) {
-            log.error("Unhandled exception", e);
-        }
-        return null;
     }
 }

@@ -65,7 +65,7 @@ public class TreatmentsCareportalFragment extends SubscriberFragment implements 
         @Override
         public void onBindViewHolder(CareportalEventsViewHolder holder, int position) {
             CareportalEvent careportalEvent = careportalEventList.get(position);
-            holder.ns.setVisibility(NSUpload.isIdValid(careportalEvent._id) ? View.VISIBLE : View.GONE);
+            holder.ns.setVisibility(careportalEvent.backing.getInterfaceIDs().getNightscoutId() != null ? View.VISIBLE : View.GONE);
             holder.date.setText(DateUtil.dateAndTimeString(careportalEvent.date));
             holder.note.setText(careportalEvent.getNotes());
             holder.type.setText(Translator.translate(careportalEvent.eventType));

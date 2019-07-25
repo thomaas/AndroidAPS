@@ -5,7 +5,6 @@ import info.nightscout.androidaps.database.TABLE_BOLUSES
 import info.nightscout.androidaps.database.embedments.InsulinConfiguration
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.interfaces.DBEntry
-import info.nightscout.androidaps.database.interfaces.DBEntryWithInsulinConfig
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTime
 
 @Entity(tableName = TABLE_BOLUSES,
@@ -29,8 +28,8 @@ data class Bolus(
         var type: Type,
         var basalInsulin: Boolean,
         @Embedded
-        override var insulinConfiguration: InsulinConfiguration? = null
-) : DBEntry, DBEntryWithTime, DBEntryWithInsulinConfig {
+        var insulinConfiguration: InsulinConfiguration? = null
+) : DBEntry, DBEntryWithTime {
     enum class Type {
         NORMAL,
         SMB,

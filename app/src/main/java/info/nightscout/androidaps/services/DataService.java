@@ -205,7 +205,7 @@ public class DataService extends IntentService {
         //MainApp.getDbHelper().deleteTempBasalById(_id);
         //MainApp.getDbHelper().deleteExtendedBolusById(_id);
         //MainApp.getDbHelper().deleteCareportalEventById(_id);
-        MainApp.getDbHelper().deleteProfileSwitchById(_id);
+        //MainApp.getDbHelper().deleteProfileSwitchById(_id);
     }
 
     private void handleTreatmentFromNS(JSONObject json, Intent intent) {
@@ -231,7 +231,7 @@ public class DataService extends IntentService {
         } else if (eventType.equals(CareportalEvent.COMBOBOLUS)) {
             //MainApp.getDbHelper().createExtendedBolusFromJsonIfNotExists(json);
         } else if (eventType.equals(CareportalEvent.PROFILESWITCH)) {
-            MainApp.getDbHelper().createProfileSwitchFromJsonIfNotExists(json);
+            //MainApp.getDbHelper().createProfileSwitchFromJsonIfNotExists(json);
         } else if (eventType.equals(CareportalEvent.SITECHANGE) ||
                 eventType.equals(CareportalEvent.INSULINCHANGE) ||
                 eventType.equals(CareportalEvent.SENSORCHANGE) ||

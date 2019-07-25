@@ -39,4 +39,8 @@ object BlockingAppRepository {
     fun getTherapyEventsInTimeRange(type: TherapyEvent.Type, start: Long, end: Long): List<TherapyEvent> = AppRepository.getTherapyEventsInTimeRange(type, start, end).blockingFirst()
 
     fun getAllTherapyEvents(): List<TherapyEvent> = AppRepository.getAllTherapyEvents().blockingFirst()
+
+    fun getProfileSwitchesInTimeRange(start: Long, end: Long): List<ProfileSwitch> = AppRepository.getProfileSwitchesInTimeRange(start, end).blockingFirst()
+
+    fun getAllProfileSwitches(): List<ProfileSwitch> = AppRepository.getAllProfileSwitches().blockingFirst()
 }

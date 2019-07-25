@@ -68,6 +68,10 @@ object AppRepository {
 
     fun getAllTherapyEvents(): Flowable<List<TherapyEvent>> = database.therapyEventDao.getAllTherapyEvents().subscribeOn(Schedulers.io())
 
+    fun getProfileSwitchesInTimeRange(start: Long, end: Long): Flowable<List<ProfileSwitch>> = database.profileSwitchDao.getProfileSwitchesInTimeRange(start, end).subscribeOn(Schedulers.io())
+
+    fun getAllProfileSwitches(): Flowable<List<ProfileSwitch>> = database.profileSwitchDao.getAllProfileSwitches().subscribeOn(Schedulers.io())
+
     fun getMergedBolusData(start: Long, end: Long) = Single.fromCallable {
         val boluses = database.bolusDao.getBolusesInTimeRange(start, end)
         val carbs = database.carbsDao.getCarbsInTimeRange(start, end).toMutableList()
