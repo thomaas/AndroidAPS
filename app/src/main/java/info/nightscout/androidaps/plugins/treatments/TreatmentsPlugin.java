@@ -465,6 +465,7 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
         return total;
     }
 
+    // We might want to calculate iob for prediction-> time can be in the future; truncateTime usually ends at "now"
     public IobTotal getCalculationToTimeTempBasals(long time, long truncateTime, AutosensResult lastAutosensResult, boolean exercise_mode, int half_basal_exercise_target, boolean isTempTarget) {
         IobTotal total = new IobTotal(time);
 
@@ -486,6 +487,25 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
                     calc = dummyTemp.iobCalc(time, profile, lastAutosensResult, exercise_mode, half_basal_exercise_target, isTempTarget);
                 } else {
                     calc = t.iobCalc(time, profile, lastAutosensResult, exercise_mode, half_basal_exercise_target, isTempTarget);
+
+                    // Adrian: Fill in gaps with 100% rates to factor in Autosens in that time periods.
+
+                    long neutralTempEnd = truncateTime;
+                    if (pos < tempBasals.size() - 1) {
+                        TemporaryBasal next = tempBasals.get(pos + 1);
+                        neutralTempEnd = Math.min(next.date, truncateTime);
+                    }
+                    if (neutralTempEnd - t.end() >= 60*1000) {
+                        // There is a gap or at least a minute
+                        TemporaryBasal neutralTemp = new TemporaryBasal();
+                        neutralTemp.date = t.end();
+                        neutralTemp.percentRate = 100;
+                        neutralTemp.durationInMinutes = (int) ((neutralTemp.date - neutralTempEnd) / (60 * 1000));
+                        IobTotal neutralTempIOB = neutralTemp.iobCalc(time, profile, lastAutosensResult, exercise_mode, half_basal_exercise_target, isTempTarget);
+                        total.plus(neutralTempIOB);
+                        log.debug("Adrian neutral Temp: " + neutralTemp.date + "/" + neutralTemp.durationInMinutes + "min, iob: " + neutralTempIOB.basaliob + ", net-insulin:" +  neutralTempIOB.netbasalinsulin );
+                    }
+
                 }
                 //log.debug("BasalIOB " + new Date(time) + " >>> " + calc.basaliob);
                 total.plus(calc);
@@ -504,9 +524,10 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
                         ExtendedBolus dummyExt = new ExtendedBolus();
                         dummyExt.copyFrom(e);
                         dummyExt.cutEndTo(truncateTime);
-                        calc = dummyExt.iobCalc(time, profile, lastAutosensResult, exercise_mode, half_basal_exercise_target, isTempTarget);
+                        // pipe in ration of 1 as workaround. Will be treated by fake TBR filling the gaps
+                        calc = dummyExt.iobCalc(time, profile, /*lastAutosensResult*/ new AutosensResult(), exercise_mode, half_basal_exercise_target, isTempTarget);
                     } else {
-                        calc = e.iobCalc(time, profile, lastAutosensResult, exercise_mode, half_basal_exercise_target, isTempTarget);
+                        calc = e.iobCalc(time, profile, /*lastAutosensResult*/ new AutosensResult(), exercise_mode, half_basal_exercise_target, isTempTarget);
                     }
                     totalExt.plus(calc);
                 }
@@ -594,7 +615,8 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
 
     // return true if new record is created
     @Override
-    public boolean addToHistoryTreatment(DetailedBolusInfo detailedBolusInfo, boolean allowUpdate) {
+    public boolean addToHistoryTreatment(DetailedBolusInfo detailedBolusInfo,
+                                         boolean allowUpdate) {
         boolean medtronicPump = MedtronicUtil.isMedtronicPump();
 
         Treatment treatment = new Treatment();
