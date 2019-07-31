@@ -25,6 +25,7 @@ import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions
 import info.nightscout.androidaps.plugins.general.overview.dialogs.ErrorHelperActivity
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatus
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin
 import info.nightscout.androidaps.queue.Callback
 import org.json.JSONException
@@ -191,7 +192,7 @@ class BolusWizard @JvmOverloads constructor(val profile: Profile,
             calculatedTotalInsulin = 0.0
         }
 
-        val bolusStep = ConfigBuilderPlugin.getPlugin().activePump.pumpDescription.bolusStep
+        val bolusStep = ConfigBuilderPlugin.getPlugin().activePump?.pumpDescription?.bolusStep ?: 0.1
         calculatedTotalInsulin = Round.roundTo(calculatedTotalInsulin, bolusStep)
 
         insulinAfterConstraints = MainApp.getConstraintChecker().applyBolusConstraints(Constraint(calculatedTotalInsulin)).value()
@@ -273,11 +274,23 @@ class BolusWizard @JvmOverloads constructor(val profile: Profile,
         var confirmMessage = MainApp.gs(R.string.entertreatmentquestion)
         if (insulinAfterConstraints > 0)
             confirmMessage += "<br/>" + MainApp.gs(R.string.bolus) + ": " + "<font color='" + MainApp.gc(R.color.bolus) + "'>" + DecimalFormatter.toPumpSupportedBolus(insulinAfterConstraints) + "U" + "</font>"
-        if (carbs > 0)
-            confirmMessage += "<br/>" + MainApp.gs(R.string.carbs) + ": " + "<font color='" + MainApp.gc(R.color.carbs) + "'>" + carbs + "g" + "</font>"
-
+        if (carbs > 0) {
+            var timeShift = ""
+            if (carbTime > 0) {
+                timeShift += " ( +" + MainApp.gs(R.string.mins, carbTime) + " )"
+            } else if (carbTime < 0) {
+                timeShift += " ( -" + MainApp.gs(R.string.mins, carbTime) + " )"
+            }
+            confirmMessage += "<br/>" + MainApp.gs(R.string.carbs) + ": " + "<font color='" + MainApp.gc(R.color.carbs) + "'>" + carbs + "g" + timeShift + "</font>"
+        }
+        if (insulinFromCOB > 0) {
+            confirmMessage += "<br/>" + MainApp.gs(R.string.insulinFromCob, MainApp.gc(R.color.cobAlert), cob, insulinFromCOB)
+            val absorptionRate = IobCobCalculatorPlugin.getPlugin().slowAbsorptionPercentage(60)
+            if (absorptionRate > .25)
+                confirmMessage += "<br/>" + MainApp.gs(R.string.slowabsorptiondetected, MainApp.gc(R.color.cobAlert), (absorptionRate * 100).toInt())
+        }
         if (Math.abs(insulinAfterConstraints - calculatedTotalInsulin) > pump.getPumpDescription().pumpType.determineCorrectBolusStepSize(insulinAfterConstraints)) {
-            confirmMessage += "<br/><font color='" + MainApp.gc(R.color.warning) + "'>" + MainApp.gs(R.string.bolusconstraintapplied) + "</font>"
+            confirmMessage += "<br/>" + MainApp.gs(R.string.bolusconstraintappliedwarning, MainApp.gc(R.color.warning), calculatedTotalInsulin, insulinAfterConstraints)
         }
 
         return confirmMessage
@@ -310,7 +323,7 @@ class BolusWizard @JvmOverloads constructor(val profile: Profile,
 
                             val pump1 = ConfigBuilderPlugin.getPlugin().activePump
 
-                            if (pump1.pumpDescription.tempBasalStyle == PumpDescription.ABSOLUTE) {
+                            if (pump1?.pumpDescription?.tempBasalStyle == PumpDescription.ABSOLUTE) {
                                 ConfigBuilderPlugin.getPlugin().commandQueue.tempBasalAbsolute(0.0, 120, true, profile, object : Callback() {
                                     override fun run() {
                                         if (!result.success) {
@@ -351,7 +364,7 @@ class BolusWizard @JvmOverloads constructor(val profile: Profile,
                         detailedBolusInfo.source = Source.USER
                         detailedBolusInfo.notes = notes
                         detailedBolusInfo.bolusCalculatorResult = getBolusCalculatorResult()
-                        if (detailedBolusInfo.insulin > 0 || ConfigBuilderPlugin.getPlugin().activePump.pumpDescription.storesCarbInfo) {
+                        if (detailedBolusInfo.insulin > 0 || ConfigBuilderPlugin.getPlugin().activePump?.pumpDescription?.storesCarbInfo == true) {
                             ConfigBuilderPlugin.getPlugin().commandQueue.bolus(detailedBolusInfo, object : Callback() {
                                 override fun run() {
                                     if (!result.success) {

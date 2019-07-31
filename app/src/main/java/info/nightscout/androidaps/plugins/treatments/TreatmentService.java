@@ -76,7 +76,7 @@ public class TreatmentService extends OrmLiteBaseService<DatabaseHelper> {
      * @param callback
      */
     private static void scheduleEvent(final Event event, ScheduledExecutorService eventWorker,
-                               final ICallback callback) {
+                                      final ICallback callback) {
 
         class PostRunnable implements Runnable {
             public void run() {
@@ -120,8 +120,12 @@ public class TreatmentService extends OrmLiteBaseService<DatabaseHelper> {
     }
 
     public List<Treatment> getTreatmentDataFromTime(long mills, boolean ascending) {
+        return getTreatmentDataFromTime(mills, Long.MAX_VALUE, ascending);
+    }
+
+    public List<Treatment> getTreatmentDataFromTime(long from, long to, boolean ascending) {
         List<Treatment> converted = new ArrayList<>();
-        for (MergedBolus mergedBolus : BlockingAppRepository.INSTANCE.getMergedBolusData(mills, Long.MAX_VALUE)) {
+        for (MergedBolus mergedBolus : BlockingAppRepository.INSTANCE.getMergedBolusData(from, to)) {
             Treatment treatment = new Treatment();
             treatment.backing = mergedBolus;
             if (mergedBolus.getCarbs() != null) {
@@ -147,6 +151,16 @@ public class TreatmentService extends OrmLiteBaseService<DatabaseHelper> {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    public class UpdateReturn {
+        public UpdateReturn(boolean success, boolean newRecord) {
+            this.success = success;
+            this.newRecord = newRecord;
+        }
+
+        boolean newRecord;
+        boolean success;
     }
 
 }

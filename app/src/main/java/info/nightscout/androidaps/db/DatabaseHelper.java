@@ -46,6 +46,7 @@ import info.nightscout.androidaps.events.EventReloadTreatmentData;
 import info.nightscout.androidaps.events.EventTempBasalChange;
 import info.nightscout.androidaps.events.EventTempTargetChange;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventNewHistoryData;
 import info.nightscout.androidaps.plugins.pump.danaR.activities.DanaRNSHistorySync;
 import info.nightscout.androidaps.plugins.pump.insight.database.InsightBolusID;
@@ -225,6 +226,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
                 if (L.isEnabled(L.DATABASE))
                     log.debug("Firing EventNewBg");
                 MainApp.bus().post(new EventNewBG());
+                RxBus.INSTANCE.send(new EventNewBG());
                 scheduledBgPost = null;
             }
         }
@@ -319,8 +321,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     // ---------------- TempTargets handling ---------------
 
     public List<TempTarget> getTemptargetsDataFromTime(long mills, boolean ascending) {
+        return getTemptargetsDataFromTime(mills, Long.MAX_VALUE, ascending);
+    }
+
+    public List<TempTarget> getTemptargetsDataFromTime(long from, long to, boolean ascending) {
         List<TempTarget> convertedTTs = new ArrayList<>();
-        for (TemporaryTarget temporaryTarget : BlockingAppRepository.INSTANCE.getTemporaryTargetsInTimeRange(mills, Long.MAX_VALUE)) {
+        for (TemporaryTarget temporaryTarget : BlockingAppRepository.INSTANCE.getTemporaryTargetsInTimeRange(from, to)) {
             TempTarget converted = new TempTarget();
             converted.backing = temporaryTarget;
             converted.date = temporaryTarget.getTimestamp();
@@ -421,8 +427,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     // ------------ TemporaryBasal handling ---------------
 
     public List<TemporaryBasal> getTemporaryBasalsDataFromTime(long mills, boolean ascending) {
+        return getTemporaryBasalsDataFromTime(mills, Long.MAX_VALUE, ascending);
+    }
+
+    public List<TemporaryBasal> getTemporaryBasalsDataFromTime(long from, long to, boolean ascending) {
         List<TemporaryBasal> convertedTBRs = new ArrayList<>();
-        for (info.nightscout.androidaps.database.entities.TemporaryBasal tbr : BlockingAppRepository.INSTANCE.getTemporaryBasalsInTimeRange(mills, Long.MAX_VALUE)) {
+        for (info.nightscout.androidaps.database.entities.TemporaryBasal tbr : BlockingAppRepository.INSTANCE.getTemporaryBasalsInTimeRange(from, to)) {
             TemporaryBasal converted = new TemporaryBasal();
             converted.backing = tbr;
             converted.date = tbr.getTimestamp();
@@ -594,6 +604,15 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     }
 
+    public List<CareportalEvent> getCareportalEvents(long start, long end, boolean ascending) {
+        List<CareportalEvent> converted = new ArrayList<>();
+        for (TherapyEvent therapyEvent : BlockingAppRepository.INSTANCE.getTherapyEventsInTimeRange(start, end))
+            converted.add(convertTherapyEvent(therapyEvent));
+        if (!ascending) Collections.reverse(converted);
+        preprocessOpenAPSOfflineEvents(converted);
+        return converted;
+    }
+
     public List<CareportalEvent> getCareportalEventsFromTime(long mills, String type, boolean ascending) {
         List<CareportalEvent> converted = new ArrayList<>();
         for (TherapyEvent therapyEvent : BlockingAppRepository.INSTANCE.getTherapyEventsInTimeRange(convertType(type), mills, Long.MAX_VALUE))
@@ -642,8 +661,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     }
 
     public List<ProfileSwitch> getProfileSwitchEventsFromTime(long mills, boolean ascending) {
+        return getProfileSwitchEventsFromTime(mills, Long.MAX_VALUE, ascending);
+    }
+
+    public List<ProfileSwitch> getProfileSwitchEventsFromTime(long from, long to, boolean ascending) {
         List<ProfileSwitch> converted = new ArrayList<>();
-        for (info.nightscout.androidaps.database.entities.ProfileSwitch profileSwitch : BlockingAppRepository.INSTANCE.getProfileSwitchesInTimeRange(mills, Long.MAX_VALUE))
+        for (info.nightscout.androidaps.database.entities.ProfileSwitch profileSwitch : BlockingAppRepository.INSTANCE.getProfileSwitchesInTimeRange(from, to))
             converted.add(ProfileSwitchUtilKt.convert(profileSwitch));
         if (!ascending) Collections.reverse(converted);
         return converted;

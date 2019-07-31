@@ -1,6 +1,7 @@
 package info.nightscout.androidaps;
 
 import android.app.Application;
+import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.os.SystemClock;
@@ -53,13 +54,17 @@ import info.nightscout.androidaps.plugins.constraints.objectives.ObjectivesPlugi
 import info.nightscout.androidaps.plugins.constraints.safety.SafetyPlugin;
 import info.nightscout.androidaps.plugins.constraints.storage.StorageConstraintPlugin;
 import info.nightscout.androidaps.plugins.general.actions.ActionsFragment;
+import info.nightscout.androidaps.plugins.general.automation.AutomationPlugin;
 import info.nightscout.androidaps.plugins.general.careportal.CareportalPlugin;
 import info.nightscout.androidaps.plugins.general.food.FoodPlugin;
 import info.nightscout.androidaps.plugins.general.maintenance.LoggerUtils;
 import info.nightscout.androidaps.plugins.general.maintenance.MaintenancePlugin;
+import info.nightscout.androidaps.plugins.general.nsclient.receivers.DBAccessReceiver;
 import info.nightscout.androidaps.plugins.general.overview.OverviewPlugin;
 import info.nightscout.androidaps.plugins.general.persistentNotification.PersistentNotificationPlugin;
+import info.nightscout.androidaps.plugins.general.signatureVerifier.SignatureVerifier;
 import info.nightscout.androidaps.plugins.general.smsCommunicator.SmsCommunicatorPlugin;
+import info.nightscout.androidaps.plugins.general.tidepool.TidepoolPlugin;
 import info.nightscout.androidaps.plugins.general.versionChecker.VersionCheckerPlugin;
 import info.nightscout.androidaps.plugins.general.wear.WearPlugin;
 import info.nightscout.androidaps.plugins.general.xdripStatusline.StatuslinePlugin;
@@ -77,6 +82,7 @@ import info.nightscout.androidaps.plugins.pump.danaRS.DanaRSPlugin;
 import info.nightscout.androidaps.plugins.pump.danaRv2.DanaRv2Plugin;
 import info.nightscout.androidaps.plugins.pump.insight.LocalInsightPlugin;
 import info.nightscout.androidaps.plugins.pump.mdi.MDIPlugin;
+import info.nightscout.androidaps.plugins.pump.medtronic.MedtronicPumpPlugin;
 import info.nightscout.androidaps.plugins.pump.virtual.VirtualPumpPlugin;
 import info.nightscout.androidaps.plugins.sensitivity.SensitivityAAPSPlugin;
 import info.nightscout.androidaps.plugins.sensitivity.SensitivityOref0Plugin;
@@ -94,6 +100,7 @@ import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.receivers.DataReceiver;
 import info.nightscout.androidaps.receivers.KeepAliveReceiver;
 import info.nightscout.androidaps.receivers.NSAlarmReceiver;
+import info.nightscout.androidaps.receivers.TimeDateOrTZChangeReceiver;
 import info.nightscout.androidaps.services.Intents;
 import info.nightscout.androidaps.utils.FabricPrivacy;
 import io.fabric.sdk.android.Fabric;
@@ -120,8 +127,10 @@ public class MainApp extends Application {
     private static DataReceiver dataReceiver = new DataReceiver();
     private static NSAlarmReceiver alarmReciever = new NSAlarmReceiver();
     //private static AckAlarmReceiver ackAlarmReciever = new AckAlarmReceiver();
-    //private static DBAccessReceiver dbAccessReciever = new DBAccessReceiver();
+    private static DBAccessReceiver dbAccessReciever = new DBAccessReceiver();
     private LocalBroadcastManager lbm;
+    BroadcastReceiver btReceiver;
+    TimeDateOrTZChangeReceiver timeDateOrTZChangeReceiver;
 
     public static boolean devBranch;
     public static boolean engineeringMode;
@@ -158,7 +167,8 @@ public class MainApp extends Application {
                         else if (entry instanceof TherapyEvent) therapyEventsChanged = true;
                         else if (entry instanceof ProfileSwitch) profileSwitchesChanged = true;
                     }
-                    if (earliestDataChange != null) DatabaseHelper.updateEarliestDataChange(earliestDataChange);
+                    if (earliestDataChange != null)
+                        DatabaseHelper.updateEarliestDataChange(earliestDataChange);
                     if (glucoseValuesChanged) DatabaseHelper.scheduleBgChange();
                     if (temporaryBasalsChanged) DatabaseHelper.scheduleTemporaryBasalChange();
                     if (extendedBolusesChanged) DatabaseHelper.scheduleExtendedBolusChange();
@@ -201,6 +211,7 @@ public class MainApp extends Application {
 
         //trigger here to see the new version on app start after an update
         triggerCheckVersion();
+        //setBTReceiver();
 
         if (pluginsList == null) {
             pluginsList = new ArrayList<>();
@@ -222,6 +233,8 @@ public class MainApp extends Application {
             if (Config.PUMPDRIVERS) pluginsList.add(LocalInsightPlugin.getPlugin());
             pluginsList.add(CareportalPlugin.getPlugin());
             if (Config.PUMPDRIVERS) pluginsList.add(ComboPlugin.getPlugin());
+            if (Config.PUMPDRIVERS && engineeringMode)
+                pluginsList.add(MedtronicPumpPlugin.getPlugin());
             if (Config.MDI) pluginsList.add(MDIPlugin.getPlugin());
             pluginsList.add(VirtualPumpPlugin.getPlugin());
             if (Config.APS) pluginsList.add(LoopPlugin.getPlugin());
@@ -235,6 +248,7 @@ public class MainApp extends Application {
             if (Config.SAFETY) pluginsList.add(SafetyPlugin.getPlugin());
             if (Config.SAFETY) pluginsList.add(VersionCheckerPlugin.INSTANCE);
             if (Config.SAFETY) pluginsList.add(StorageConstraintPlugin.getPlugin());
+            if (Config.SAFETY) pluginsList.add(SignatureVerifier.getPlugin());
             if (Config.APS) pluginsList.add(ObjectivesPlugin.getPlugin());
             pluginsList.add(SourceXdripPlugin.INSTANCE);
             pluginsList.add(SourceMM640gPlugin.INSTANCE);
@@ -249,7 +263,11 @@ public class MainApp extends Application {
             pluginsList.add(WearPlugin.initPlugin(this));
             pluginsList.add(StatuslinePlugin.initPlugin(this));
             pluginsList.add(PersistentNotificationPlugin.getPlugin());
+            if (engineeringMode)
+                pluginsList.add(TidepoolPlugin.INSTANCE);
             pluginsList.add(MaintenancePlugin.initPlugin(this));
+            if (engineeringMode)
+                pluginsList.add(AutomationPlugin.INSTANCE);
 
             pluginsList.add(ConfigBuilderPlugin.getPlugin());
 
@@ -297,6 +315,11 @@ public class MainApp extends Application {
 
         //register dbaccess
         //lbm.registerReceiver(dbAccessReciever, new IntentFilter(Intents.ACTION_DATABASE));
+        lbm.registerReceiver(dbAccessReciever, new IntentFilter(Intents.ACTION_DATABASE));
+
+        this.timeDateOrTZChangeReceiver = new TimeDateOrTZChangeReceiver();
+        this.timeDateOrTZChangeReceiver.registerBroadcasts(this);
+
     }
 
     private void startKeepAliveService() {
@@ -482,5 +505,19 @@ public class MainApp extends Application {
             sDatabaseHelper.close();
             sDatabaseHelper = null;
         }
+
+        if (btReceiver != null) {
+            unregisterReceiver(btReceiver);
+        }
+
+        if (timeDateOrTZChangeReceiver != null) {
+            unregisterReceiver(timeDateOrTZChangeReceiver);
+        }
+
+    }
+
+    public static int dpToPx(int dp) {
+        float scale = sResources.getDisplayMetrics().density;
+        return (int) (dp * scale + 0.5f);
     }
 }

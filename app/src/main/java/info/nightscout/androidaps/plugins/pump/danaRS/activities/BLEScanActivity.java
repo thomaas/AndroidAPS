@@ -7,12 +7,13 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.os.Bundle;
 import android.os.Handler;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -27,7 +28,6 @@ public class BLEScanActivity extends AppCompatActivity {
     private ListView listView = null;
     private ListAdapter mListAdapter = null;
     private ArrayList<BluetoothDeviceItem> mDevices = new ArrayList<>();
-    ;
 
     private BluetoothAdapter mBluetoothAdapter = null;
     private BluetoothLeScanner mBluetoothLeScanner = null;

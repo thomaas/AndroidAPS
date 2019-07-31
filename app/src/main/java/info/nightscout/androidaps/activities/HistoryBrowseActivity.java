@@ -2,9 +2,6 @@ package info.nightscout.androidaps.activities;
 
 import android.os.Bundle;
 import android.os.SystemClock;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.PopupMenu;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
@@ -14,6 +11,10 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.jjoe64.graphview.GraphView;
 import com.squareup.otto.Subscribe;
@@ -36,12 +37,12 @@ import info.nightscout.androidaps.events.EventCustomCalculationFinished;
 import info.nightscout.androidaps.interfaces.PumpInterface;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventAutosensCalculationFinished;
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventIobCalculationProgress;
 import info.nightscout.androidaps.plugins.general.overview.OverviewFragment;
 import info.nightscout.androidaps.plugins.general.overview.OverviewPlugin;
 import info.nightscout.androidaps.plugins.general.overview.graphData.GraphData;
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventAutosensCalculationFinished;
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventIobCalculationProgress;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.T;
 
@@ -52,7 +53,7 @@ public class HistoryBrowseActivity extends AppCompatActivity {
     ImageButton chartButton;
 
     boolean showBasal = true;
-    boolean showIob, showCob, showDev, showRat, showDevslope;
+    boolean showIob, showCob, showDev, showRat, showActPrim, showActSec, showDevslope;
 
 
     @BindView(R.id.historybrowse_date)
@@ -285,6 +286,10 @@ public class HistoryBrowseActivity extends AppCompatActivity {
         // set manual x bounds to have nice steps
         graphData.formatAxis(fromTime, toTime);
 
+        if(showActPrim) {
+            graphData.addActivity(fromTime, toTime, false,1d);
+        }
+
         // Treatments
         graphData.addTreatments(fromTime, toTime);
 
@@ -305,6 +310,7 @@ public class HistoryBrowseActivity extends AppCompatActivity {
             boolean useCobForScale = false;
             boolean useDevForScale = false;
             boolean useRatioForScale = false;
+            boolean useIAForScale = false;
             boolean useDSForScale = false;
 
             if (showIob) {
@@ -315,18 +321,22 @@ public class HistoryBrowseActivity extends AppCompatActivity {
                 useDevForScale = true;
             } else if (showRat) {
                 useRatioForScale = true;
+            } else if (showActSec) {
+                useIAForScale = true;
             } else if (showDevslope) {
                 useDSForScale = true;
             }
 
             if (showIob)
-                secondGraphData.addIob(fromTime, toTime, useIobForScale, 1d);
+                secondGraphData.addIob(fromTime, toTime, useIobForScale, 1d, showPrediction);
             if (showCob)
                 secondGraphData.addCob(fromTime, toTime, useCobForScale, useCobForScale ? 1d : 0.5d);
             if (showDev)
                 secondGraphData.addDeviations(fromTime, toTime, useDevForScale, 1d);
             if (showRat)
                 secondGraphData.addRatio(fromTime, toTime, useRatioForScale, 1d);
+            if (showActSec)
+                secondGraphData.addActivity(fromTime, toTime, useIAForScale, useIAForScale? 2d: 1d);
             if (showDevslope)
                 secondGraphData.addDeviationSlope(fromTime, toTime, useDSForScale, 1d);
 
@@ -337,14 +347,14 @@ public class HistoryBrowseActivity extends AppCompatActivity {
 
             // do GUI update
             runOnUiThread(() -> {
-                if (showIob || showCob || showDev || showRat || showDevslope) {
+                if (showIob || showCob || showDev || showRat || showActSec || showDevslope) {
                     iobGraph.setVisibility(View.VISIBLE);
                 } else {
                     iobGraph.setVisibility(View.GONE);
                 }
                 // finally enforce drawing of graphs
                 graphData.performUpdate();
-                if (showIob || showCob || showDev || showRat || showDevslope)
+                if (showIob || showCob || showDev || showRat || showActSec || showDevslope)
                     secondGraphData.performUpdate();
             });
         }).start();
@@ -353,22 +363,37 @@ public class HistoryBrowseActivity extends AppCompatActivity {
     private void setupChartMenu() {
         chartButton = (ImageButton) findViewById(R.id.overview_chartMenuButton);
         chartButton.setOnClickListener(v -> {
-            MenuItem item;
+            MenuItem item,dividerItem;
             CharSequence title;
+            int titleMaxChars = 0;
             SpannableString s;
             PopupMenu popup = new PopupMenu(v.getContext(), v);
 
 
             item = popup.getMenu().add(Menu.NONE, OverviewFragment.CHARTTYPE.BAS.ordinal(), Menu.NONE, MainApp.gs(R.string.overview_show_basals));
             title = item.getTitle();
+            if (titleMaxChars < title.length()) titleMaxChars =  title.length();
             s = new SpannableString(title);
             s.setSpan(new ForegroundColorSpan(ResourcesCompat.getColor(getResources(), R.color.basal, null)), 0, s.length(), 0);
             item.setTitle(s);
             item.setCheckable(true);
             item.setChecked(showBasal);
 
+            item = popup.getMenu().add(Menu.NONE, OverviewFragment.CHARTTYPE.ACTPRIM.ordinal(), Menu.NONE, MainApp.gs(R.string.overview_show_activity));
+            title = item.getTitle();
+            if (titleMaxChars < title.length()) titleMaxChars =  title.length();
+            s = new SpannableString(title);
+            s.setSpan(new ForegroundColorSpan(ResourcesCompat.getColor(getResources(), R.color.activity, null)), 0, s.length(), 0);
+            item.setTitle(s);
+            item.setCheckable(true);
+            item.setChecked(showActPrim);
+
+            dividerItem = popup.getMenu().add("");
+            dividerItem.setEnabled(false);
+
             item = popup.getMenu().add(Menu.NONE, OverviewFragment.CHARTTYPE.IOB.ordinal(), Menu.NONE, MainApp.gs(R.string.overview_show_iob));
             title = item.getTitle();
+            if (titleMaxChars < title.length()) titleMaxChars =  title.length();
             s = new SpannableString(title);
             s.setSpan(new ForegroundColorSpan(ResourcesCompat.getColor(getResources(), R.color.iob, null)), 0, s.length(), 0);
             item.setTitle(s);
@@ -377,6 +402,7 @@ public class HistoryBrowseActivity extends AppCompatActivity {
 
             item = popup.getMenu().add(Menu.NONE, OverviewFragment.CHARTTYPE.COB.ordinal(), Menu.NONE, MainApp.gs(R.string.overview_show_cob));
             title = item.getTitle();
+            if (titleMaxChars < title.length()) titleMaxChars =  title.length();
             s = new SpannableString(title);
             s.setSpan(new ForegroundColorSpan(ResourcesCompat.getColor(getResources(), R.color.cob, null)), 0, s.length(), 0);
             item.setTitle(s);
@@ -385,6 +411,7 @@ public class HistoryBrowseActivity extends AppCompatActivity {
 
             item = popup.getMenu().add(Menu.NONE, OverviewFragment.CHARTTYPE.DEV.ordinal(), Menu.NONE, MainApp.gs(R.string.overview_show_deviations));
             title = item.getTitle();
+            if (titleMaxChars < title.length()) titleMaxChars =  title.length();
             s = new SpannableString(title);
             s.setSpan(new ForegroundColorSpan(ResourcesCompat.getColor(getResources(), R.color.deviations, null)), 0, s.length(), 0);
             item.setTitle(s);
@@ -393,21 +420,37 @@ public class HistoryBrowseActivity extends AppCompatActivity {
 
             item = popup.getMenu().add(Menu.NONE, OverviewFragment.CHARTTYPE.SEN.ordinal(), Menu.NONE, MainApp.gs(R.string.overview_show_sensitivity));
             title = item.getTitle();
+            if (titleMaxChars < title.length()) titleMaxChars =  title.length();
             s = new SpannableString(title);
             s.setSpan(new ForegroundColorSpan(ResourcesCompat.getColor(getResources(), R.color.ratio, null)), 0, s.length(), 0);
             item.setTitle(s);
             item.setCheckable(true);
             item.setChecked(showRat);
 
+            item = popup.getMenu().add(Menu.NONE, OverviewFragment.CHARTTYPE.ACTSEC.ordinal(), Menu.NONE, MainApp.gs(R.string.overview_show_activity));
+            title = item.getTitle();
+            if (titleMaxChars < title.length()) titleMaxChars =  title.length();
+            s = new SpannableString(title);
+            s.setSpan(new ForegroundColorSpan(ResourcesCompat.getColor(getResources(), R.color.activity, null)), 0, s.length(), 0);
+            item.setTitle(s);
+            item.setCheckable(true);
+            item.setChecked(showActSec);
+
+
             if (MainApp.devBranch) {
                 item = popup.getMenu().add(Menu.NONE, OverviewFragment.CHARTTYPE.DEVSLOPE.ordinal(), Menu.NONE, "Deviation slope");
                 title = item.getTitle();
+                if (titleMaxChars < title.length()) titleMaxChars =  title.length();
                 s = new SpannableString(title);
                 s.setSpan(new ForegroundColorSpan(ResourcesCompat.getColor(getResources(), R.color.devslopepos, null)), 0, s.length(), 0);
                 item.setTitle(s);
                 item.setCheckable(true);
                 item.setChecked(showDevslope);
             }
+
+            // Fairly good guestimate for required divider text size...
+            title = new String(new char[titleMaxChars+10]).replace("\0", "_");
+            dividerItem.setTitle(title);
 
             popup.setOnMenuItemClickListener(item1 -> {
                 if (item1.getItemId() == OverviewFragment.CHARTTYPE.BAS.ordinal()) {
@@ -420,6 +463,10 @@ public class HistoryBrowseActivity extends AppCompatActivity {
                     showDev = !item1.isChecked();
                 } else if (item1.getItemId() == OverviewFragment.CHARTTYPE.SEN.ordinal()) {
                     showRat = !item1.isChecked();
+                } else if (item1.getItemId() == OverviewFragment.CHARTTYPE.ACTPRIM.ordinal()) {
+                    showActPrim = !item1.isChecked();
+                } else if (item1.getItemId() == OverviewFragment.CHARTTYPE.ACTSEC.ordinal()) {
+                    showActSec = !item1.isChecked();
                 } else if (item1.getItemId() == OverviewFragment.CHARTTYPE.DEVSLOPE.ordinal()) {
                     showDevslope = !item1.isChecked();
                 }

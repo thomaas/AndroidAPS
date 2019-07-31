@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.data;
 
-import androidx.annotation.Nullable;
 import androidx.collection.LongSparseArray;
 
 import java.util.ArrayList;
@@ -22,7 +21,7 @@ public abstract class Intervals<T extends Interval> {
         rawData = new LongSparseArray<T>();
     }
 
-    public synchronized Intervals reset() {
+    public synchronized Intervals<T> reset() {
         rawData = new LongSparseArray<T>();
         return this;
     }

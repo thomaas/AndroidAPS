@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 
 import info.nightscout.androidaps.Constants;
+import info.nightscout.androidaps.MainApp;
+import info.nightscout.androidaps.R;
+import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
 import info.nightscout.androidaps.interfaces.Interval;
 import info.nightscout.androidaps.logging.L;
@@ -192,6 +195,13 @@ public class TempTarget implements Interval {
                 ", low=" + low +
                 ", high=" + high +
                 '}';
+    }
+
+    public String friendlyDescription(String units) {
+        return Profile.toTargetRangeString(low, high, Constants.MGDL, units) +
+                units +
+                "@" + MainApp.gs(R.string.mins, durationInMinutes) +
+                (reason != null && !reason.equals("") ? "(" + reason + ")" : "");
     }
 
 }

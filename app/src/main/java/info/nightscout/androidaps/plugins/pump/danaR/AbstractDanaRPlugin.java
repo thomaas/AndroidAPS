@@ -1,6 +1,7 @@
 package info.nightscout.androidaps.plugins.pump.danaR;
 
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,6 +29,8 @@ import info.nightscout.androidaps.interfaces.ProfileInterface;
 import info.nightscout.androidaps.interfaces.PumpDescription;
 import info.nightscout.androidaps.interfaces.PumpInterface;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.common.ManufacturerType;
+import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderFragment;
 import info.nightscout.androidaps.plugins.general.actions.defs.CustomAction;
 import info.nightscout.androidaps.plugins.general.actions.defs.CustomActionType;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
@@ -74,6 +77,11 @@ public abstract class AbstractDanaRPlugin extends PluginBase implements PumpInte
             NSProfilePlugin.getPlugin().setPluginEnabled(PluginType.PROFILE, true);
             NSProfilePlugin.getPlugin().setFragmentVisible(PluginType.PROFILE, true);
         }
+    }
+
+    @Override
+    public void switchAllowed(ConfigBuilderFragment.PluginViewHolder.PluginSwitcher pluginSwitcher, FragmentActivity activity) {
+        confirmPumpPluginActivation(pluginSwitcher, activity);
     }
 
     @Override
@@ -186,8 +194,8 @@ public abstract class AbstractDanaRPlugin extends PluginBase implements PumpInte
         if (percent > getPumpDescription().maxTempPercent)
             percent = getPumpDescription().maxTempPercent;
         long now = System.currentTimeMillis();
-        TemporaryBasal runningTB = TreatmentsPlugin.getPlugin().getRealTempBasalFromHistory(now);
-        if (runningTB != null && runningTB.percentRate == percent && !enforceNew) {
+        TemporaryBasal activeTemp = TreatmentsPlugin.getPlugin().getRealTempBasalFromHistory(now);
+        if (activeTemp != null && activeTemp.percentRate == percent && activeTemp.getPlannedRemainingMinutes() > 4 && !enforceNew) {
             result.enacted = false;
             result.success = true;
             result.isTempCancel = false;
@@ -376,7 +384,12 @@ public abstract class AbstractDanaRPlugin extends PluginBase implements PumpInte
     }
 
     @Override
-    public String deviceID() {
+    public ManufacturerType manufacturer() {
+        return ManufacturerType.Sooil;
+    }
+
+    @Override
+    public String serialNumber() {
         return DanaRPump.getInstance().serialNumber;
     }
 
@@ -493,7 +506,10 @@ public abstract class AbstractDanaRPlugin extends PluginBase implements PumpInte
         return false;
     }
 
+    @Override
+    public void timeDateOrTimeZoneChanged() {
 
+    }
 
 
 }

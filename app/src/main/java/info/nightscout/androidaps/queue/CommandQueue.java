@@ -3,9 +3,10 @@ package info.nightscout.androidaps.queue;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.Html;
 import android.text.Spanned;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -386,10 +387,10 @@ public class CommandQueue {
         }
 
         // Compare with pump limits
-        Profile.BasalValue[] basalValues = profile.getBasalValues();
+        Profile.ProfileValue[] basalValues = profile.getBasalValues();
         PumpInterface pump = ConfigBuilderPlugin.getPlugin().getActivePump();
 
-        for (Profile.BasalValue basalValue : basalValues) {
+        for (Profile.ProfileValue basalValue : basalValues) {
             if (basalValue.value < pump.getPumpDescription().basalMinimumRate) {
                 Notification notification = new Notification(Notification.BASAL_VALUE_BELOW_MINIMUM, MainApp.gs(R.string.basalvaluebelowminimum), Notification.URGENT);
                 MainApp.bus().post(new EventNewNotification(notification));
@@ -432,6 +433,19 @@ public class CommandQueue {
 
         return true;
     }
+
+
+    public synchronized boolean statusInQueue() {
+        if (isRunning(Command.CommandType.READSTATUS))
+            return true;
+        for (int i = 0; i < queue.size(); i++) {
+            if (queue.get(i).commandType == Command.CommandType.READSTATUS) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     // returns true if command is queued
     public boolean loadHistory(byte type, Callback callback) {

@@ -1,12 +1,12 @@
 package info.nightscout.androidaps.plugins.insulin;
 
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.fragment.app.Fragment;
 
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
@@ -52,7 +52,7 @@ public class InsulinFragment extends Fragment {
     private void updateGUI() {
         insulinName.setText(ConfigBuilderPlugin.getPlugin().getActiveInsulin().getFriendlyName());
         insulinComment.setText(ConfigBuilderPlugin.getPlugin().getActiveInsulin().getComment());
-        insulinDia.setText(MainApp.gs(R.string.dia) + "  " + Double.toString(ConfigBuilderPlugin.getPlugin().getActiveInsulin().getDia()) + "h");
+        insulinDia.setText(MainApp.gs(R.string.dia) + "  " + ConfigBuilderPlugin.getPlugin().getActiveInsulin().getDia() + "h");
         insulinGraph.show(ConfigBuilderPlugin.getPlugin().getActiveInsulin());
     }
 

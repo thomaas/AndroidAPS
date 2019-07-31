@@ -7,11 +7,16 @@ import android.os.Looper;
 import android.widget.Toast;
 
 import info.nightscout.androidaps.MainApp;
-import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
+import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 
 
 public class ToastUtils {
+    public static void showToastInUiThread(final Context ctx,
+                                           final int stringId) {
+        showToastInUiThread(ctx, MainApp.gs(stringId));
+    }
+
     public static void showToastInUiThread(final Context ctx,
                                            final String string) {
 

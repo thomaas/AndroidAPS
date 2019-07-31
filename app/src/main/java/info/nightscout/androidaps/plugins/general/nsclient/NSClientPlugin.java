@@ -30,6 +30,7 @@ import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginDescription;
 import info.nightscout.androidaps.interfaces.PluginType;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.general.nsclient.events.EventNSClientNewLog;
 import info.nightscout.androidaps.plugins.general.nsclient.events.EventNSClientStatus;
 import info.nightscout.androidaps.plugins.general.nsclient.events.EventNSClientUpdateGUI;
@@ -213,6 +214,7 @@ public class NSClientPlugin extends PluginBase {
         SP.putBoolean(R.string.key_nsclientinternal_paused, newState);
         paused = newState;
         MainApp.bus().post(new EventPreferenceChange(R.string.key_nsclientinternal_paused));
+        RxBus.INSTANCE.send(new EventPreferenceChange(R.string.key_nsclientinternal_paused));
     }
 
     public UploadQueue queue() {
