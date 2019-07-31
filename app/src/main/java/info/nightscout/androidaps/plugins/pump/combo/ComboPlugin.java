@@ -488,8 +488,6 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
                 // bolus needed, ask pump to deliver it
                 return deliverBolus(detailedBolusInfo);
             } else {
-                // TODO refactor
-                if (1==1) throw new IllegalStateException("This path is never taken, is it? If it is, Insight would be borked");
                 // no bolus required, carb only treatment
                 TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false);
 
@@ -808,6 +806,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     public PumpEnactResult cancelTempBasal(boolean enforceNew) {
         if (L.isEnabled(L.PUMP))
             log.debug("cancelTempBasal called");
+        // TODO
         final TemporaryBasal activeTemp = TreatmentsPlugin.getPlugin().getTempBasalFromHistory(System.currentTimeMillis());
         if (enforceNew) {
             CommandResult stateResult = runCommand(MainApp.gs(R.string.combo_pump_action_refreshing), 2, ruffyScripter::readPumpState);
@@ -965,8 +964,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
             }
         } else {
             long now = System.currentTimeMillis();
-            // TODO change to use finder from new DB or move into tx or end an update a running TBR to end now
-            // applies to other access to TreatmentsPlugin as well
+            // TODO
             TemporaryBasal aapsTbr = TreatmentsPlugin.getPlugin().getTempBasalFromHistory(now);
             if (aapsTbr == null || aapsTbr.percentRate != 0) {
                 if (L.isEnabled(L.PUMP)) {
