@@ -44,4 +44,6 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract val profileSwitchDao: ProfileSwitchDao
 
+    abstract val apsResultDao: APSResultDao
+
 }
