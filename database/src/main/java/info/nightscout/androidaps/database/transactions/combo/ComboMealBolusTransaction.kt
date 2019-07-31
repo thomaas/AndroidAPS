@@ -42,7 +42,7 @@ class ComboMealBolusTransaction(
             interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_COMBO
             interfaceIDs.pumpSerial = pumpSerial
             interfaceIDs.pumpId = bolusId
-            inserted.add(this)
+            changes.add(this)
         })
     }
 
@@ -53,7 +53,7 @@ class ComboMealBolusTransaction(
                 amount = carbs,
                 duration = 0
         ).apply {
-            inserted.add(this)
+            changes.add(this)
         })
     }
 
@@ -62,7 +62,7 @@ class ComboMealBolusTransaction(
                 bolusId = bolusDBId,
                 carbsId = carbsDBId
         ).apply {
-            inserted.add(this)
+            changes.add(this)
         })
     }
 }

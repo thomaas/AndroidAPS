@@ -21,7 +21,7 @@ class ComboNewTempBasalTransaction(
                 duration = duration.toLong(),
                 type = TemporaryBasal.Type.NORMAL
         ).apply {
-            inserted.add(this)
+            changes.add(this)
         })
     }
 }

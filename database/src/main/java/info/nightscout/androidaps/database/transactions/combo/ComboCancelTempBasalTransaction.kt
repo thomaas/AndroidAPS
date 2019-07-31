@@ -17,7 +17,7 @@ class ComboCancelTempBasalTransaction: Transaction<Unit>() {
                 duration = 0,
                 type = TemporaryBasal.Type.NORMAL
         ).apply {
-            inserted.add(this)
+            changes.add(this)
         })
     }
 }
