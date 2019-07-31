@@ -25,7 +25,7 @@ import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.database.BlockingAppRepository;
-import info.nightscout.androidaps.database.transactions.combo.ComboCancelTempBasalTransaction;
+import info.nightscout.androidaps.database.transactions.CancelTemporaryBasalTransaction;
 import info.nightscout.androidaps.database.transactions.combo.ComboMealBolusTransaction;
 import info.nightscout.androidaps.database.transactions.combo.ComboNewTempBasalTransaction;
 import info.nightscout.androidaps.db.Source;
@@ -824,7 +824,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
                 return new PumpEnactResult().success(false).enacted(false);
             }
             if (!cancelResult.state.tbrActive) {
-                BlockingAppRepository.INSTANCE.runTransaction(new ComboCancelTempBasalTransaction());
+                BlockingAppRepository.INSTANCE.runTransaction(new CancelTemporaryBasalTransaction());
                 return new PumpEnactResult().isTempCancel(true).success(true).enacted(true);
             } else {
                 return new PumpEnactResult().success(false).enacted(false);
@@ -1105,13 +1105,13 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
         } else if (aapsTbr != null && aapsTbr.getPlannedRemainingMinutes() > 2 && !state.tbrActive) {
             if (L.isEnabled(L.PUMP))
                 log.debug("Ending AAPS-TBR since pump has no TBR active");
-            BlockingAppRepository.INSTANCE.runTransaction(new ComboCancelTempBasalTransaction());
+            BlockingAppRepository.INSTANCE.runTransaction(new CancelTemporaryBasalTransaction());
         } else if (aapsTbr != null && state.tbrActive
                 && (aapsTbr.percentRate != state.tbrPercent ||
                 Math.abs(aapsTbr.getPlannedRemainingMinutes() - state.tbrRemainingDuration) > 2)) {
             if (L.isEnabled(L.PUMP))
                 log.debug("AAPSs and pump-TBR differ; ending AAPS-TBR and creating new TBR based on pump TBR");
-            BlockingAppRepository.INSTANCE.runTransaction(new ComboCancelTempBasalTransaction());
+            BlockingAppRepository.INSTANCE.runTransaction(new CancelTemporaryBasalTransaction());
             BlockingAppRepository.INSTANCE.runTransaction(new ComboNewTempBasalTransaction(
                     PUMP_SERIAL,
                     now + 1000,
