@@ -28,7 +28,7 @@ import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.transactions.combo.ComboCancelTempBasalTransaction;
 import info.nightscout.androidaps.database.transactions.combo.ComboMealBolusTransaction;
 import info.nightscout.androidaps.database.transactions.combo.ComboNewTempBasalTransaction;
-import info.nightscout.androidaps.db.Source;
+import info.nightscout.androidaps.database.transactions.combo.ComboInsertTotalDailyDoseTransaction;
 import info.nightscout.androidaps.db.TDD;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.events.EventInitializationChanged;
@@ -1354,9 +1354,10 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
 
                 Collection<TDD> uniqueColl = map.values();
 
-                for (TDD currTdd : uniqueColl) {
-                    MainApp.getDbHelper().createOrUpdateTDD(currTdd);
-                }
+//                for (TDD currTdd : uniqueColl) {
+                    BlockingAppRepository.INSTANCE.runTransactionForResult(new ComboInsertTotalDailyDoseTransaction(uniqueColl));
+//                            MainApp.getDbHelper().createOrUpdateTDD(currTdd);
+//                }
             }
         }
         return result;
