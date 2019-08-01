@@ -16,6 +16,6 @@ abstract class TotalDailyDoseDao : BaseDao<TotalDailyDose>() {
     @Query("DELETE FROM $TABLE_TOTAL_DAILY_DOSES")
     abstract override fun deleteAllEntries()
 
-    @Query("SELECT * FROM $TABLE_TOTAL_DAILY_DOSES ORDER BY timestamp DESC LIMIT :amount")
+    @Query("SELECT * FROM $TABLE_TOTAL_DAILY_DOSES WHERE referenceId IS NULL and valid = 1 ORDER BY timestamp DESC LIMIT :amount")
     abstract fun getTotalDailyDoses(amount: Int): Single<List<TotalDailyDose>>
 }
