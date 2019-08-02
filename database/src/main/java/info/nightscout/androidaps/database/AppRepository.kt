@@ -26,22 +26,28 @@ object AppRepository {
         database = Room.databaseBuilder(context, AppDatabase::class.java, DB_FILE).build()
     }
 
-    fun <T> runTransaction(transaction: Transaction<T>): Completable = Completable.fromCallable {
-        database.runInTransaction {
-            transaction.database = database
-            transaction.run()
+    fun <T> runTransaction(transaction: Transaction<T>): Completable {
+        val changes = mutableListOf<DBEntry>()
+        return Completable.fromCallable {
+            database.runInTransaction {
+                transaction.database = DelegatedAppDatabase(changes, database)
+                transaction.run()
+            }
+        }.subscribeOn(Schedulers.io()).doOnComplete {
+            changeSubject.onNext(changes)
         }
-    }.subscribeOn(Schedulers.io()).doOnComplete {
-        changeSubject.onNext(transaction.changes)
     }
 
-    fun <T> runTransactionForResult(transaction: Transaction<T>): Single<T> = Single.fromCallable {
-        database.runInTransaction(Callable<T> {
-            transaction.database = database
-            transaction.run()
-        })
-    }.subscribeOn(Schedulers.io()).doOnSuccess {
-        changeSubject.onNext(transaction.changes)
+    fun <T> runTransactionForResult(transaction: Transaction<T>): Single<T> {
+        val changes = mutableListOf<DBEntry>()
+        return Single.fromCallable {
+            database.runInTransaction(Callable<T> {
+                transaction.database = DelegatedAppDatabase(changes, database)
+                transaction.run()
+            })
+        }.subscribeOn(Schedulers.io()).doOnSuccess {
+            changeSubject.onNext(changes)
+        }
     }
 
     fun getLastGlucoseValue(): Maybe<GlucoseValue> = database.glucoseValueDao.getLastGlucoseValue().subscribeOn(Schedulers.io())
