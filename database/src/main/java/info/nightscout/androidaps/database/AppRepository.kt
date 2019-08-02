@@ -52,15 +52,15 @@ object AppRepository {
 
     fun getLastGlucoseValue(): Maybe<GlucoseValue> = database.glucoseValueDao.getLastGlucoseValue().subscribeOn(Schedulers.io())
 
-    fun getLastRecentGlucoseValue(): Maybe<GlucoseValue> = System.currentTimeMillis().let {
+    fun getLastGlucoseValueIfRecent(): Maybe<GlucoseValue> = System.currentTimeMillis().let {
         database.glucoseValueDao.getLastGlucoseValueInTimeRange(it - TimeUnit.MINUTES.toMillis(9), it)
     }.subscribeOn(Schedulers.io())
 
     fun getGlucoseValuesInTimeRange(start: Long, end: Long): Single<List<GlucoseValue>> = database.glucoseValueDao.getGlucoseValuesInTimeRange(start, end).subscribeOn(Schedulers.io())
 
-    fun getProperGlucoseValuesInTimeRange(start: Long, end: Long): Single<List<GlucoseValue>> = database.glucoseValueDao.getProperGlucoseValuesInTimeRange(start, end).subscribeOn(Schedulers.io())
+    fun getGlucoseValuesInTimeRangeIf39OrHigher(start: Long, end: Long): Single<List<GlucoseValue>> = database.glucoseValueDao.getGlucoseValuesInTimeRangeIf39OrHigher(start, end).subscribeOn(Schedulers.io())
 
-    fun getProperGlucoseValuesInTimeRange(timeRange: Long): Flowable<List<GlucoseValue>> = database.glucoseValueDao.getProperGlucoseValuesInTimeRange(timeRange).subscribeOn(Schedulers.io())
+    fun getGlucoseValuesInTimeRangeIf39OrHigher(timeRange: Long): Flowable<List<GlucoseValue>> = database.glucoseValueDao.getGlucoseValuesInTimeRangeIf39OrHigher(timeRange).subscribeOn(Schedulers.io())
 
     fun getTemporaryBasalsInTimeRange(start: Long, end: Long): Flowable<List<TemporaryBasal>> = database.temporaryBasalDao.getTemporaryBasalsInTimeRange(start, end).subscribeOn(Schedulers.io())
 

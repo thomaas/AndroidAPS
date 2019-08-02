@@ -30,8 +30,8 @@ interface GlucoseValueDao : BaseDao<GlucoseValue> {
     fun getGlucoseValuesInTimeRange(start: Long, end: Long): Single<List<GlucoseValue>>
 
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE timestamp >= :start AND timestamp <= :end AND value >= 39 AND referenceId IS NULL AND valid = 1 ORDER BY timestamp ASC")
-    fun getProperGlucoseValuesInTimeRange(start: Long, end: Long): Single<List<GlucoseValue>>
+    fun getGlucoseValuesInTimeRangeIf39OrHigher(start: Long, end: Long): Single<List<GlucoseValue>>
 
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE timestamp >= (julianday('now') - 2440587.5) * 86400000.0 - :timeRange AND timestamp < (julianday('now') - 2440587.5) * 86400000.0 AND referenceId IS NULL AND valid = 1 ORDER BY timestamp ASC")
-    fun getProperGlucoseValuesInTimeRange(timeRange: Long): Flowable<List<GlucoseValue>>
+    fun getGlucoseValuesInTimeRangeIf39OrHigher(timeRange: Long): Flowable<List<GlucoseValue>>
 }
