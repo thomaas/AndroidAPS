@@ -651,7 +651,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
             BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                     System.currentTimeMillis(),
                     defHelper.determineActivityTTDuration() * 60000,
-                    TemporaryTarget.Reason.EATING_SOON,
+                    TemporaryTarget.Reason.ACTIVITY,
                     defHelper.determineActivityTT(profile.getUnits())
             ));
         } else if (item.getTitle().equals(MainApp.gs(R.string.hypo))) {
@@ -659,7 +659,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
             BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                     System.currentTimeMillis(),
                     defHelper.determineHypoTTDuration() * 60000,
-                    TemporaryTarget.Reason.EATING_SOON,
+                    TemporaryTarget.Reason.HYPOGLYCEMIA,
                     defHelper.determineHypoTT(profile.getUnits())
             ));
         } else if (item.getTitle().equals(MainApp.gs(R.string.custom))) {

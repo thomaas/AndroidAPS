@@ -398,7 +398,7 @@ public class NewCarbsDialog extends DialogFragment implements OnClickListener, C
                             BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                                     System.currentTimeMillis(),
                                     finalActivityTTDuration * 60000,
-                                    TemporaryTarget.Reason.EATING_SOON,
+                                    TemporaryTarget.Reason.ACTIVITY,
                                     Profile.toMgdl(finalActivityTT, currentProfile.getUnits())
                             ));
                         } else if (startEatingSoonTTCheckbox.isChecked()) {
@@ -412,7 +412,7 @@ public class NewCarbsDialog extends DialogFragment implements OnClickListener, C
                             BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
                                     System.currentTimeMillis(),
                                     finalHypoTTDuration * 60000,
-                                    TemporaryTarget.Reason.EATING_SOON,
+                                    TemporaryTarget.Reason.HYPOGLYCEMIA,
                                     Profile.toMgdl(finalHypoTT, currentProfile.getUnits())
                             ));
                         }
