@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.AppTheme_NoActionBar);
         super.onCreate(savedInstanceState);
 
         if (L.isEnabled(L.CORE))
@@ -334,7 +335,7 @@ public class MainActivity extends AppCompatActivity {
                     case AndroidPermission.CASE_LOCATION:
                     case AndroidPermission.CASE_SMS:
                     case AndroidPermission.CASE_BATTERY:
-                    case AndroidPermission.CASE_PHONESTATE:
+                    case AndroidPermission.CASE_PHONE_STATE:
                         break;
                 }
             }

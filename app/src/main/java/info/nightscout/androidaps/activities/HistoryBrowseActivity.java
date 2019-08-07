@@ -46,7 +46,7 @@ import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventIobCa
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.T;
 
-public class HistoryBrowseActivity extends AppCompatActivity {
+public class HistoryBrowseActivity extends NoSplashActivity {
     private static Logger log = LoggerFactory.getLogger(HistoryBrowseActivity.class);
 
 
@@ -83,7 +83,7 @@ public class HistoryBrowseActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_historybrowse);
 
