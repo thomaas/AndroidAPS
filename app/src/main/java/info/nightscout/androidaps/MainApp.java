@@ -192,6 +192,7 @@ public class MainApp extends Application {
         }
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        mFirebaseAnalytics.setAnalyticsCollectionEnabled(!Boolean.getBoolean("disableFirebase"));
 
         JodaTimeAndroid.init(this);
 
