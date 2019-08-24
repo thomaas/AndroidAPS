@@ -41,6 +41,7 @@ import info.nightscout.androidaps.plugins.aps.openAPSMA.OpenAPSMAPlugin;
 import info.nightscout.androidaps.plugins.aps.openAPSSMB.OpenAPSSMBPlugin;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.constraints.dstHelper.DstHelperPlugin;
+import info.nightscout.androidaps.plugins.constraints.lgsWatchdog.LgsWatchdogPlugin;
 import info.nightscout.androidaps.plugins.constraints.objectives.ObjectivesPlugin;
 import info.nightscout.androidaps.plugins.constraints.safety.SafetyPlugin;
 import info.nightscout.androidaps.plugins.constraints.storage.StorageConstraintPlugin;
@@ -207,6 +208,7 @@ public class MainApp extends Application {
             if (Config.SAFETY) pluginsList.add(VersionCheckerPlugin.INSTANCE);
             if (Config.SAFETY) pluginsList.add(StorageConstraintPlugin.getPlugin());
             if (Config.SAFETY) pluginsList.add(SignatureVerifier.getPlugin());
+            if (Config.SAFETY) pluginsList.add(LgsWatchdogPlugin.INSTANCE);
             if (Config.APS) pluginsList.add(ObjectivesPlugin.getPlugin());
             pluginsList.add(SourceXdripPlugin.getPlugin());
             pluginsList.add(SourceNSClientPlugin.getPlugin());

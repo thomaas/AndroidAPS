@@ -27,7 +27,7 @@ class BasalElement(tbr: TemporaryBasal)
     init {
         type = "basal"
         timestamp = tbr.date
-        rate = tbr.tempBasalConvertedToAbsolute(tbr.date, ProfileFunctions.getInstance().getProfile(tbr.date))
+        rate = ProfileFunctions.getInstance().getProfile(tbr.date)?.let { tbr.tempBasalConvertedToAbsolute(tbr.date, it) } ?: 0.0
         duration = tbr.end() - tbr.start()
     }
 

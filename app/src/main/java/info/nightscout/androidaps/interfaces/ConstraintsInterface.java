@@ -1,65 +1,67 @@
 package info.nightscout.androidaps.interfaces;
 
+import androidx.annotation.NonNull;
+
 import info.nightscout.androidaps.data.Profile;
 
 /**
  * Created by mike on 15.06.2016.
  */
 public interface ConstraintsInterface {
-
-    default Constraint<Boolean> isLoopInvocationAllowed(Constraint<Boolean> value) {
+    @NonNull
+    default Constraint<Boolean> isLoopInvocationAllowed(@NonNull Constraint<Boolean> value) {
         return value;
     }
-
-    default Constraint<Boolean> isClosedLoopAllowed(Constraint<Boolean> value) {
+    @NonNull
+    default Constraint<Boolean> isClosedLoopAllowed(@NonNull Constraint<Boolean> value) {
         return value;
     }
-
-    default Constraint<Boolean> isAutosensModeEnabled(Constraint<Boolean> value) {
+    @NonNull
+    default Constraint<Boolean> isAutosensModeEnabled(@NonNull Constraint<Boolean> value) {
         return value;
     }
-
-    default Constraint<Boolean> isAMAModeEnabled(Constraint<Boolean> value) {
+    @NonNull
+    default Constraint<Boolean> isAMAModeEnabled(@NonNull Constraint<Boolean> value) {
         return value;
     }
-
-    default Constraint<Boolean> isSMBModeEnabled(Constraint<Boolean> value) {
+    @NonNull
+    default Constraint<Boolean> isSMBModeEnabled(@NonNull Constraint<Boolean> value) {
         return value;
     }
-
-    default Constraint<Boolean> isUAMEnabled(Constraint<Boolean> value) {
+    @NonNull
+    default Constraint<Boolean> isUAMEnabled(@NonNull Constraint<Boolean> value) {
         return value;
     }
-
-    default Constraint<Boolean> isAdvancedFilteringEnabled(Constraint<Boolean> value) {
+    @NonNull
+    default Constraint<Boolean> isAdvancedFilteringEnabled(@NonNull Constraint<Boolean> value) {
         return value;
     }
-
-    default Constraint<Boolean> isSuperBolusEnabled(Constraint<Boolean> value) {
+    @NonNull
+    default Constraint<Boolean> isSuperBolusEnabled(@NonNull Constraint<Boolean> value) {
         return value;
     }
-
-    default Constraint<Double> applyBasalConstraints(Constraint<Double> absoluteRate, Profile profile) {
+    @NonNull
+    default Constraint<Double> applyBasalConstraints(@NonNull Constraint<Double> absoluteRate, @NonNull Profile profile) {
         return absoluteRate;
     }
-
-    default Constraint<Integer> applyBasalPercentConstraints(Constraint<Integer> percentRate, Profile profile) {
+    @NonNull
+    default Constraint<Integer> applyBasalPercentConstraints(@NonNull Constraint<Integer> percentRate, @NonNull Profile profile) {
         return percentRate;
     }
-
-    default Constraint<Double>  applyBolusConstraints(Constraint<Double>  insulin) {
+    @NonNull
+    default Constraint<Double>  applyBolusConstraints(@NonNull Constraint<Double>  insulin) {
         return insulin;
     }
-
-    default Constraint<Double>  applyExtendedBolusConstraints(Constraint<Double>  insulin) {
+    @NonNull
+    default Constraint<Double>  applyExtendedBolusConstraints(@NonNull Constraint<Double>  insulin) {
         return insulin;
     }
-
-    default Constraint<Integer> applyCarbsConstraints(Constraint<Integer> carbs) {
+    @NonNull
+    default Constraint<Integer> applyCarbsConstraints(@NonNull Constraint<Integer> carbs) {
         return carbs;
     }
-
-    default Constraint<Double> applyMaxIOBConstraints(Constraint<Double> maxIob) {
+    @NonNull
+    default Constraint<Double> applyMaxIOBConstraints(@NonNull Constraint<Double> maxIob) {
         return maxIob;
     }
 

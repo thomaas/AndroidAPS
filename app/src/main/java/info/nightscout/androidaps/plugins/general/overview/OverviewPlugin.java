@@ -16,11 +16,15 @@ import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginDescription;
 import info.nightscout.androidaps.interfaces.PluginType;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.NotificationStore;
+import info.nightscout.androidaps.utils.FabricPrivacy;
 import info.nightscout.androidaps.utils.SP;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Created by mike on 05.08.2016.
@@ -35,6 +39,8 @@ public class OverviewPlugin extends PluginBase {
             overviewPlugin = new OverviewPlugin();
         return overviewPlugin;
     }
+
+    private CompositeDisposable disposable = new CompositeDisposable();
 
     public static double bgTargetLow = 80d;
     public static double bgTargetHigh = 180d;
@@ -66,10 +72,29 @@ public class OverviewPlugin extends PluginBase {
     protected void onStart() {
         MainApp.bus().register(this);
         super.onStart();
+        disposable.add(RxBus.INSTANCE
+                .toObservable(EventNewNotification.class)
+                .observeOn(Schedulers.io())
+                .subscribe(
+                        eventNewNotification -> {
+                            if (notificationStore.add(eventNewNotification.notification))
+                                MainApp.bus().post(new EventRefreshOverview("EventNewNotification"));
+                        }, FabricPrivacy::logException
+                ));
+        disposable.add(RxBus.INSTANCE
+                .toObservable(EventDismissNotification.class)
+                .observeOn(Schedulers.io())
+                .subscribe(
+                        eventDismissNotification -> {
+                            if (notificationStore.remove(eventDismissNotification.id))
+                                MainApp.bus().post(new EventRefreshOverview("EventDismissNotification"));
+                        }, FabricPrivacy::logException
+                ));
     }
 
     @Override
     protected void onStop() {
+        disposable.clear();
         MainApp.bus().unregister(this);
         super.onStop();
     }

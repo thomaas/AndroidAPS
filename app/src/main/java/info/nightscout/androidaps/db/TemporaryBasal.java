@@ -1,5 +1,7 @@
 package info.nightscout.androidaps.db;
 
+import androidx.annotation.NonNull;
+
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -365,7 +367,7 @@ public class TemporaryBasal implements Interval, DbObjectBase {
         return (remainingMin < 0) ? 0 : Math.round(remainingMin);
     }
 
-    public double tempBasalConvertedToAbsolute(long time, Profile profile) {
+    public double tempBasalConvertedToAbsolute(long time, @NonNull Profile profile) {
         if (isFakeExtended) {
             return profile.getBasal(time) + netExtendedRate;
         } else if (isAbsolute) {
