@@ -31,6 +31,7 @@ import info.nightscout.androidaps.plugins.common.SubscriberFragment;
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
 import info.nightscout.androidaps.plugins.general.nsclient.UploadQueue;
 import info.nightscout.androidaps.services.Intents;
+import info.nightscout.androidaps.plugins.general.nsclient.events.EventNSClientRestart;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.utils.Translator;
@@ -161,6 +162,8 @@ public class TreatmentsCareportalFragment extends SubscriberFragment implements 
                         //MainApp.getDbHelper().resetCareportalEvents();
                         Intent restartNSClient = new Intent(Intents.ACTION_RESTART);
                         MainApp.instance().getApplicationContext().sendBroadcast(restartNSClient);
+                        MainApp.getDbHelper().resetCareportalEvents();
+                        MainApp.bus().post(new EventNSClientRestart());
                     }
                 });
                 builder.setNegativeButton(MainApp.gs(R.string.cancel), null);
