@@ -52,7 +52,6 @@ import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DecimalFormatter;
 import info.nightscout.androidaps.utils.GlucoseValueUtilsKt;
 import info.nightscout.androidaps.utils.Round;
-import info.nightscout.androidaps.utils.SP;
 
 /**
  * Created by mike on 18.10.2017.
@@ -773,8 +772,8 @@ public class GraphData {
         @Override
         public int getColor() {
             String units = ProfileFunctions.getInstance().getProfileUnits();
-            Double lowLine = OverviewPlugin.getPlugin().determineLowLine(units);
-            Double highLine = OverviewPlugin.getPlugin().determineHighLine(units);
+            double lowLine = OverviewPlugin.INSTANCE.determineLowLine(units);
+            double highLine = OverviewPlugin.INSTANCE.determineHighLine(units);
             int color = MainApp.gc(R.color.inrange);
             double value = GlucoseValueUtilsKt.valueToUnits(glucoseValue.getValue(), units);
             if (value < lowLine)

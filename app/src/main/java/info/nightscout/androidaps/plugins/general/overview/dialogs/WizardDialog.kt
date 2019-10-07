@@ -6,7 +6,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.*
 import android.widget.AdapterView
-import android.widget.AdapterView.*
+import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import android.widget.CompoundButton
 import androidx.fragment.app.DialogFragment
@@ -14,7 +14,7 @@ import info.nightscout.androidaps.Constants
 import info.nightscout.androidaps.MainApp
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.data.Profile
-import info.nightscout.androidaps.db.DatabaseHelper
+import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.events.EventFeatureRunning
 import info.nightscout.androidaps.interfaces.Constraint
 import info.nightscout.androidaps.plugins.bus.RxBus
@@ -217,10 +217,10 @@ class WizardDialog : DialogFragment() {
             treatments_wizard_bginput.setStep(0.1)
 
         // Set BG if not old
-        val lastBg = DatabaseHelper.actualBg()
+        val lastBg = BlockingAppRepository.getLastGlucoseValueIfRecent()
 
         if (lastBg != null) {
-            treatments_wizard_bginput.value = lastBg.valueToUnits(units)
+            treatments_wizard_bginput.value = valueToUnits(lastBg.value, units)
         } else {
             treatments_wizard_bginput.value = 0.0
         }
