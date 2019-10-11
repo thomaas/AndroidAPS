@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.transactions.insight
 
-import info.nightscout.androidaps.database.AppRepository
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.Bolus
 import info.nightscout.androidaps.database.entities.Carbs

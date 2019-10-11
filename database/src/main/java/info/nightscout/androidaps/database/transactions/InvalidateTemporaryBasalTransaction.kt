@@ -1,7 +1,8 @@
 package info.nightscout.androidaps.database.transactions
 
-import info.nightscout.androidaps.database.AppRepository
-
+/**
+ * Invalidates the TemporaryBasal with the specified id
+ */
 class InvalidateTemporaryBasalTransaction(val id: Long) : Transaction<Unit>() {
 
     override fun run() {

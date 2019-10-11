@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.transactions.insight
 
-import info.nightscout.androidaps.database.AppRepository
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.*
 import info.nightscout.androidaps.database.entities.links.MultiwaveBolusLink
@@ -273,26 +272,29 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
         boluses.groupBy { it.bolusId }
                 .map { entry -> entry.value.find { it.start } to entry.value.findLast { !it.start } }
                 .forEach {
-            val type = it.first?.type ?: it.second!!.type
-            val timestamp = it.first?.timestamp ?: it.second!!.timestamp
-            val utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong()
-            val bolusId = (it.first?.bolusId ?: it.second!!.bolusId).toLong()
-            val startId = it.first?.eventId
-            val endId = it.second?.eventId
-            val (bolusDatabaseId, bolusCreated) = if (type == Bolus.Type.STANDARD || type == Bolus.Type.MULTIWAVE) {
-                saveStandardBolus(timestamp, utcOffset, it.second?.immediateAmount ?: it.first!!.immediateAmount, bolusId, startId, endId)
-            } else {
-                null to false
-            }
-            val (extendedBolusDatabaseId, extendedBolusCreated) = if (type == Bolus.Type.EXTENDED || type == Bolus.Type.MULTIWAVE) {
-                saveExtendedBolus(timestamp, utcOffset, it.second?.extendedAmount ?: it.first!!.extendedAmount, it.second?.duration ?: it.first!!.duration, bolusId, startId, endId)
-            } else {
-                null to false
-            }
-            if (bolusDatabaseId != null && extendedBolusDatabaseId != null) {
-                saveMultiwaveBolusLink(bolusCreated && extendedBolusCreated, bolusId, startId, endId, bolusDatabaseId, extendedBolusDatabaseId)
-            }
-        }
+                    val type = it.first?.type ?: it.second!!.type
+                    val timestamp = it.first?.timestamp ?: it.second!!.timestamp
+                    val utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong()
+                    val bolusId = (it.first?.bolusId ?: it.second!!.bolusId).toLong()
+                    val startId = it.first?.eventId
+                    val endId = it.second?.eventId
+                    val (bolusDatabaseId, bolusCreated) = if (type == Bolus.Type.STANDARD || type == Bolus.Type.MULTIWAVE) {
+                        saveStandardBolus(timestamp, utcOffset, it.second?.immediateAmount
+                                ?: it.first!!.immediateAmount, bolusId, startId, endId)
+                    } else {
+                        null to false
+                    }
+                    val (extendedBolusDatabaseId, extendedBolusCreated) = if (type == Bolus.Type.EXTENDED || type == Bolus.Type.MULTIWAVE) {
+                        saveExtendedBolus(timestamp, utcOffset, it.second?.extendedAmount
+                                ?: it.first!!.extendedAmount, it.second?.duration
+                                ?: it.first!!.duration, bolusId, startId, endId)
+                    } else {
+                        null to false
+                    }
+                    if (bolusDatabaseId != null && extendedBolusDatabaseId != null) {
+                        saveMultiwaveBolusLink(bolusCreated && extendedBolusCreated, bolusId, startId, endId, bolusDatabaseId, extendedBolusDatabaseId)
+                    }
+                }
     }
 
     data class TotalDailyDose(

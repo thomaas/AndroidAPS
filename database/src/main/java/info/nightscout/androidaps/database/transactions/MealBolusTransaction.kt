@@ -1,11 +1,13 @@
 package info.nightscout.androidaps.database.transactions
 
-import info.nightscout.androidaps.database.AppRepository
 import info.nightscout.androidaps.database.entities.Bolus
 import info.nightscout.androidaps.database.entities.Carbs
 import info.nightscout.androidaps.database.entities.links.MealLink
 import java.util.*
 
+/**
+ * Inserts a Bolus, Carbs, a BolusCalculatorResult and a MealLink into the database
+ */
 class MealBolusTransaction(
         val timestamp: Long,
         val insulin: Double,

@@ -1,7 +1,8 @@
 package info.nightscout.androidaps.database.transactions
 
-import info.nightscout.androidaps.database.AppRepository
-
+/**
+ * Invalidates the backing entries of a MergedBolus
+ */
 class InvalidateMergedBolusTransaction(val mergedBolus: MergedBolus) : Transaction<Unit>() {
     override fun run() {
         mergedBolus.bolus?.let {

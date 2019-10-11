@@ -4,7 +4,7 @@ import info.nightscout.androidaps.database.daos.TemporaryTargetDao
 import info.nightscout.androidaps.database.entities.TemporaryTarget
 import info.nightscout.androidaps.database.interfaces.DBEntry
 
-class DelegatedTemporaryTargetDao(changes: MutableList<DBEntry>, dao: TemporaryTargetDao) : DelegatedDao(changes), TemporaryTargetDao by dao {
+internal class DelegatedTemporaryTargetDao(changes: MutableList<DBEntry>, dao: TemporaryTargetDao) : DelegatedDao(changes), TemporaryTargetDao by dao {
 
     override fun insertNewEntry(entry: TemporaryTarget): Long {
         changes.add(entry)

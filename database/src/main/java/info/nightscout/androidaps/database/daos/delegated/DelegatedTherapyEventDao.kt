@@ -4,7 +4,7 @@ import info.nightscout.androidaps.database.daos.TherapyEventDao
 import info.nightscout.androidaps.database.entities.TherapyEvent
 import info.nightscout.androidaps.database.interfaces.DBEntry
 
-class DelegatedTherapyEventDao(changes: MutableList<DBEntry>, dao: TherapyEventDao) : DelegatedDao(changes), TherapyEventDao by dao {
+internal class DelegatedTherapyEventDao(changes: MutableList<DBEntry>, dao: TherapyEventDao) : DelegatedDao(changes), TherapyEventDao by dao {
 
     override fun insertNewEntry(entry: TherapyEvent): Long {
         changes.add(entry)

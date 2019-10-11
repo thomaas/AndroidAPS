@@ -1,11 +1,13 @@
 package info.nightscout.androidaps.database.transactions
 
-import info.nightscout.androidaps.database.AppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
 import info.nightscout.androidaps.database.entities.TherapyEvent
 import java.util.*
 
-class GlucoseValuesTransaction(
+/**
+ * Inserts data from a CGM source into the database
+ */
+class CgmSourceTransaction(
         private val glucoseValues: List<GlucoseValue>,
         private val calibrations: List<Calibration>,
         private val sensorInsertionTime: Long?

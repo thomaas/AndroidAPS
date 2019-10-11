@@ -2,14 +2,13 @@ package info.nightscout.androidaps.plugins.source
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.core.content.ContextCompat
 import info.nightscout.androidaps.MainApp
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.activities.RequestDexcomPermissionActivity
 import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.GlucoseValue
-import info.nightscout.androidaps.database.transactions.GlucoseValuesTransaction
+import info.nightscout.androidaps.database.transactions.CgmSourceTransaction
 import info.nightscout.androidaps.interfaces.BgSourceInterface
 import info.nightscout.androidaps.interfaces.PluginBase
 import info.nightscout.androidaps.interfaces.PluginDescription
@@ -62,10 +61,10 @@ object SourceDexcomPlugin : PluginBase(PluginDescription()
         if (!isEnabled(PluginType.BGSOURCE)) return
         try {
             val glucoseValuesBundle = intent.getBundleExtra("glucoseValues")!!
-            val glucoseValues = mutableListOf<GlucoseValuesTransaction.GlucoseValue>()
+            val glucoseValues = mutableListOf<CgmSourceTransaction.GlucoseValue>()
             for (i in 0 until glucoseValuesBundle.size()) {
                 val glucoseValueBundle = glucoseValuesBundle.getBundle(i.toString())!!
-                glucoseValues.add(GlucoseValuesTransaction.GlucoseValue(
+                glucoseValues.add(CgmSourceTransaction.GlucoseValue(
                         timestamp = glucoseValueBundle.getLong("timestamp") * 1000,
                         value = glucoseValueBundle.getInt("glucoseValue").toDouble(),
                         noise = null,
@@ -75,10 +74,10 @@ object SourceDexcomPlugin : PluginBase(PluginDescription()
                 ))
             }
             val meters = intent.getBundleExtra("meters")
-            val calibrations = mutableListOf<GlucoseValuesTransaction.Calibration>()
+            val calibrations = mutableListOf<CgmSourceTransaction.Calibration>()
             for (i in 0 until meters.size()) {
                 val meter = meters.getBundle(i.toString())!!
-                calibrations.add(GlucoseValuesTransaction.Calibration(meter.getLong("timestamp") * 1000,
+                calibrations.add(CgmSourceTransaction.Calibration(meter.getLong("timestamp") * 1000,
                         meter.getInt("meterValue").toDouble()))
             }
             val sensorStartTime = if (SP.getBoolean(R.string.key_dexcom_lognssensorchange, false)) {
@@ -90,7 +89,7 @@ object SourceDexcomPlugin : PluginBase(PluginDescription()
             } else {
                 null
             }
-            BlockingAppRepository.runTransactionForResult(GlucoseValuesTransaction(glucoseValues, calibrations, sensorStartTime)).forEach {
+            BlockingAppRepository.runTransactionForResult(CgmSourceTransaction(glucoseValues, calibrations, sensorStartTime)).forEach {
                 if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
                     NSUpload.uploadBg(it, "AndroidAPS-Poctech")
                 }
