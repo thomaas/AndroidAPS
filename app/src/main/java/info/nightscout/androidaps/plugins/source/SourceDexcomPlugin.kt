@@ -60,7 +60,12 @@ object SourceDexcomPlugin : PluginBase(PluginDescription()
     override fun handleNewData(intent: Intent) {
         if (!isEnabled(PluginType.BGSOURCE)) return
         try {
-            val sensorType = when (intent.getStringExtra("sensorType"))
+            val sensorType = intent.getStringExtra("sensorType") ?: ""
+            val sourceSensor = when (sensorType) {
+                "G6" -> GlucoseValue.SourceSensor.DEXCOM_G6_NATIVE
+                "G5" -> GlucoseValue.SourceSensor.DEXCOM_G5_NATIVE
+                else -> GlucoseValue.SourceSensor.DEXCOM_NATIVE_UNKNOWN
+            }
             val glucoseValuesBundle = intent.getBundleExtra("glucoseValues")!!
             val glucoseValues = mutableListOf<CgmSourceTransaction.GlucoseValue>()
             for (i in 0 until glucoseValuesBundle.size()) {
@@ -71,7 +76,7 @@ object SourceDexcomPlugin : PluginBase(PluginDescription()
                         noise = null,
                         raw = null,
                         trendArrow = glucoseValueBundle.getString("trendArrow")!!.toTrendArrow(),
-                        sourceSensor = GlucoseValue.SourceSensor.DEXCOM_NATIVE_UNKNOWN
+                        sourceSensor = sourceSensor
                 ))
             }
             val meters = intent.getBundleExtra("meters")
@@ -92,7 +97,7 @@ object SourceDexcomPlugin : PluginBase(PluginDescription()
             }
             BlockingAppRepository.runTransactionForResult(CgmSourceTransaction(glucoseValues, calibrations, sensorStartTime)).forEach {
                 if (SP.getBoolean(R.string.key_dexcomg5_nsupload, false)) {
-                    NSUpload.uploadBg(it, "AndroidAPS-Poctech")
+                    NSUpload.uploadBg(it, "AndroidAPS-$sensorType")
                 }
                 if (SP.getBoolean(R.string.key_dexcomg5_xdripupload, false)) {
                     NSUpload.sendToXdrip(it)
