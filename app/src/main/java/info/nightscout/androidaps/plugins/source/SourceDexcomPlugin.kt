@@ -60,6 +60,7 @@ object SourceDexcomPlugin : PluginBase(PluginDescription()
     override fun handleNewData(intent: Intent) {
         if (!isEnabled(PluginType.BGSOURCE)) return
         try {
+            val sensorType = when (intent.getStringExtra("sensorType"))
             val glucoseValuesBundle = intent.getBundleExtra("glucoseValues")!!
             val glucoseValues = mutableListOf<CgmSourceTransaction.GlucoseValue>()
             for (i in 0 until glucoseValuesBundle.size()) {
