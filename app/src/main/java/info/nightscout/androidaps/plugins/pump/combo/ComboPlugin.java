@@ -489,6 +489,8 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
                 return deliverBolus(detailedBolusInfo);
             } else {
                 // no bolus required, carb only treatment
+                // TODO; method can be simplified to reject any invalid request where bolus == 0;
+                // a call asking for that would be a coder error
                 TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false);
 
                 EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
@@ -1091,6 +1093,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     private void checkAndResolveTbrMismatch(PumpState state) {
         // compare with: info.nightscout.androidaps.plugins.PumpDanaR.comm.MsgStatusTempBasal.updateTempBasalInDB()
         long now = System.currentTimeMillis();
+        // TODO
         TemporaryBasal aapsTbr = TreatmentsPlugin.getPlugin().getTempBasalFromHistory(now);
         if (aapsTbr == null && state.tbrActive && state.tbrRemainingDuration > 2) {
             if (L.isEnabled(L.PUMP))
@@ -1352,6 +1355,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
 
                 Collection<TDD> uniqueColl = map.values();
 
+                // TODO
 //                for (TDD currTdd : uniqueColl) {
                     BlockingAppRepository.INSTANCE.runTransactionForResult(new ComboInsertTotalDailyDoseTransaction(uniqueColl));
 //                            MainApp.getDbHelper().createOrUpdateTDD(currTdd);
