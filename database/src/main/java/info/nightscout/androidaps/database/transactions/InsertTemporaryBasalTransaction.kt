@@ -12,7 +12,7 @@ class InsertTemporaryBasalTransaction(val timestamp: Long, val duration: Long, v
                 timestamp = timestamp,
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                 type = TemporaryBasal.Type.NORMAL,
-                absolute = absolute,
+                isAbsolute = absolute,
                 rate = rate,
                 duration = duration
         ))

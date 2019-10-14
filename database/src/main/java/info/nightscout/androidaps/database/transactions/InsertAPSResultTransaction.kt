@@ -30,7 +30,7 @@ class InsertAPSResultTransaction(
                 profileJson = profileJson,
                 autosensDataJson = autosensDataJson,
                 mealDataJson = mealDataJson,
-                microBolusAllowed = microBolusAllowed,
+                isMicroBolusAllowed = microBolusAllowed,
                 resultJson = resultJson
         ))
     }

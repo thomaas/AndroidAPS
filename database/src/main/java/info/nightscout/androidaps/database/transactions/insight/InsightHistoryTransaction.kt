@@ -88,7 +88,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
                     utcOffset = TimeZone.getDefault().getOffset(dateStopped).toLong(),
                     timestamp = dateStopped,
                     duration = startEvent.timestamp - dateStopped,
-                    absolute = false,
+                    isAbsolute = false,
                     rate = 0.0,
                     type = info.nightscout.androidaps.database.entities.TemporaryBasal.Type.PUMP_SUSPEND
             ).apply {
@@ -142,7 +142,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             dbTBR = TemporaryBasal(
                     utcOffset = TimeZone.getDefault().getOffset(temporaryBasal.timestamp).toLong(),
                     timestamp = temporaryBasal.timestamp,
-                    absolute = false,
+                    isAbsolute = false,
                     rate = temporaryBasal.percentage.toDouble(),
                     duration = temporaryBasal.duration,
                     type = info.nightscout.androidaps.database.entities.TemporaryBasal.Type.NORMAL
@@ -175,7 +175,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
             val id = database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
                     utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                     timestamp = timestamp,
-                    absolute = false,
+                    isAbsolute = false,
                     rate = percentage.toDouble(),
                     duration = duration,
                     type = info.nightscout.androidaps.database.entities.TemporaryBasal.Type.NORMAL
@@ -236,7 +236,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
                     timestamp = timestamp,
                     amount = amount,
                     duration = duration,
-                    emulatingTempBasal = false
+                    isEmulatingTempBasal = false
             )
             extendedBolus.interfaceIDs.pumpId = bolusId
             extendedBolus.interfaceIDs.startId = startId

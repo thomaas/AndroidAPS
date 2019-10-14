@@ -7,7 +7,7 @@ class InvalidateGlucoseValueTransaction(val id: Long) : Transaction<Unit>() {
     override fun run() {
         val glucoseValue = database.glucoseValueDao.findById(id)
                 ?: throw IllegalArgumentException("There is no such GlucoseValue with the specified ID.")
-        glucoseValue.valid = false
+        glucoseValue.isValid = false
         database.glucoseValueDao.updateExistingEntry(glucoseValue)
     }
 }

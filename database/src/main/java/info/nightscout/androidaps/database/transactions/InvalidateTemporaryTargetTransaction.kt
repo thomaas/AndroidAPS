@@ -8,7 +8,7 @@ class InvalidateTemporaryTargetTransaction(val id: Long) : Transaction<Unit>() {
     override fun run() {
         val tempBasal = database.temporaryTargetDao.findById(id)
                 ?: throw IllegalArgumentException("There is no such TemporaryTarget with the specified ID.")
-        tempBasal.valid = false
+        tempBasal.isValid = false
         database.temporaryTargetDao.updateExistingEntry(tempBasal)
     }
 }

@@ -22,7 +22,7 @@ class InsightExtendedBolusTransaction(
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                 amount = amount,
                 duration = duration,
-                emulatingTempBasal = emulatingTempBasal
+                isEmulatingTempBasal = emulatingTempBasal
         ).apply {
             interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
             interfaceIDs.pumpSerial = pumpSerial

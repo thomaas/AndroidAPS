@@ -18,7 +18,7 @@ class InsertTemporaryBasalAndCancelCurrentTransaction(val timestamp: Long, val d
                 timestamp = timestamp,
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                 type = TemporaryBasal.Type.NORMAL,
-                absolute = absolute,
+                isAbsolute = absolute,
                 rate = rate,
                 duration = duration
         ))

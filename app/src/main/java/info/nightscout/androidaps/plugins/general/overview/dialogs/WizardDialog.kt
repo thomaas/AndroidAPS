@@ -310,7 +310,7 @@ class WizardDialog : DialogFragment() {
                 treatment_wizard_notes.text.toString(), carbTime)
 
         wizard?.let { wizard ->
-            treatments_wizard_bg.text = String.format(MainApp.gs(R.string.format_bg_isf), BgReading().value(Profile.toMgdl(c_bg, specificProfile.units)).valueToUnitsToString(specificProfile.units), wizard.sens)
+            treatments_wizard_bg.text = String.format(MainApp.gs(R.string.format_bg_isf), valueToUnitsString(valueToUnits(c_bg, specificProfile.units), specificProfile.units), wizard.sens)
             treatments_wizard_bginsulin.text = StringUtils.formatInsulin(wizard.insulinFromBG)
 
             treatments_wizard_carbs.text = String.format(MainApp.gs(R.string.format_carbs_ic), c_carbs.toDouble(), wizard.ic)

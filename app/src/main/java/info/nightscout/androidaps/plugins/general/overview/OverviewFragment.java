@@ -1029,7 +1029,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
                 color = MainApp.gc(R.color.low);
             else if (GlucoseValueUtilsKt.valueToUnits(lastBG.getValue(), units) > highLine)
                 color = MainApp.gc(R.color.high);
-            bgView.setText(GlucoseValueUtilsKt.valueToUnitsToString(lastBG.getValue(), units));
+            bgView.setText(GlucoseValueUtilsKt.valueToUnitsString(lastBG.getValue(), units));
             arrowView.setText(GlucoseValueUtilsKt.toSymbol(lastBG.getTrendArrow()));
             bgView.setTextColor(color);
             arrowView.setTextColor(color);

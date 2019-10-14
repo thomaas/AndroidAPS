@@ -17,8 +17,6 @@ import androidx.core.app.TaskStackBuilder;
 
 import com.squareup.otto.Subscribe;
 
-import javax.annotation.Nonnull;
-
 import info.nightscout.androidaps.Constants;
 import info.nightscout.androidaps.MainActivity;
 import info.nightscout.androidaps.MainApp;
@@ -140,7 +138,7 @@ public class PersistentNotificationPlugin extends PluginBase {
             GlucoseStatus glucoseStatus = GlucoseStatus.getGlucoseStatusData();
 
             if (lastBG != null) {
-                line1 = line1_aa = GlucoseValueUtilsKt.valueToUnitsToString(lastBG.getValue(), units);
+                line1 = line1_aa = GlucoseValueUtilsKt.valueToUnitsString(lastBG.getValue(), units);
                 if (glucoseStatus != null) {
                     line1 += "  Δ" + deltastring(glucoseStatus.delta, glucoseStatus.delta * Constants.MGDL_TO_MMOLL, units)
                             + " avgΔ" + deltastring(glucoseStatus.avgdelta, glucoseStatus.avgdelta * Constants.MGDL_TO_MMOLL, units);

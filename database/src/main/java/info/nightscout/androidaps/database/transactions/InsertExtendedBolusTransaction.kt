@@ -13,7 +13,7 @@ class InsertExtendedBolusTransaction(val timestamp: Long, val duration: Long, va
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                 amount = amount,
                 duration = duration,
-                emulatingTempBasal = false
+                isEmulatingTempBasal = false
         ))
     }
 }
