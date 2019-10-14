@@ -206,7 +206,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
                     timestamp = timestamp,
                     amount = amount,
                     type = info.nightscout.androidaps.database.entities.Bolus.Type.NORMAL,
-                    basalInsulin = false
+                    isBasalInsulin = false
             )
             bolus.interfaceIDs.pumpId = bolusId
             bolus.interfaceIDs.startId = startId

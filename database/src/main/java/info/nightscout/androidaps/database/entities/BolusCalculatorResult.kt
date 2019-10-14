@@ -36,7 +36,7 @@ data class BolusCalculatorResult(
         var glucoseDifference: Double,
         var glucoseInsulin: Double,
         var glucoseTrend: Double,
-        var trendUsed: Boolean,
+        var wasTrendUsed: Boolean,
         var trendInsulin: Double,
         var cob: Double,
         var wasCOBUsed: Boolean,

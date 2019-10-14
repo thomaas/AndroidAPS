@@ -30,7 +30,7 @@ fun BolusCalculatorResult.nsJSON(): String {
     boluscalcJSON.put("insulin", totalInsulin)
     boluscalcJSON.put("superbolusused", wasSuperbolusUsed)
     boluscalcJSON.put("insulinsuperbolus", superbolusInsulin)
-    boluscalcJSON.put("trendused", trendUsed)
+    boluscalcJSON.put("trendused", wasTrendUsed)
     boluscalcJSON.put("insulintrend", trendInsulin)
     boluscalcJSON.put("trend", glucoseTrend)
     boluscalcJSON.put("ttused", wasTempTargetUsed)

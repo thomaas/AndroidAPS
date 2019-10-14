@@ -24,7 +24,7 @@ class BolusCalculatorResultDaoTest : AbstractDaoTest<BolusCalculatorResult>() {
             wasGlucoseUsed = true,
             glucoseInsulin = 0.6,
             glucoseTrend = 10.0,
-            trendUsed = true,
+            wasTrendUsed = true,
             trendInsulin = 0.2,
             cob = 40.0,
             wasCOBUsed = true,

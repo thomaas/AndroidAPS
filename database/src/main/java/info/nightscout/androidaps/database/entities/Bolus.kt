@@ -26,7 +26,7 @@ data class Bolus(
         override var utcOffset: Long,
         var amount: Double,
         var type: Type,
-        var basalInsulin: Boolean,
+        var isBasalInsulin: Boolean,
         @Embedded
         var insulinConfiguration: InsulinConfiguration? = null
 ) : DBEntry, DBEntryWithTime {

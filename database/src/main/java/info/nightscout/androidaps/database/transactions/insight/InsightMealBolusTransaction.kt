@@ -28,7 +28,7 @@ class InsightMealBolusTransaction(
                 utcOffset = utcOffset,
                 amount = insulin,
                 type = type,
-                basalInsulin = false
+                isBasalInsulin = false
         ).apply {
             interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
             interfaceIDs.pumpSerial = pumpSerial
@@ -53,7 +53,7 @@ class InsightMealBolusTransaction(
                     glucoseDifference = bolusCalculatorResult.glucoseDifference,
                     glucoseInsulin = bolusCalculatorResult.glucoseInsulin,
                     glucoseTrend = bolusCalculatorResult.glucoseTrend,
-                    trendUsed = bolusCalculatorResult.trendUsed,
+                    wasTrendUsed = bolusCalculatorResult.trendUsed,
                     trendInsulin = bolusCalculatorResult.trendInsulin,
                     carbs = bolusCalculatorResult.carbs,
                     wereCarbsUsed = bolusCalculatorResult.carbsUsed,
