@@ -16,9 +16,9 @@ interface TemporaryTargetDao : BaseDao<TemporaryTarget> {
     @Query("DELETE FROM $TABLE_TEMPORARY_TARGETS")
     override fun deleteAllEntries()
 
-    @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp >= :start AND timestamp <= :end AND referenceId IS NULL AND valid = 1 ORDER BY timestamp ASC")
+    @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp >= :start AND timestamp <= :end AND referenceId IS NULL AND isValid = 1 ORDER BY timestamp ASC")
     fun getTemporaryTargetsInTimeRange(start: Long, end: Long): Flowable<List<TemporaryTarget>>
 
-    @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND referenceId IS NULL AND valid = 1 ORDER BY timestamp DESC LIMIT 1")
+    @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND referenceId IS NULL AND isValid = 1 ORDER BY timestamp DESC LIMIT 1")
     fun getTemporaryTargetActiveAt(timestamp: Long): TemporaryTarget?
 }

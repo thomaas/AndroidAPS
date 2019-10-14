@@ -334,7 +334,7 @@ public class WatchUpdaterService extends WearableListenerService implements Goog
         }
 
         DataMap dataMap = new DataMap();
-        dataMap.putString("sgvString", GlucoseValueUtilsKt.valueToUnitsToString(lastBG.getValue(), units));
+        dataMap.putString("sgvString", GlucoseValueUtilsKt.valueToUnitsString(lastBG.getValue(), units));
         dataMap.putString("glucoseUnits", units);
         dataMap.putLong("timestamp", lastBG.getTimestamp());
         if (glucoseStatus == null) {

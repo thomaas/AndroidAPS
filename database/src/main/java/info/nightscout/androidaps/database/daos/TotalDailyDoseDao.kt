@@ -16,6 +16,6 @@ interface TotalDailyDoseDao : BaseDao<TotalDailyDose> {
     @Query("DELETE FROM $TABLE_TOTAL_DAILY_DOSES")
     override fun deleteAllEntries()
 
-    @Query("SELECT * FROM $TABLE_TOTAL_DAILY_DOSES WHERE referenceId IS NULL and valid = 1 ORDER BY timestamp DESC LIMIT :amount")
+    @Query("SELECT * FROM $TABLE_TOTAL_DAILY_DOSES WHERE referenceId IS NULL and isValid = 1 ORDER BY timestamp DESC LIMIT :amount")
     fun getTotalDailyDoses(amount: Int): Single<List<TotalDailyDose>>
 }

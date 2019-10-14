@@ -272,11 +272,11 @@ public class SmsCommunicatorPlugin extends PluginBase {
         String units = ProfileFunctions.getInstance().getProfileUnits();
 
         if (actualBG != null) {
-            reply = MainApp.gs(R.string.sms_actualbg) + " " + GlucoseValueUtilsKt.valueToUnitsToString(actualBG.getValue(), units) + ", ";
+            reply = MainApp.gs(R.string.sms_actualbg) + " " + GlucoseValueUtilsKt.valueToUnitsString(actualBG.getValue(), units) + ", ";
         } else if (lastBG != null) {
             Long agoMsec = System.currentTimeMillis() - lastBG.getTimestamp();
             int agoMin = (int) (agoMsec / 60d / 1000d);
-            reply = MainApp.gs(R.string.sms_lastbg) + " " + GlucoseValueUtilsKt.valueToUnitsToString(lastBG.getValue(), units) + " " + String.format(MainApp.gs(R.string.sms_minago), agoMin) + ", ";
+            reply = MainApp.gs(R.string.sms_lastbg) + " " + GlucoseValueUtilsKt.valueToUnitsString(lastBG.getValue(), units) + " " + String.format(MainApp.gs(R.string.sms_minago), agoMin) + ", ";
         }
         GlucoseStatus glucoseStatus = GlucoseStatus.getGlucoseStatusData();
         if (glucoseStatus != null)
