@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.transactions.combo
 
-import info.nightscout.androidaps.database.AppRepository
 import info.nightscout.androidaps.database.entities.TemporaryBasal
 import info.nightscout.androidaps.database.transactions.Transaction
 import java.util.*
@@ -13,16 +12,14 @@ class ComboNewTempBasalTransaction(
 ) : Transaction<Unit>() {
 
     override fun run() {
-        AppRepository.database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
+        database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                 timestamp = timestamp,
-                absolute = false,
+                isAbsolute = false,
                 rate = percentage.toDouble(),
                 duration = duration.toLong(),
                 type = TemporaryBasal.Type.NORMAL
-        ).apply {
-            changes.add(this)
-        })
+        ))
     }
 }
 

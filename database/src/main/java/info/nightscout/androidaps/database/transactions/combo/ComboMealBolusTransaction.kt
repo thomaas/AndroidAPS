@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.database.transactions.combo
 
-import info.nightscout.androidaps.database.AppRepository
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.Bolus
 import info.nightscout.androidaps.database.entities.Carbs
@@ -18,7 +17,7 @@ class ComboMealBolusTransaction(
 ) : Transaction<Boolean>() {
 
     override fun run(): Boolean {
-        val bolusExistsInDb = AppRepository.database.bolusDao
+        val bolusExistsInDb = database.bolusDao
                 .findByPumpId(InterfaceIDs.PumpType.ACCU_CHEK_COMBO, pumpSerial, bolusId) != null
         if (bolusExistsInDb) return false
 
@@ -32,7 +31,7 @@ class ComboMealBolusTransaction(
     }
 
     private fun createBolusRecord(utcOffset: Long): Long {
-        return AppRepository.database.bolusDao.insertNewEntry(Bolus(
+        return database.bolusDao.insertNewEntry(Bolus(
                 timestamp = timestamp,
                 utcOffset = utcOffset,
                 amount = insulin,
@@ -42,27 +41,22 @@ class ComboMealBolusTransaction(
             interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_COMBO
             interfaceIDs.pumpSerial = pumpSerial
             interfaceIDs.pumpId = bolusId
-            changes.add(this)
         })
     }
 
     private fun createCarbsRecord(utcOffset: Long): Long {
-        return AppRepository.database.carbsDao.insertNewEntry(Carbs(
+        return database.carbsDao.insertNewEntry(Carbs(
                 timestamp = timestamp,
                 utcOffset = utcOffset,
                 amount = carbs,
                 duration = 0
-        ).apply {
-            changes.add(this)
-        })
+        ))
     }
 
     private fun linkBolusAndCarbsRecord(bolusDBId: Long, carbsDBId: Long) {
-        AppRepository.database.mealLinkDao.insertNewEntry(MealLink(
+        database.mealLinkDao.insertNewEntry(MealLink(
                 bolusId = bolusDBId,
                 carbsId = carbsDBId
-        ).apply {
-            changes.add(this)
-        })
+        ))
     }
 }

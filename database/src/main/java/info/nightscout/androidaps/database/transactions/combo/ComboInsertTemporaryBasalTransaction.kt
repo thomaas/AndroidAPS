@@ -18,15 +18,12 @@ class ComboInsertTemporaryBasalTransaction(
                 timestamp = timestamp,
                 utcOffset = TimeZone.getDefault().getOffset(timestamp).toLong(),
                 type = TemporaryBasal.Type.NORMAL,
-                absolute = false,
+                isAbsolute = false,
                 rate = rate,
                 duration = duration
         ).apply {
             interfaceIDs.pumpSerial = pumpSerial
-            interfaceIDs.startId = it.first.eventId
-            interfaceIDs.endId = it.second?.eventId
-            interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT
-            changes.add(this)
+            interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_COMBO
         })
     }
 }
