@@ -4,10 +4,11 @@ import androidx.room.Dao
 import androidx.room.Query
 import info.nightscout.androidaps.database.TABLE_MEAL_LINKS
 import info.nightscout.androidaps.database.entities.links.MealLink
+import io.reactivex.Single
 
 @Suppress("FunctionName")
 @Dao
-interface MealLinkDao : BaseDao<MealLink> {
+internal interface MealLinkDao : BaseDao<MealLink> {
 
     @Query("SELECT * FROM $TABLE_MEAL_LINKS WHERE id = :id")
     override fun findById(id: Long): MealLink?
@@ -20,4 +21,7 @@ interface MealLinkDao : BaseDao<MealLink> {
 
     @Query("SELECT * FROM $TABLE_MEAL_LINKS WHERE carbsId = :carbsId AND referenceId IS NULL")
     fun findByCarbsId(carbsId: Long): MealLink?
+
+    @Query("SELECT * FROM $TABLE_MEAL_LINKS WHERE dateCreated >= :start AND dateCreated < :end ORDER BY dateCreated ASC")
+    override fun getAllEntriesCreatedBetween(start: Long, end: Long): Single<List<MealLink>>
 }

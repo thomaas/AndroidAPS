@@ -7,10 +7,11 @@ import info.nightscout.androidaps.database.checkSanity
 import info.nightscout.androidaps.database.daos.workaround.ProfileSwitchDaoWorkaround
 import info.nightscout.androidaps.database.entities.ProfileSwitch
 import io.reactivex.Flowable
+import io.reactivex.Single
 
 @Suppress("FunctionName")
 @Dao
-interface ProfileSwitchDao : ProfileSwitchDaoWorkaround {
+internal interface ProfileSwitchDao : ProfileSwitchDaoWorkaround {
 
     @Query("SELECT * FROM $TABLE_PROFILE_SWITCHES WHERE id = :id")
     override fun findById(id: Long): ProfileSwitch?
@@ -23,9 +24,12 @@ interface ProfileSwitchDao : ProfileSwitchDaoWorkaround {
 
     @Query("SELECT * FROM $TABLE_PROFILE_SWITCHES WHERE referenceId IS NULL AND isValid = 1 ORDER BY timestamp ASC")
     fun getAllProfileSwitches(): Flowable<List<ProfileSwitch>>
+
+    @Query("SELECT * FROM $TABLE_PROFILE_SWITCHES WHERE dateCreated >= :start AND dateCreated < :end ORDER BY dateCreated ASC")
+    override fun getAllEntriesCreatedBetween(start: Long, end: Long): Single<List<ProfileSwitch>>
 }
 
-fun ProfileSwitchDao.insertNewEntryImpl(entry: ProfileSwitch): Long {
+internal fun ProfileSwitchDao.insertNewEntryImpl(entry: ProfileSwitch): Long {
     if (!entry.basalBlocks.checkSanity()) throw IllegalArgumentException("Sanity check failed for basal blocks.")
     if (!entry.icBlocks.checkSanity()) throw IllegalArgumentException("Sanity check failed for IC blocks.")
     if (!entry.isfBlocks.checkSanity()) throw IllegalArgumentException("Sanity check failed for ISF blocks.")
@@ -33,7 +37,7 @@ fun ProfileSwitchDao.insertNewEntryImpl(entry: ProfileSwitch): Long {
     return (this as BaseDao<ProfileSwitch>).insertNewEntryImpl(entry)
 }
 
-fun ProfileSwitchDao.updateExistingEntryImpl(entry: ProfileSwitch): Long {
+internal fun ProfileSwitchDao.updateExistingEntryImpl(entry: ProfileSwitch): Long {
     if (!entry.basalBlocks.checkSanity()) throw IllegalArgumentException("Sanity check failed for basal blocks.")
     if (!entry.icBlocks.checkSanity()) throw IllegalArgumentException("Sanity check failed for IC blocks.")
     if (!entry.isfBlocks.checkSanity()) throw IllegalArgumentException("Sanity check failed for ISF blocks.")

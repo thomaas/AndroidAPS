@@ -6,10 +6,11 @@ import info.nightscout.androidaps.database.TABLE_TEMPORARY_BASALS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.TemporaryBasal
 import io.reactivex.Flowable
+import io.reactivex.Single
 
 @Suppress("FunctionName")
 @Dao
-interface TemporaryBasalDao : BaseDao<TemporaryBasal> {
+internal interface TemporaryBasalDao : BaseDao<TemporaryBasal> {
 
     @Query("SELECT * FROM $TABLE_TEMPORARY_BASALS WHERE id = :id")
     override fun findById(id: Long): TemporaryBasal?
@@ -25,4 +26,7 @@ interface TemporaryBasalDao : BaseDao<TemporaryBasal> {
 
     @Query("SELECT * FROM $TABLE_TEMPORARY_BASALS WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND referenceId IS NULL AND isValid = 1 ORDER BY timestamp DESC LIMIT 1")
     fun getTemporaryBasalActiveAt(timestamp: Long): TemporaryBasal?
+
+    @Query("SELECT * FROM $TABLE_TEMPORARY_BASALS WHERE dateCreated >= :start AND dateCreated < :end ORDER BY dateCreated ASC")
+    override fun getAllEntriesCreatedBetween(start: Long, end: Long): Single<List<TemporaryBasal>>
 }

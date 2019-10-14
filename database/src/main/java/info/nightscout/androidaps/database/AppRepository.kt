@@ -3,6 +3,9 @@ package info.nightscout.androidaps.database
 import android.content.Context
 import androidx.room.Room
 import info.nightscout.androidaps.database.entities.*
+import info.nightscout.androidaps.database.entities.links.APSResultLink
+import info.nightscout.androidaps.database.entities.links.MealLink
+import info.nightscout.androidaps.database.entities.links.MultiwaveBolusLink
 import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.transactions.MergedBolus
 import info.nightscout.androidaps.database.transactions.Transaction
@@ -81,6 +84,36 @@ object AppRepository {
     fun getProfileSwitchesInTimeRange(start: Long, end: Long): Flowable<List<ProfileSwitch>> = database.profileSwitchDao.getProfileSwitchesInTimeRange(start, end).subscribeOn(Schedulers.io())
 
     fun getAllProfileSwitches(): Flowable<List<ProfileSwitch>> = database.profileSwitchDao.getAllProfileSwitches().subscribeOn(Schedulers.io())
+
+    fun getAPSResultsCreatedBetween(start: Long, end: Long): Single<List<APSResult>> = database.apsResultDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getAPSResultLinksCreatedBetween(start: Long, end: Long): Single<List<APSResultLink>> = database.apsResultLinkDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getBolusCalculatorResultsCreatedBetween(start: Long, end: Long): Single<List<BolusCalculatorResult>> = database.bolusCalculatorResultDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getBolusesCreatedBetween(start: Long, end: Long): Single<List<Bolus>> = database.bolusDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getCarbsCreatedBetween(start: Long, end: Long): Single<List<Carbs>> = database.carbsDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getEffectiveProfileSwitchesCreatedBetween(start: Long, end: Long): Single<List<EffectiveProfileSwitch>> = database.effectiveProfileSwitchDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getExtendedBolusesCreatedBetween(start: Long, end: Long): Single<List<ExtendedBolus>> = database.extendedBolusDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getGlucoseValuesCreatedBetween(start: Long, end: Long): Single<List<GlucoseValue>> = database.glucoseValueDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getMealLinksCreatedBetween(start: Long, end: Long): Single<List<MealLink>> = database.mealLinkDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getMultiwaveBolusLinksCreatedBetween(start: Long, end: Long): Single<List<MultiwaveBolusLink>> = database.multiwaveBolusLinkDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getProfileSwitchesCreatedBetween(start: Long, end: Long): Single<List<ProfileSwitch>> = database.profileSwitchDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getTemporaryBasalsCreatedBetween(start: Long, end: Long): Single<List<TemporaryBasal>> = database.temporaryBasalDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getTemporaryTargetsCreatedBetween(start: Long, end: Long): Single<List<TemporaryTarget>> = database.temporaryTargetDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getTherapyEventsCreatedBetween(start: Long, end: Long): Single<List<TherapyEvent>> = database.therapyEventDao.getAllEntriesCreatedBetween(start, end)
+
+    fun getTotalDailyDosesCreatedBetween(start: Long, end: Long): Single<List<TotalDailyDose>> = database.totalDailyDoseDao.getAllEntriesCreatedBetween(start, end)
 
     fun getMergedBolusData(start: Long, end: Long) = Single.fromCallable {
         val boluses = database.bolusDao.getBolusesInTimeRange(start, end)

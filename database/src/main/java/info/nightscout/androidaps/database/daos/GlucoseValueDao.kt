@@ -9,7 +9,7 @@ import io.reactivex.Maybe
 import io.reactivex.Single
 
 @Dao
-interface GlucoseValueDao : BaseDao<GlucoseValue> {
+internal interface GlucoseValueDao : BaseDao<GlucoseValue> {
 
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE id = :id")
     override fun findById(id: Long): GlucoseValue?
@@ -34,4 +34,7 @@ interface GlucoseValueDao : BaseDao<GlucoseValue> {
 
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE timestamp >= (julianday('now') - 2440587.5) * 86400000.0 - :timeRange AND timestamp < (julianday('now') - 2440587.5) * 86400000.0 AND referenceId IS NULL AND isValid = 1 ORDER BY timestamp ASC")
     fun getGlucoseValuesInTimeRangeIf39OrHigher(timeRange: Long): Flowable<List<GlucoseValue>>
+
+    @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE dateCreated >= :start AND dateCreated < :end ORDER BY dateCreated ASC")
+    override fun getAllEntriesCreatedBetween(start: Long, end: Long): Single<List<GlucoseValue>>
 }

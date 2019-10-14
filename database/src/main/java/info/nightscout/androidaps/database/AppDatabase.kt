@@ -14,7 +14,13 @@ import info.nightscout.androidaps.database.entities.links.MultiwaveBolusLink
         TemporaryBasal::class, TemporaryTarget::class, TherapyEvent::class, TotalDailyDose::class,
         APSResultLink::class, MealLink::class, MultiwaveBolusLink::class))
 @TypeConverters(Converters::class)
-abstract class AppDatabase : RoomDatabase() {
+internal abstract class AppDatabase : RoomDatabase() {
+
+    val daos = lazy {
+        arrayOf(glucoseValueDao, therapyEventDao, temporaryBasalDao, bolusDao, extendedBolusDao,
+                multiwaveBolusLinkDao, totalDailyDoseDao, carbsDao, mealLinkDao, temporaryTargetDao,
+                apsResultLinkDao, bolusCalculatorResultDao, effectiveProfileSwitchDao, profileSwitchDao, apsResultDao)
+    }
 
     abstract val glucoseValueDao: GlucoseValueDao
 
