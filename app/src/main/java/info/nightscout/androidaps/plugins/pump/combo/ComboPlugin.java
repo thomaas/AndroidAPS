@@ -12,11 +12,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import info.nightscout.androidaps.BuildConfig;
 import info.nightscout.androidaps.MainApp;
@@ -25,12 +25,13 @@ import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.database.BlockingAppRepository;
+import info.nightscout.androidaps.database.embedments.InterfaceIDs;
+import info.nightscout.androidaps.database.entities.TemporaryBasal;
+import info.nightscout.androidaps.database.interfaces.DBEntryWithTimeAndDurationKt;
 import info.nightscout.androidaps.database.transactions.combo.ComboCancelTempBasalTransaction;
+import info.nightscout.androidaps.database.transactions.combo.ComboInsertTotalDailyDoseTransaction;
 import info.nightscout.androidaps.database.transactions.combo.ComboMealBolusTransaction;
 import info.nightscout.androidaps.database.transactions.combo.ComboNewTempBasalTransaction;
-import info.nightscout.androidaps.database.transactions.combo.ComboInsertTotalDailyDoseTransaction;
-import info.nightscout.androidaps.db.TDD;
-import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.events.EventInitializationChanged;
 import info.nightscout.androidaps.events.EventRefreshOverview;
 import info.nightscout.androidaps.interfaces.Constraint;
@@ -66,21 +67,9 @@ import info.nightscout.androidaps.plugins.pump.combo.ruffyscripter.history.PumpH
 import info.nightscout.androidaps.plugins.pump.combo.ruffyscripter.history.Tdd;
 import info.nightscout.androidaps.plugins.pump.common.defs.PumpType;
 import info.nightscout.androidaps.plugins.treatments.Treatment;
-import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.InstanceId;
 import info.nightscout.androidaps.utils.SP;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 
 
 /**
@@ -91,6 +80,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     static final String COMBO_TBRS_SET = "combo_tbrs_set";
     static final String COMBO_BOLUSES_DELIVERED = "combo_boluses_delivered";
 
+    //TODO: Resolve real serial or MAC
     private final String PUMP_SERIAL = "Combo";
 
     private static ComboPlugin plugin = null;
@@ -488,6 +478,8 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
                 // bolus needed, ask pump to deliver it
                 return deliverBolus(detailedBolusInfo);
             } else {
+                throw new IllegalArgumentException("Cannot handle carb-only requests");
+                /*
                 // no bolus required, carb only treatment
                 // TODO; method can be simplified to reject any invalid request where bolus == 0;
                 // a call asking for that would be a coder error
@@ -501,7 +493,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
 
                 return new PumpEnactResult().success(true).enacted(true)
                         .bolusDelivered(0d).carbsDelivered(detailedBolusInfo.carbs)
-                        .comment(MainApp.gs(R.string.virtualpump_resultok));
+                        .comment(MainApp.gs(R.string.virtualpump_resultok));*/
             }
         } finally {
             MainApp.bus().post(new EventComboPumpUpdateGUI());
@@ -808,8 +800,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     public PumpEnactResult cancelTempBasal(boolean enforceNew) {
         if (L.isEnabled(L.PUMP))
             log.debug("cancelTempBasal called");
-        // TODO
-        final TemporaryBasal activeTemp = TreatmentsPlugin.getPlugin().getTempBasalFromHistory(System.currentTimeMillis());
+        final info.nightscout.androidaps.database.entities.TemporaryBasal activeTemp = BlockingAppRepository.INSTANCE.getTemporaryBasalActiveAt(System.currentTimeMillis(), InterfaceIDs.PumpType.ACCU_CHEK_COMBO);
         if (enforceNew) {
             CommandResult stateResult = runCommand(MainApp.gs(R.string.combo_pump_action_refreshing), 2, ruffyScripter::readPumpState);
             if (!stateResult.success) {
@@ -832,20 +823,20 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
             }
         } else if (activeTemp == null) {
             return new PumpEnactResult().success(true).enacted(false);
-        } else if ((activeTemp.percentRate >= 90 && activeTemp.percentRate <= 110) && activeTemp.getPlannedRemainingMinutes() <= 15) {
+        } else if ((activeTemp.getRate() >= 90 && activeTemp.getRate() <= 110) && DBEntryWithTimeAndDurationKt.getRemainingDuration(activeTemp) <= TimeUnit.MINUTES.toMillis(15)) {
             // Let fake neutral temp keep run (see below)
             // Note that since this runs on the queue a connection is opened regardless, but this
             // case doesn't occur all that often, so it's not worth optimizing (1.3k SetTBR vs 4 cancelTBR).
             if (L.isEnabled(L.PUMP))
-                log.debug("cancelTempBasal: skipping changing tbr since it already is at " + activeTemp.percentRate + "% and running for another " + activeTemp.getPlannedRemainingMinutes() + " mins.");
+                log.debug("cancelTempBasal: skipping changing tbr since it already is at " + activeTemp.getRate() + "% and running for another " + DBEntryWithTimeAndDurationKt.getRemainingDuration(activeTemp) + " mins.");
             return new PumpEnactResult().success(true).enacted(true)
                     .comment("cancelTempBasal skipping changing tbr since it already is at "
-                            + activeTemp.percentRate + "% and running for another "
-                            + activeTemp.getPlannedRemainingMinutes() + " mins.");
+                            + activeTemp.getRate() + "% and running for another "
+                            + DBEntryWithTimeAndDurationKt.getRemainingDuration(activeTemp) + " mins.");
         } else {
             // Set a fake neutral temp to avoid TBR cancel alert. Decide 90% vs 110% based on
             // on whether the TBR we're cancelling is above or below 100%.
-            final int percentage = (activeTemp.percentRate > 100) ? 110 : 90;
+            final int percentage = (activeTemp.getRate() > 100) ? 110 : 90;
             if (L.isEnabled(L.PUMP))
                 log.debug("cancelTempBasal: changing TBR to " + percentage + "% for 15 mins.");
             return setTempBasalPercent(percentage, 15);
@@ -966,9 +957,8 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
             }
         } else {
             long now = System.currentTimeMillis();
-            // TODO
-            TemporaryBasal aapsTbr = TreatmentsPlugin.getPlugin().getTempBasalFromHistory(now);
-            if (aapsTbr == null || aapsTbr.percentRate != 0) {
+            info.nightscout.androidaps.database.entities.TemporaryBasal aapsTbr = BlockingAppRepository.INSTANCE.getTemporaryBasalActiveAt(now, InterfaceIDs.PumpType.ACCU_CHEK_COMBO);
+            if (aapsTbr == null || aapsTbr.getRate() != 0) {
                 if (L.isEnabled(L.PUMP)) {
                     log.debug("Creating 15m zero temp since pump is suspended");
                 }
@@ -1093,8 +1083,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     private void checkAndResolveTbrMismatch(PumpState state) {
         // compare with: info.nightscout.androidaps.plugins.PumpDanaR.comm.MsgStatusTempBasal.updateTempBasalInDB()
         long now = System.currentTimeMillis();
-        // TODO
-        TemporaryBasal aapsTbr = TreatmentsPlugin.getPlugin().getTempBasalFromHistory(now);
+        TemporaryBasal aapsTbr = BlockingAppRepository.INSTANCE.getTemporaryBasalActiveAt(now, InterfaceIDs.PumpType.ACCU_CHEK_COMBO);
         if (aapsTbr == null && state.tbrActive && state.tbrRemainingDuration > 2) {
             if (L.isEnabled(L.PUMP))
                 log.debug("Creating temp basal from pump TBR");
@@ -1103,13 +1092,13 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
                     now,
                     state.tbrPercent,
                     state.tbrRemainingDuration));
-        } else if (aapsTbr != null && aapsTbr.getPlannedRemainingMinutes() > 2 && !state.tbrActive) {
+        } else if (aapsTbr != null && DBEntryWithTimeAndDurationKt.getRemainingDuration(aapsTbr) > 2 && !state.tbrActive) {
             if (L.isEnabled(L.PUMP))
                 log.debug("Ending AAPS-TBR since pump has no TBR active");
             BlockingAppRepository.INSTANCE.runTransaction(new ComboCancelTempBasalTransaction());
         } else if (aapsTbr != null && state.tbrActive
-                && (aapsTbr.percentRate != state.tbrPercent ||
-                Math.abs(aapsTbr.getPlannedRemainingMinutes() - state.tbrRemainingDuration) > 2)) {
+                && (aapsTbr.getRate() != state.tbrPercent ||
+                Math.abs(DBEntryWithTimeAndDurationKt.getRemainingDuration(aapsTbr) - state.tbrRemainingDuration) > 2)) {
             if (L.isEnabled(L.PUMP))
                 log.debug("AAPSs and pump-TBR differ; ending AAPS-TBR and creating new TBR based on pump TBR");
             BlockingAppRepository.INSTANCE.runTransaction(new ComboCancelTempBasalTransaction());
@@ -1339,27 +1328,20 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
         if (result.success) {
             List<Tdd> tdds = pump.tddHistory;
             if (tdds != null) {
-                HashMap<Long, TDD> map = new HashMap<>();
+                HashMap<Long, ComboInsertTotalDailyDoseTransaction.TDD> map = new HashMap<>();
                 for (int i = 0; i < tdds.size(); i++) {
                     Tdd currTdd = tdds.get(i);
                     if (currTdd.total < 1)
                         continue; //cases where dummy days are introduced (e.g. Battery change with date loss)
                     if (map.containsKey(currTdd.timestamp)) {
                         //duplicate days on time changes
-                        TDD existing = map.get(currTdd.timestamp);
-                        existing.total += currTdd.total;
+                        map.put(currTdd.timestamp, new ComboInsertTotalDailyDoseTransaction.TDD(currTdd.timestamp,
+                                map.get(currTdd.timestamp).getTotalAmount() + currTdd.total));
                     } else {
-                        map.put(currTdd.timestamp, new TDD(currTdd.timestamp, 0d, 0d, currTdd.total));
+                        map.put(currTdd.timestamp, new ComboInsertTotalDailyDoseTransaction.TDD(currTdd.timestamp, currTdd.total));
                     }
                 }
-
-                Collection<TDD> uniqueColl = map.values();
-
-                // TODO
-//                for (TDD currTdd : uniqueColl) {
-                    BlockingAppRepository.INSTANCE.runTransactionForResult(new ComboInsertTotalDailyDoseTransaction(uniqueColl));
-//                            MainApp.getDbHelper().createOrUpdateTDD(currTdd);
-//                }
+                BlockingAppRepository.INSTANCE.runTransactionForResult(new ComboInsertTotalDailyDoseTransaction(new ArrayList<>(map.values()), PUMP_SERIAL));
             }
         }
         return result;

@@ -6,9 +6,9 @@ import info.nightscout.androidaps.database.transactions.Transaction
 import java.util.*
 
 class ComboInsertTotalDailyDoseTransaction(
-        val tdds: Collection<TotalDailyDose>,
+        val tdds: List<TDD>,
         val pumpSerial: String
-): Transaction<Unit>() {
+) : Transaction<Unit>() {
 
     override fun run() {
         tdds.forEach {
@@ -24,4 +24,6 @@ class ComboInsertTotalDailyDoseTransaction(
             })
         }
     }
+
+    data class TDD(val timestamp: Long, val totalAmount: Double)
 }

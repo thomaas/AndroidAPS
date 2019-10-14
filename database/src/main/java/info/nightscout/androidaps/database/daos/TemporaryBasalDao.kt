@@ -6,6 +6,7 @@ import info.nightscout.androidaps.database.TABLE_TEMPORARY_BASALS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.TemporaryBasal
 import io.reactivex.Flowable
+import io.reactivex.Maybe
 
 @Suppress("FunctionName")
 @Dao
@@ -26,6 +27,9 @@ interface TemporaryBasalDao : BaseDao<TemporaryBasal> {
     @Query("SELECT * FROM $TABLE_TEMPORARY_BASALS WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND referenceId IS NULL AND isValid = 1 ORDER BY timestamp DESC LIMIT 1")
     fun getTemporaryBasalActiveAt(timestamp: Long): TemporaryBasal?
 
-    @Query("SELECT * FROM $TABLE_TEMPORARY_BASALS WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND referenceId IS NULL AND pumpType == :pumpType AND valid = 1 ORDER BY timestamp DESC LIMIT 1")
-    abstract fun getTemporaryBasalActiveAt(timestamp: Long, pumpType: InterfaceIDs.PumpType): TemporaryBasal?
+    @Query("SELECT * FROM $TABLE_TEMPORARY_BASALS WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND referenceId IS NULL AND pumpType == :pumpType AND isValid = 1 ORDER BY timestamp DESC LIMIT 1")
+    fun getTemporaryBasalActiveAt(timestamp: Long, pumpType: InterfaceIDs.PumpType): TemporaryBasal?
+
+    @Query("SELECT * FROM $TABLE_TEMPORARY_BASALS WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND referenceId IS NULL AND pumpType == :pumpType AND isValid = 1 ORDER BY timestamp DESC LIMIT 1")
+    fun getTemporaryBasalActiveAtMaybe(timestamp: Long, pumpType: InterfaceIDs.PumpType): Maybe<TemporaryBasal>
 }
