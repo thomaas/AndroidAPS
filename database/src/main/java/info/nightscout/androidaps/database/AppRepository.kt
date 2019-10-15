@@ -86,7 +86,7 @@ object AppRepository {
 
     fun getAllProfileSwitches(): Flowable<List<ProfileSwitch>> = database.profileSwitchDao.getAllProfileSwitches().subscribeOn(Schedulers.io())
 
-    fun getTemporaryBasalActiveAtMaybe(timestamp: Long, pumpType: InterfaceIDs.PumpType): Maybe<TemporaryBasal> = database.temporaryBasalDao.getTemporaryBasalActiveAtMaybe(timestamp, pumpType)
+    fun getTemporaryBasalActiveAtIncludingInvalidMaybe(timestamp: Long, pumpType: InterfaceIDs.PumpType): Maybe<TemporaryBasal> = database.temporaryBasalDao.getTemporaryBasalActiveAtIncludingInvalidMaybe(timestamp, pumpType)
 
     fun getAPSResultsCreatedBetween(start: Long, end: Long): Single<List<APSResult>> = database.apsResultDao.getAllEntriesCreatedBetween(start, end)
 

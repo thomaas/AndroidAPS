@@ -800,7 +800,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     public PumpEnactResult cancelTempBasal(boolean enforceNew) {
         if (L.isEnabled(L.PUMP))
             log.debug("cancelTempBasal called");
-        final info.nightscout.androidaps.database.entities.TemporaryBasal activeTemp = BlockingAppRepository.INSTANCE.getTemporaryBasalActiveAt(System.currentTimeMillis(), InterfaceIDs.PumpType.ACCU_CHEK_COMBO);
+        final info.nightscout.androidaps.database.entities.TemporaryBasal activeTemp = BlockingAppRepository.INSTANCE.getTemporaryBasalActiveAtIncludingInvalid(System.currentTimeMillis(), InterfaceIDs.PumpType.ACCU_CHEK_COMBO);
         if (enforceNew) {
             CommandResult stateResult = runCommand(MainApp.gs(R.string.combo_pump_action_refreshing), 2, ruffyScripter::readPumpState);
             if (!stateResult.success) {
@@ -957,7 +957,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
             }
         } else {
             long now = System.currentTimeMillis();
-            info.nightscout.androidaps.database.entities.TemporaryBasal aapsTbr = BlockingAppRepository.INSTANCE.getTemporaryBasalActiveAt(now, InterfaceIDs.PumpType.ACCU_CHEK_COMBO);
+            info.nightscout.androidaps.database.entities.TemporaryBasal aapsTbr = BlockingAppRepository.INSTANCE.getTemporaryBasalActiveAtIncludingInvalid(now, InterfaceIDs.PumpType.ACCU_CHEK_COMBO);
             if (aapsTbr == null || aapsTbr.getRate() != 0) {
                 if (L.isEnabled(L.PUMP)) {
                     log.debug("Creating 15m zero temp since pump is suspended");
@@ -1083,7 +1083,7 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
     private void checkAndResolveTbrMismatch(PumpState state) {
         // compare with: info.nightscout.androidaps.plugins.PumpDanaR.comm.MsgStatusTempBasal.updateTempBasalInDB()
         long now = System.currentTimeMillis();
-        TemporaryBasal aapsTbr = BlockingAppRepository.INSTANCE.getTemporaryBasalActiveAt(now, InterfaceIDs.PumpType.ACCU_CHEK_COMBO);
+        TemporaryBasal aapsTbr = BlockingAppRepository.INSTANCE.getTemporaryBasalActiveAtIncludingInvalid(now, InterfaceIDs.PumpType.ACCU_CHEK_COMBO);
         if (aapsTbr == null && state.tbrActive && state.tbrRemainingDuration > 2) {
             if (L.isEnabled(L.PUMP))
                 log.debug("Creating temp basal from pump TBR");

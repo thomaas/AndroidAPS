@@ -8,7 +8,7 @@ class ComboCancelTempBasalTransaction: Transaction<Unit>() {
     override fun run() {
         val now = System.currentTimeMillis()
         val currentlyActive = database.temporaryBasalDao
-                .getTemporaryBasalActiveAt(now, InterfaceIDs.PumpType.ACCU_CHEK_COMBO)
+                .getTemporaryBasalActiveAtIncludingInvalid(now, InterfaceIDs.PumpType.ACCU_CHEK_COMBO)
                 ?: throw IllegalStateException("There is currently no TemporaryBasal active.")
         currentlyActive.duration = now - currentlyActive.timestamp
         database.temporaryBasalDao.updateExistingEntry(currentlyActive)
