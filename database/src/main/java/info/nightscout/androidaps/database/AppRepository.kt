@@ -26,6 +26,8 @@ object AppRepository {
 
     val changeObservable: Observable<List<DBEntry>> = changeSubject
 
+    val databaseVersion = DATABASE_VERSION
+
     fun initialize(context: Context) {
         database = Room.databaseBuilder(context, AppDatabase::class.java, DB_FILE).build()
     }
@@ -125,7 +127,9 @@ object AppRepository {
         boluses.forEach {
             val mealLink = database.mealLinkDao.findByBolusId(it.id)
             if (mealLink != null) {
-                var carbEntry = mealLink.carbsId?.run { carbs.find { it.id == this } ?: AppRepository.database.carbsDao.findById(this) }
+                var carbEntry = mealLink.carbsId?.run {
+                    carbs.find { it.id == this } ?: AppRepository.database.carbsDao.findById(this)
+                }
                 if (carbEntry != null) {
                     carbs.remove(carbEntry)
                     if (carbEntry.timestamp != it.timestamp) {

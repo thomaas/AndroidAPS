@@ -9,7 +9,9 @@ import info.nightscout.androidaps.database.entities.links.APSResultLink
 import info.nightscout.androidaps.database.entities.links.MealLink
 import info.nightscout.androidaps.database.entities.links.MultiwaveBolusLink
 
-@Database(version = 1, entities = arrayOf(APSResult::class, Bolus::class, BolusCalculatorResult::class, Carbs::class,
+const val DATABASE_VERSION = 1
+
+@Database(version = DATABASE_VERSION, entities = arrayOf(APSResult::class, Bolus::class, BolusCalculatorResult::class, Carbs::class,
         EffectiveProfileSwitch::class, ExtendedBolus::class, GlucoseValue::class, ProfileSwitch::class,
         TemporaryBasal::class, TemporaryTarget::class, TherapyEvent::class, TotalDailyDose::class,
         APSResultLink::class, MealLink::class, MultiwaveBolusLink::class))
