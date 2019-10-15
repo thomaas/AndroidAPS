@@ -2,6 +2,7 @@ package info.nightscout.androidaps.database
 
 import android.content.Context
 import androidx.room.Room
+import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.*
 import info.nightscout.androidaps.database.entities.links.APSResultLink
 import info.nightscout.androidaps.database.entities.links.MealLink
@@ -84,6 +85,8 @@ object AppRepository {
     fun getProfileSwitchesInTimeRange(start: Long, end: Long): Flowable<List<ProfileSwitch>> = database.profileSwitchDao.getProfileSwitchesInTimeRange(start, end).subscribeOn(Schedulers.io())
 
     fun getAllProfileSwitches(): Flowable<List<ProfileSwitch>> = database.profileSwitchDao.getAllProfileSwitches().subscribeOn(Schedulers.io())
+
+    fun getTemporaryBasalActiveAtMaybe(timestamp: Long, pumpType: InterfaceIDs.PumpType): Maybe<TemporaryBasal> = database.temporaryBasalDao.getTemporaryBasalActiveAtMaybe(timestamp, pumpType)
 
     fun getAPSResultsCreatedBetween(start: Long, end: Long): Single<List<APSResult>> = database.apsResultDao.getAllEntriesCreatedBetween(start, end)
 
