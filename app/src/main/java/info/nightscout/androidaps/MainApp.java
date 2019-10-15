@@ -256,10 +256,6 @@ public class MainApp extends Application {
             if (Config.SAFETY) pluginsList.add(SignatureVerifier.getPlugin());
             if (Config.APS) pluginsList.add(ObjectivesPlugin.INSTANCE);
             pluginsList.add(SourceXdripPlugin.INSTANCE);
-            pluginsList.add(SourceMM640gPlugin.INSTANCE);
-            pluginsList.add(SourceGlimpPlugin.INSTANCE);
-            if (Config.APS) pluginsList.add(ObjectivesPlugin.INSTANCE);
-            pluginsList.add(SourceXdripPlugin.INSTANCE);
             pluginsList.add(SourceNSClientPlugin.INSTANCE);
             pluginsList.add(SourceMM640gPlugin.INSTANCE);
             pluginsList.add(SourceGlimpPlugin.INSTANCE);
