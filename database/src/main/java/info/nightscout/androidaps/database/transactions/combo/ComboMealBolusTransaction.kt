@@ -36,7 +36,7 @@ class ComboMealBolusTransaction(
                 utcOffset = utcOffset,
                 amount = insulin,
                 type = if (smb) Bolus.Type.SMB else Bolus.Type.NORMAL,
-                basalInsulin = false
+                isBasalInsulin = false
         ).apply {
             interfaceIDs.pumpType = InterfaceIDs.PumpType.ACCU_CHEK_COMBO
             interfaceIDs.pumpSerial = pumpSerial
