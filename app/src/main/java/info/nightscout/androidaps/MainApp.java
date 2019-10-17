@@ -39,6 +39,7 @@ import info.nightscout.androidaps.database.entities.TherapyEvent;
 import info.nightscout.androidaps.database.entities.links.MealLink;
 import info.nightscout.androidaps.database.interfaces.DBEntry;
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTime;
+import info.nightscout.androidaps.database.transactions.SaveVersionChangeIfNeededTransaction;
 import info.nightscout.androidaps.db.DatabaseHelper;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginType;
@@ -141,6 +142,13 @@ public class MainApp extends Application {
     public void onCreate() {
         super.onCreate();
         AppRepository.INSTANCE.initialize(this);
+        String gitRemote = BuildConfig.REMOTE;
+        String commitHash = BuildConfig.HEAD;
+        if (gitRemote.contains("NoGitSystemAvailable")) {
+            gitRemote = null;
+            commitHash = null;
+        }
+        AppRepository.INSTANCE.runTransaction(new SaveVersionChangeIfNeededTransaction(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE, gitRemote, commitHash));
         AppRepository.INSTANCE.getChangeObservable()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(changes -> {

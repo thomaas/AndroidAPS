@@ -14,7 +14,7 @@ const val DATABASE_VERSION = 1
 @Database(version = DATABASE_VERSION, entities = arrayOf(APSResult::class, Bolus::class, BolusCalculatorResult::class, Carbs::class,
         EffectiveProfileSwitch::class, ExtendedBolus::class, GlucoseValue::class, ProfileSwitch::class,
         TemporaryBasal::class, TemporaryTarget::class, TherapyEvent::class, TotalDailyDose::class,
-        APSResultLink::class, MealLink::class, MultiwaveBolusLink::class))
+        APSResultLink::class, MealLink::class, MultiwaveBolusLink::class, PreferenceChange::class, VersionChange::class))
 @TypeConverters(Converters::class)
 internal abstract class AppDatabase : RoomDatabase() {
 
@@ -47,5 +47,7 @@ internal abstract class AppDatabase : RoomDatabase() {
     abstract val profileSwitchDao: ProfileSwitchDao
 
     abstract val apsResultDao: APSResultDao
+
+    abstract val versionChangeDao: VersionChangeDao
 
 }
