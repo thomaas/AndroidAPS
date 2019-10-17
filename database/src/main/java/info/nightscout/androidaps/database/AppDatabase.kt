@@ -16,7 +16,7 @@ const val DATABASE_VERSION = 1
         TemporaryBasal::class, TemporaryTarget::class, TherapyEvent::class, TotalDailyDose::class,
         APSResultLink::class, MealLink::class, MultiwaveBolusLink::class))
 @TypeConverters(Converters::class)
-abstract class AppDatabase : RoomDatabase() {
+internal abstract class AppDatabase : RoomDatabase() {
 
     abstract val glucoseValueDao: GlucoseValueDao
 
