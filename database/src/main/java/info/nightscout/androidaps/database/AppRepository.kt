@@ -4,9 +4,6 @@ import android.content.Context
 import androidx.room.Room
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.*
-import info.nightscout.androidaps.database.entities.links.APSResultLink
-import info.nightscout.androidaps.database.entities.links.MealLink
-import info.nightscout.androidaps.database.entities.links.MultiwaveBolusLink
 import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.transactions.MergedBolus
 import info.nightscout.androidaps.database.transactions.Transaction
@@ -89,36 +86,6 @@ object AppRepository {
     fun getAllProfileSwitches(): Flowable<List<ProfileSwitch>> = database.profileSwitchDao.getAllProfileSwitches().subscribeOn(Schedulers.io())
 
     fun getTemporaryBasalActiveAtIncludingInvalidMaybe(timestamp: Long, pumpType: InterfaceIDs.PumpType): Maybe<TemporaryBasal> = database.temporaryBasalDao.getTemporaryBasalActiveAtIncludingInvalidMaybe(timestamp, pumpType).subscribeOn(Schedulers.io())
-
-    fun getAPSResultsCreatedBetween(start: Long, end: Long): Single<List<APSResult>> = database.apsResultDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getAPSResultLinksCreatedBetween(start: Long, end: Long): Single<List<APSResultLink>> = database.apsResultLinkDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getBolusCalculatorResultsCreatedBetween(start: Long, end: Long): Single<List<BolusCalculatorResult>> = database.bolusCalculatorResultDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getBolusesCreatedBetween(start: Long, end: Long): Single<List<Bolus>> = database.bolusDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getCarbsCreatedBetween(start: Long, end: Long): Single<List<Carbs>> = database.carbsDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getEffectiveProfileSwitchesCreatedBetween(start: Long, end: Long): Single<List<EffectiveProfileSwitch>> = database.effectiveProfileSwitchDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getExtendedBolusesCreatedBetween(start: Long, end: Long): Single<List<ExtendedBolus>> = database.extendedBolusDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getGlucoseValuesCreatedBetween(start: Long, end: Long): Single<List<GlucoseValue>> = database.glucoseValueDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getMealLinksCreatedBetween(start: Long, end: Long): Single<List<MealLink>> = database.mealLinkDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getMultiwaveBolusLinksCreatedBetween(start: Long, end: Long): Single<List<MultiwaveBolusLink>> = database.multiwaveBolusLinkDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getProfileSwitchesCreatedBetween(start: Long, end: Long): Single<List<ProfileSwitch>> = database.profileSwitchDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getTemporaryBasalsCreatedBetween(start: Long, end: Long): Single<List<TemporaryBasal>> = database.temporaryBasalDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getTemporaryTargetsCreatedBetween(start: Long, end: Long): Single<List<TemporaryTarget>> = database.temporaryTargetDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getTherapyEventsCreatedBetween(start: Long, end: Long): Single<List<TherapyEvent>> = database.therapyEventDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
-
-    fun getTotalDailyDosesCreatedBetween(start: Long, end: Long): Single<List<TotalDailyDose>> = database.totalDailyDoseDao.getAllEntriesCreatedBetween(start, end).subscribeOn(Schedulers.io())
 
     fun getMergedBolusData(start: Long, end: Long) = Single.fromCallable {
         val boluses = database.bolusDao.getBolusesInTimeRange(start, end)

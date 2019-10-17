@@ -6,11 +6,10 @@ import info.nightscout.androidaps.database.TABLE_EXTENDED_BOLUSES
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.ExtendedBolus
 import io.reactivex.Flowable
-import io.reactivex.Single
 
 @Suppress("FunctionName")
 @Dao
-internal interface ExtendedBolusDao : BaseDao<ExtendedBolus> {
+interface ExtendedBolusDao : BaseDao<ExtendedBolus> {
 
     @Query("SELECT * FROM $TABLE_EXTENDED_BOLUSES WHERE id = :id")
     override fun findById(id: Long): ExtendedBolus?
@@ -32,7 +31,4 @@ internal interface ExtendedBolusDao : BaseDao<ExtendedBolus> {
 
     @Query("SELECT * FROM $TABLE_EXTENDED_BOLUSES WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND referenceId IS NULL AND isValid = 1 ORDER BY timestamp DESC LIMIT 1")
     fun getExtendedBolusActiveAt(timestamp: Long): ExtendedBolus?
-
-    @Query("SELECT * FROM $TABLE_EXTENDED_BOLUSES WHERE dateCreated >= :start AND dateCreated < :end ORDER BY dateCreated ASC")
-    override fun getAllEntriesCreatedBetween(start: Long, end: Long): Single<List<ExtendedBolus>>
 }

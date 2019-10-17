@@ -8,7 +8,7 @@ import io.reactivex.Single
 
 @Suppress("FunctionName")
 @Dao
-internal interface TotalDailyDoseDao : BaseDao<TotalDailyDose> {
+interface TotalDailyDoseDao : BaseDao<TotalDailyDose> {
 
     @Query("SELECT * FROM $TABLE_TOTAL_DAILY_DOSES WHERE id = :id")
     override fun findById(id: Long): TotalDailyDose?
@@ -18,7 +18,4 @@ internal interface TotalDailyDoseDao : BaseDao<TotalDailyDose> {
 
     @Query("SELECT * FROM $TABLE_TOTAL_DAILY_DOSES WHERE referenceId IS NULL and isValid = 1 ORDER BY timestamp DESC LIMIT :amount")
     fun getTotalDailyDoses(amount: Int): Single<List<TotalDailyDose>>
-
-    @Query("SELECT * FROM $TABLE_TOTAL_DAILY_DOSES WHERE dateCreated >= :start AND dateCreated < :end ORDER BY dateCreated ASC")
-    override fun getAllEntriesCreatedBetween(start: Long, end: Long): Single<List<TotalDailyDose>>
 }

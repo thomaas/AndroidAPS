@@ -5,11 +5,10 @@ import androidx.room.Query
 import info.nightscout.androidaps.database.TABLE_TEMPORARY_TARGETS
 import info.nightscout.androidaps.database.entities.TemporaryTarget
 import io.reactivex.Flowable
-import io.reactivex.Single
 
 @Suppress("FunctionName")
 @Dao
-internal interface TemporaryTargetDao : BaseDao<TemporaryTarget> {
+interface TemporaryTargetDao : BaseDao<TemporaryTarget> {
 
     @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE id = :id")
     override fun findById(id: Long): TemporaryTarget?
@@ -22,7 +21,4 @@ internal interface TemporaryTargetDao : BaseDao<TemporaryTarget> {
 
     @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND referenceId IS NULL AND isValid = 1 ORDER BY timestamp DESC LIMIT 1")
     fun getTemporaryTargetActiveAt(timestamp: Long): TemporaryTarget?
-
-    @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE dateCreated >= :start AND dateCreated < :end ORDER BY dateCreated ASC")
-    override fun getAllEntriesCreatedBetween(start: Long, end: Long): Single<List<TemporaryTarget>>
 }

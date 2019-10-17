@@ -16,13 +16,7 @@ const val DATABASE_VERSION = 1
         TemporaryBasal::class, TemporaryTarget::class, TherapyEvent::class, TotalDailyDose::class,
         APSResultLink::class, MealLink::class, MultiwaveBolusLink::class))
 @TypeConverters(Converters::class)
-internal abstract class AppDatabase : RoomDatabase() {
-
-    val daos = lazy {
-        arrayOf(glucoseValueDao, therapyEventDao, temporaryBasalDao, bolusDao, extendedBolusDao,
-                multiwaveBolusLinkDao, totalDailyDoseDao, carbsDao, mealLinkDao, temporaryTargetDao,
-                apsResultLinkDao, bolusCalculatorResultDao, effectiveProfileSwitchDao, profileSwitchDao, apsResultDao)
-    }
+abstract class AppDatabase : RoomDatabase() {
 
     abstract val glucoseValueDao: GlucoseValueDao
 

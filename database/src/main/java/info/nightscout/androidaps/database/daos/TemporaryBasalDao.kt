@@ -7,7 +7,6 @@ import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.TemporaryBasal
 import io.reactivex.Flowable
 import io.reactivex.Maybe
-import io.reactivex.Single
 
 @Suppress("FunctionName")
 @Dao
@@ -33,7 +32,4 @@ internal interface TemporaryBasalDao : BaseDao<TemporaryBasal> {
 
     @Query("SELECT * FROM $TABLE_TEMPORARY_BASALS WHERE timestamp <= :timestamp AND (timestamp + duration) > :timestamp AND referenceId IS NULL AND pumpType == :pumpType ORDER BY timestamp DESC LIMIT 1")
     fun getTemporaryBasalActiveAtIncludingInvalidMaybe(timestamp: Long, pumpType: InterfaceIDs.PumpType): Maybe<TemporaryBasal>
-
-    @Query("SELECT * FROM $TABLE_TEMPORARY_BASALS WHERE dateCreated >= :start AND dateCreated < :end ORDER BY dateCreated ASC")
-    override fun getAllEntriesCreatedBetween(start: Long, end: Long): Single<List<TemporaryBasal>>
 }

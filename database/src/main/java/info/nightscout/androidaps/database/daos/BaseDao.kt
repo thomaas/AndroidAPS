@@ -4,9 +4,8 @@ import androidx.room.Insert
 import androidx.room.Update
 import info.nightscout.androidaps.database.daos.workaround.BaseDaoWorkaround
 import info.nightscout.androidaps.database.interfaces.DBEntry
-import io.reactivex.Single
 
-internal interface BaseDao<T : DBEntry> : BaseDaoWorkaround<T> {
+interface BaseDao<T : DBEntry> : BaseDaoWorkaround<T> {
 
     fun findById(id: Long): T?
 
@@ -17,8 +16,6 @@ internal interface BaseDao<T : DBEntry> : BaseDaoWorkaround<T> {
 
     @Update
     fun update(entry: T)
-
-    fun getAllEntriesCreatedBetween(start: Long, end: Long): Single<List<T>>
 }
 
 /**
