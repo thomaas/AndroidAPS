@@ -9,7 +9,7 @@ import io.reactivex.Flowable
 
 @Suppress("FunctionName")
 @Dao
-interface ExtendedBolusDao : BaseDao<ExtendedBolus> {
+internal interface ExtendedBolusDao : BaseDao<ExtendedBolus> {
 
     @Query("SELECT * FROM $TABLE_EXTENDED_BOLUSES WHERE id = :id")
     override fun findById(id: Long): ExtendedBolus?

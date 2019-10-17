@@ -5,7 +5,7 @@ import androidx.room.Update
 import info.nightscout.androidaps.database.daos.workaround.BaseDaoWorkaround
 import info.nightscout.androidaps.database.interfaces.DBEntry
 
-interface BaseDao<T : DBEntry> : BaseDaoWorkaround<T> {
+internal interface BaseDao<T : DBEntry> : BaseDaoWorkaround<T> {
 
     fun findById(id: Long): T?
 

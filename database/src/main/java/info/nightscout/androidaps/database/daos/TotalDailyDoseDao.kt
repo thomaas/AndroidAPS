@@ -8,7 +8,7 @@ import io.reactivex.Single
 
 @Suppress("FunctionName")
 @Dao
-interface TotalDailyDoseDao : BaseDao<TotalDailyDose> {
+internal interface TotalDailyDoseDao : BaseDao<TotalDailyDose> {
 
     @Query("SELECT * FROM $TABLE_TOTAL_DAILY_DOSES WHERE id = :id")
     override fun findById(id: Long): TotalDailyDose?

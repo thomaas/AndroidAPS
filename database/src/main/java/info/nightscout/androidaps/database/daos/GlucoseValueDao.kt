@@ -9,7 +9,7 @@ import io.reactivex.Maybe
 import io.reactivex.Single
 
 @Dao
-interface GlucoseValueDao : BaseDao<GlucoseValue> {
+internal interface GlucoseValueDao : BaseDao<GlucoseValue> {
 
     @Query("SELECT * FROM $TABLE_GLUCOSE_VALUES WHERE id = :id")
     override fun findById(id: Long): GlucoseValue?

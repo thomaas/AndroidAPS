@@ -8,7 +8,7 @@ import io.reactivex.Flowable
 
 @Suppress("FunctionName")
 @Dao
-interface TemporaryTargetDao : BaseDao<TemporaryTarget> {
+internal interface TemporaryTargetDao : BaseDao<TemporaryTarget> {
 
     @Query("SELECT * FROM $TABLE_TEMPORARY_TARGETS WHERE id = :id")
     override fun findById(id: Long): TemporaryTarget?
