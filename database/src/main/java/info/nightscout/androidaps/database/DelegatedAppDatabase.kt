@@ -4,7 +4,7 @@ import info.nightscout.androidaps.database.daos.*
 import info.nightscout.androidaps.database.daos.delegated.*
 import info.nightscout.androidaps.database.interfaces.DBEntry
 
-class DelegatedAppDatabase(val changes: MutableList<DBEntry>, val database: AppDatabase) {
+internal class DelegatedAppDatabase(val changes: MutableList<DBEntry>, val database: AppDatabase) {
 
     val glucoseValueDao: GlucoseValueDao = DelegatedGlucoseValueDao(changes, database.glucoseValueDao)
     val therapyEventDao: TherapyEventDao = DelegatedTherapyEventDao(changes, database.therapyEventDao)

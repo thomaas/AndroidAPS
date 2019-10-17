@@ -9,7 +9,7 @@ import io.reactivex.Flowable
 import io.reactivex.Maybe
 
 @Dao
-interface TherapyEventDao : BaseDao<TherapyEvent> {
+internal interface TherapyEventDao : BaseDao<TherapyEvent> {
 
     @Query("SELECT * FROM $TABLE_THERAPY_EVENTS WHERE id = :id")
     override fun findById(id: Long): TherapyEvent?
