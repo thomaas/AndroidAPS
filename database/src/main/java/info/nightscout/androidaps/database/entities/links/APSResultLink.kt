@@ -26,7 +26,7 @@ import info.nightscout.androidaps.database.interfaces.DBEntry
                 parentColumns = arrayOf("id"),
                 childColumns = arrayOf("referenceId"))],
         indices = [Index("referenceId"), Index("apsResultId"),
-                Index("smbId"), Index("tbrId")])
+            Index("smbId"), Index("tbrId")])
 data class APSResultLink(
         @PrimaryKey(autoGenerate = true)
         override var id: Long = 0,

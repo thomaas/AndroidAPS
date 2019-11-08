@@ -21,7 +21,7 @@ import info.nightscout.androidaps.database.interfaces.DBEntry
                 parentColumns = ["id"],
                 childColumns = ["referenceId"])],
         indices = [Index("referenceId"), Index("bolusId"),
-                Index("extendedBolusId")])
+            Index("extendedBolusId")])
 data class MultiwaveBolusLink(
         @PrimaryKey(autoGenerate = true)
         override var id: Long = 0,

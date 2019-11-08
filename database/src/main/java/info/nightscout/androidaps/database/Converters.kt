@@ -64,7 +64,7 @@ class Converters {
 
     @TypeConverter
     fun fromListOfBlocks(blocks: List<Block>?): String? {
-        if (blocks == null) return null;
+        if (blocks == null) return null
         val jsonArray = JSONArray()
         blocks.forEach {
             val jsonObject = JSONObject()
@@ -111,7 +111,7 @@ class Converters {
 
     @TypeConverter
     fun fromListOfTargetBlocks(blocks: List<TargetBlock>?): String? {
-        if (blocks == null) return null;
+        if (blocks == null) return null
         val jsonArray = JSONArray()
         blocks.forEach {
             val jsonObject = JSONObject()

@@ -17,7 +17,7 @@ object AppRepository {
 
     private const val DB_FILE = "AndroidAPS.db"
 
-    internal lateinit var database: AppDatabase;
+    internal lateinit var database: AppDatabase
 
     private val changeSubject = PublishSubject.create<List<DBEntry>>()
 
