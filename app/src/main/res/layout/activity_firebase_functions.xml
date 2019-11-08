@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="2dp"
+    tools:context=".plugins.general.maintenance.MaintenanceFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+
+    <Button
+        android:id="@+id/firebase_export"
+        style="?android:attr/buttonStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="3dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="3dp"
+        android:layout_weight="0.5"
+        android:text="Export settings to Firebase"
+        android:textColor="@color/colorTreatmentButton" />
+
+    <Button
+        android:id="@+id/firebase_import"
+        style="?android:attr/buttonStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="3dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="3dp"
+        android:layout_weight="0.5"
+        android:text="Import settings from Firebase"
+        android:textColor="@color/colorTreatmentButton" />
+
+    </LinearLayout>
+</FrameLayout>

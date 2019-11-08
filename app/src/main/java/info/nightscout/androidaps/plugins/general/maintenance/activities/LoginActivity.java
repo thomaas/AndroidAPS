@@ -10,6 +10,7 @@ import android.widget.TextView;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.general.maintenance.ImportExportPrefs;
 import info.nightscout.androidaps.utils.ToastUtils;
 
 import androidx.annotation.NonNull;
@@ -47,13 +48,14 @@ public class LoginActivity extends AppCompatActivity {
             // Do something
             // Write sharedPreferences to database ot file
             ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "ALREADY LOGGED IN!!!");
+            startActivity(new Intent(this, FirebaseFunctions.class));
             finish();
 
         } else {
             setContentView(R.layout.activity_login);
             buttonRegister = (Button) findViewById(R.id.buttonRegister);
             buttonRegister.setOnClickListener(view1 -> {
-                // try to register account
+                // try to login
                 loginUser();
             });
             emailText = (EditText) findViewById(R.id.loginEmail);

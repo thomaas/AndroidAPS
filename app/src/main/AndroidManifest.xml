@@ -11,7 +11,6 @@
         android:roundIcon="${appIconRound}"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.Launcher">
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -20,7 +19,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity android:name=".activities.PreferencesActivity" />
         <activity
             android:name=".plugins.general.overview.dialogs.BolusProgressHelperActivity"
@@ -70,7 +68,6 @@
             android:label="@string/pairing_information"
             android:theme="@style/AppTheme" /> <!-- Network change local receiver -->
         <activity android:name=".activities.RequestDexcomPermissionActivity" />
-
         <activity android:name=".plugins.pump.common.dialog.RileyLinkBLEScanActivity">
             <intent-filter>
                 <action android:name="info.nightscout.androidaps.plugins.PumpCommon.dialog.RileyLinkBLEScanActivity" />
@@ -85,12 +82,15 @@
         <activity android:name=".plugins.pump.medtronic.dialog.MedtronicHistoryActivity" />
         <activity android:name=".plugins.general.maintenance.activities.LoginActivity" />
         <activity android:name=".plugins.general.maintenance.activities.SignUpActivity" />
+        <activity android:name=".plugins.general.maintenance.activities.FirebaseFunctions" />
+
         <meta-data
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="59d462666c664c57b29e1d79ea123e01f8057cfa" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -100,6 +100,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
         </provider>
+
         <receiver
             android:name=".receivers.DataReceiver"
             android:enabled="true"
@@ -152,14 +153,13 @@
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
             </intent-filter>
         </receiver>
+
         <service
             android:name=".services.DataService"
             android:exported="false" />
-
         <service
             android:name=".services.LocationService"
             android:exported="false" />
-
         <service
             android:name=".plugins.pump.danaR.services.DanaRExecutionService"
             android:enabled="true"
@@ -251,11 +251,9 @@
         <service
             android:name=".plugins.general.overview.notifications.DismissNotificationService"
             android:exported="false" />
-
         <service android:name=".plugins.general.persistentNotification.DummyService" />
         <service android:name=".plugins.pump.insight.connection_service.InsightConnectionService" />
         <service android:name=".plugins.pump.insight.InsightAlertService" />
-
         <service
             android:name=".plugins.pump.medtronic.service.RileyLinkMedtronicService"
             android:enabled="true"
@@ -284,9 +282,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- To receive data from xdrip. -->
+    <uses-permission android:name="com.dexcom.cgm.EXTERNAL_PERMISSION" />
 
-    <uses-permission android:name="com.dexcom.cgm.EXTERNAL_PERMISSION" /> <!-- To receive data from xdrip. -->
     <uses-permission android:name="com.eveningoutpost.dexdrip.permissions.RECEIVE_BG_ESTIMATE" />
 
     <uses-permission-sdk-23 android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
