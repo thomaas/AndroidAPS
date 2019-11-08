@@ -11,26 +11,26 @@
         android:id="@+id/signupEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter your email"
+        android:hint="@string/email_hint"
         android:inputType="textEmailAddress" />
 
     <EditText
         android:id="@+id/signupPassword"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Password"
+        android:hint="@string/password_hint"
         android:inputType="textPassword" />
 
     <Button
         android:id="@+id/buttonRegister"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Register user" />
+        android:text="@string/register_user" />
 
     <TextView
         android:id="@+id/login_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Already have an acount? Sign in here" />
+        android:text="@string/login_link" />
 
 </LinearLayout>

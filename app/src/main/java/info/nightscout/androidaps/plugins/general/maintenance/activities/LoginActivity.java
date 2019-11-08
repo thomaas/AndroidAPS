@@ -7,12 +7,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import info.nightscout.androidaps.MainApp;
-import info.nightscout.androidaps.R;
-import info.nightscout.androidaps.logging.L;
-import info.nightscout.androidaps.plugins.general.maintenance.ImportExportPrefs;
-import info.nightscout.androidaps.utils.ToastUtils;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -26,6 +20,11 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import info.nightscout.androidaps.MainApp;
+import info.nightscout.androidaps.R;
+import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.utils.ToastUtils;
 
 public class LoginActivity extends AppCompatActivity {
     private Button buttonRegister;
@@ -47,7 +46,7 @@ public class LoginActivity extends AppCompatActivity {
         if(firebaseAuth.getCurrentUser() != null){
             // Do something
             // Write sharedPreferences to database ot file
-            ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "ALREADY LOGGED IN!!!");
+            ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.firebase_logged));
             startActivity(new Intent(this, FirebaseFunctions.class));
             finish();
 
@@ -74,13 +73,13 @@ public class LoginActivity extends AppCompatActivity {
 
         if(TextUtils.isEmpty(email)){
             //email is empty
-            ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Enter email");
+            ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.enter_email));
             return;
         }
 
         if(TextUtils.isEmpty(password) || password.length() < 6){
             //Password is empty
-            ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Password should be at least 6 characters");
+            ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.password_length));
             return;
         }
 
@@ -88,10 +87,10 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
-                    ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Logged in successfully!");
+                    ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.login_successful));
 
                 } else {
-                    ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Login FAILED!");
+                    ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.login_failed));
                     log.debug("Error logging in: "+task.getException());
                     log.debug("Name of app: " + FirebaseApp.getInstance().getOptions().getProjectId());
                 }

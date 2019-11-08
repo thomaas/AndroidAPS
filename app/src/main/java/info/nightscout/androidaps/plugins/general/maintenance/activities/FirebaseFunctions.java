@@ -1,10 +1,8 @@
 package info.nightscout.androidaps.plugins.general.maintenance.activities;
 
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
@@ -52,11 +50,9 @@ public class FirebaseFunctions extends AppCompatActivity {
             reference = FirebaseStorage.getInstance().getReference();
             // Show the import/export buttons
             exportButton.setOnClickListener(view1 -> {
-                // Will open signup activity
                 exportToFirebase();
             });
             importButton.setOnClickListener(view1 -> {
-                // Will open signup activity
                 importFromFirebase();
             });
         }
@@ -64,7 +60,7 @@ public class FirebaseFunctions extends AppCompatActivity {
 
     private void exportToFirebase(){
         if(!file.exists()) {
-            ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Preferences not exported!!!");
+            ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.preferences_file_missing));
             return;
         }
         // save it to storage
@@ -73,7 +69,7 @@ public class FirebaseFunctions extends AppCompatActivity {
         reference.child(user.getUid()).putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Upload successful!");
+                ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.upload_success));
 
             }
         })
@@ -82,7 +78,6 @@ public class FirebaseFunctions extends AppCompatActivity {
                     public void onFailure(@NonNull Exception exception) {
                         // Handle unsuccessful uploads
                         log.debug("Error: "+exception.getMessage());
-                        // ...
                     }
                 });
     }
@@ -95,7 +90,7 @@ public class FirebaseFunctions extends AppCompatActivity {
                     @Override
                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                         // Successfully downloaded data to local file
-                        ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Download successful!");
+                        ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.download_success));
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
