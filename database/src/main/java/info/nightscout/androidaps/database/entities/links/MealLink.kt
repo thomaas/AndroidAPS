@@ -32,8 +32,8 @@ import info.nightscout.androidaps.database.interfaces.DBEntry
                 parentColumns = ["id"],
                 childColumns = ["referenceId"])],
         indices = [Index("referenceId"), Index("bolusId"),
-                Index("carbsId"), Index("bolusCalcResultId"),
-                Index("superbolusTempBasalId"), Index("noteId")])
+            Index("carbsId"), Index("bolusCalcResultId"),
+            Index("superbolusTempBasalId"), Index("noteId")])
 data class MealLink(
         @PrimaryKey(autoGenerate = true)
         override var id: Long = 0,

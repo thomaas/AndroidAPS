@@ -10,6 +10,7 @@ public interface BaseDaoWorkaround<T extends DBEntry> {
 
     /**
      * Inserts a new entry
+     *
      * @return The ID of the newly generated entry
      */
     @Transaction
@@ -19,6 +20,7 @@ public interface BaseDaoWorkaround<T extends DBEntry> {
 
     /**
      * Updates an existing entry
+     *
      * @return The ID of the newly generated HISTORIC entry
      */
     @Transaction

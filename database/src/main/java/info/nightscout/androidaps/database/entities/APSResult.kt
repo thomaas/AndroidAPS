@@ -33,9 +33,9 @@ data class APSResult(
         var isMicroBolusAllowed: Boolean?,
         var resultJson: String
 ) : DBEntry, DBEntryWithTime {
-        enum class Algorithm {
-                MA,
-                AMA,
-                SMB
-        }
+    enum class Algorithm {
+        MA,
+        AMA,
+        SMB
+    }
 }
