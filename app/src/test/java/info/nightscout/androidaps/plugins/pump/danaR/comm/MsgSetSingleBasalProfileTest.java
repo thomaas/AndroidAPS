@@ -10,7 +10,7 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.utils.SP;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by Rumen Georgiev on 8/30/2018.
@@ -25,7 +25,6 @@ public class MsgSetSingleBasalProfileTest {
         AAPSMocker.mockApplicationContext();
         AAPSMocker.mockSP();
         AAPSMocker.mockL();
-        AAPSMocker.mockBus();
         MsgSetSingleBasalProfile packet = new MsgSetSingleBasalProfile(createArray(24, 2));
 
         // test message decoding

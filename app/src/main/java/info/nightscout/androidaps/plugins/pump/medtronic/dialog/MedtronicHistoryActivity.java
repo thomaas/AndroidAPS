@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.plugins.pump.medtronic.dialog;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.LayoutInflater;
@@ -20,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.activities.NoSplashActivity;
 import info.nightscout.androidaps.logging.L;
@@ -83,7 +81,6 @@ public class MedtronicHistoryActivity extends NoSplashActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        MainApp.bus().register(this);
         filterHistory(selectedGroup);
         setHistoryTypeSpinner();
     }
@@ -107,7 +104,6 @@ public class MedtronicHistoryActivity extends NoSplashActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        MainApp.bus().unregister(this);
     }
 
 

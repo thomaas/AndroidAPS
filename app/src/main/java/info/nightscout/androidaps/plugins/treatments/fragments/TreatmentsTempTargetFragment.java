@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.plugins.treatments.fragments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Paint;
@@ -14,10 +13,9 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.squareup.otto.Subscribe;
 
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
@@ -26,23 +24,23 @@ import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.transactions.InvalidateTemporaryTargetTransaction;
 import info.nightscout.androidaps.db.TempTarget;
 import info.nightscout.androidaps.events.EventTempTargetChange;
-import info.nightscout.androidaps.plugins.common.SubscriberFragment;
+import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
-import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
-import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
-import info.nightscout.androidaps.plugins.general.nsclient.UploadQueue;
 import info.nightscout.androidaps.plugins.general.nsclient.events.EventNSClientRestart;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
-import info.nightscout.androidaps.services.Intents;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.DecimalFormatter;
+import info.nightscout.androidaps.utils.FabricPrivacy;
 import info.nightscout.androidaps.utils.SP;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 
 /**
  * Created by mike on 13/01/17.
  */
 
-public class TreatmentsTempTargetFragment extends SubscriberFragment implements View.OnClickListener {
+public class TreatmentsTempTargetFragment extends Fragment implements View.OnClickListener {
+    private CompositeDisposable disposable = new CompositeDisposable();
 
     RecyclerView recyclerView;
     LinearLayoutManager llm;
@@ -181,8 +179,24 @@ public class TreatmentsTempTargetFragment extends SubscriberFragment implements 
         if (nsUploadOnly)
             refreshFromNS.setVisibility(View.GONE);
 
-        updateGUI();
         return view;
+    }
+
+    @Override
+    public synchronized void onResume() {
+        super.onResume();
+        disposable.add(RxBus.INSTANCE
+                .toObservable(EventTempTargetChange.class)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(event -> updateGui(), FabricPrivacy::logException)
+        );
+        updateGui();
+    }
+
+    @Override
+    public synchronized void onPause() {
+        super.onPause();
+        disposable.clear();
     }
 
     @Override
@@ -195,7 +209,7 @@ public class TreatmentsTempTargetFragment extends SubscriberFragment implements 
                 builder.setPositiveButton(MainApp.gs(R.string.ok), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         //MainApp.getDbHelper().resetTempTargets();
-                        MainApp.bus().post(new EventNSClientRestart());
+                        RxBus.INSTANCE.send(new EventNSClientRestart());
                     }
                 });
                 builder.setNegativeButton(MainApp.gs(R.string.cancel), null);
@@ -205,20 +219,7 @@ public class TreatmentsTempTargetFragment extends SubscriberFragment implements 
 
     }
 
-    @Subscribe
-    public void onStatusEvent(final EventTempTargetChange ev) {
-        updateGUI();
-    }
-
-    @Override
-    protected void updateGUI() {
-        Activity activity = getActivity();
-        if (activity != null)
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    recyclerView.swapAdapter(new RecyclerViewAdapter(TreatmentsPlugin.getPlugin().getTempTargetsFromHistory()), false);
-                }
-            });
+    private void updateGui() {
+        recyclerView.swapAdapter(new RecyclerViewAdapter(TreatmentsPlugin.getPlugin().getTempTargetsFromHistory()), false);
     }
 }

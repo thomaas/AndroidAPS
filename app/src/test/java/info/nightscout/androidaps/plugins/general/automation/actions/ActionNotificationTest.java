@@ -73,7 +73,6 @@ public class ActionNotificationTest {
         AAPSMocker.mockMainApp();
         AAPSMocker.mockSP();
         AAPSMocker.mockStrings();
-        AAPSMocker.mockBus();
         AAPSMocker.mockNSUpload();
 
         actionNotification = new ActionNotification();

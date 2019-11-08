@@ -12,7 +12,7 @@ import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.pump.danaR.DanaRPump;
 import info.nightscout.androidaps.utils.SP;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by Rumen Georgiev on 8/30/2018.
@@ -27,7 +27,6 @@ public class MsgInitConnStatusOptionTest {
         AAPSMocker.mockApplicationContext();
         AAPSMocker.mockSP();
         AAPSMocker.mockL();
-        AAPSMocker.mockBus();
         AAPSMocker.mockConfigBuilder();
         MsgInitConnStatusOption packet = new MsgInitConnStatusOption();
 

@@ -13,7 +13,7 @@ import info.nightscout.androidaps.plugins.treatments.TreatmentService;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.SP;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by Rumen Georgiev on 30.10.2018.
@@ -28,7 +28,6 @@ public class MsgHistoryEvents_v2Test {
         AAPSMocker.mockApplicationContext();
         AAPSMocker.mockSP();
         AAPSMocker.mockL();
-        AAPSMocker.mockBus();
         AAPSMocker.mockDatabaseHelper();
         AAPSMocker.mockTreatmentPlugin();
         AAPSMocker.mockTreatmentService();

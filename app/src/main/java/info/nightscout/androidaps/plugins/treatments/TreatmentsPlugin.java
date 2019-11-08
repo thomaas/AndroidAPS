@@ -2,8 +2,6 @@ package info.nightscout.androidaps.plugins.treatments;
 
 import androidx.annotation.Nullable;
 
-import com.squareup.otto.Subscribe;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,18 +44,25 @@ import info.nightscout.androidaps.plugins.general.overview.notifications.Notific
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.AutosensData;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.AutosensResult;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
+import info.nightscout.androidaps.plugins.pump.medtronic.data.MedtronicHistoryData;
+import info.nightscout.androidaps.plugins.pump.medtronic.util.MedtronicUtil;
 import info.nightscout.androidaps.plugins.sensitivity.SensitivityAAPSPlugin;
 import info.nightscout.androidaps.plugins.sensitivity.SensitivityWeightedAveragePlugin;
 import info.nightscout.androidaps.utils.DateUtil;
+import info.nightscout.androidaps.utils.FabricPrivacy;
 import info.nightscout.androidaps.utils.ProfileSwitchUtilKt;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.utils.T;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Created by mike on 05.08.2016.
  */
 public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface {
     private Logger log = LoggerFactory.getLogger(L.DATATREATMENTS);
+
+    private CompositeDisposable disposable = new CompositeDisposable();
 
     private static TreatmentsPlugin treatmentsPlugin;
 
@@ -92,18 +97,53 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
 
     @Override
     protected void onStart() {
-        MainApp.bus().register(this);
         initializeTempBasalData();
         initializeTreatmentData();
         initializeExtendedBolusData();
         initializeTempTargetData();
         initializeProfileSwitchData();
         super.onStart();
+        disposable.add(RxBus.INSTANCE
+                .toObservable(EventReloadTreatmentData.class)
+                .observeOn(Schedulers.io())
+                .subscribe(event -> {
+                            if (L.isEnabled(L.DATATREATMENTS))
+                                log.debug("EventReloadTreatmentData");
+                            initializeTreatmentData();
+                            initializeExtendedBolusData();
+                            updateTotalIOBTreatments();
+                            RxBus.INSTANCE.send(event.getNext());
+                        },
+                        FabricPrivacy::logException
+                ));
+        disposable.add(RxBus.INSTANCE
+                .toObservable(EventReloadProfileSwitchData.class)
+                .observeOn(Schedulers.io())
+                .subscribe(event -> initializeProfileSwitchData(),
+                        FabricPrivacy::logException
+                ));
+        disposable.add(RxBus.INSTANCE
+                .toObservable(EventTempTargetChange.class)
+                .observeOn(Schedulers.io())
+                .subscribe(event -> initializeTempTargetData(),
+                        FabricPrivacy::logException
+                ));
+        disposable.add(RxBus.INSTANCE
+                .toObservable(EventReloadTempBasalData.class)
+                .observeOn(Schedulers.io())
+                .subscribe(event -> {
+                            if (L.isEnabled(L.DATATREATMENTS))
+                                log.debug("EventReloadTempBasalData");
+                            initializeTempBasalData();
+                            updateTotalIOBTempBasals();
+                        },
+                        FabricPrivacy::logException
+                ));
     }
 
     @Override
     protected void onStop() {
-        MainApp.bus().register(this);
+        disposable.clear();
         super.onStop();
     }
 
@@ -299,12 +339,20 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
     @Override
     public List<Treatment> getTreatmentsFromHistoryAfterTimestamp(long fromTimestamp) {
         List<Treatment> in5minback = new ArrayList<>();
+
         long time = System.currentTimeMillis();
         synchronized (treatments) {
+            if (MedtronicHistoryData.doubleBolusDebug)
+                log.debug("DoubleBolusDebug: AllTreatmentsInDb: {}", MedtronicUtil.getGsonInstance().toJson(treatments));
+
             for (Treatment t : treatments) {
                 if (t.date <= time && t.date >= fromTimestamp)
                     in5minback.add(t);
             }
+
+            if (MedtronicHistoryData.doubleBolusDebug)
+                log.debug("DoubleBolusDebug: FilteredTreatments: AfterTime={}, Items={}", fromTimestamp, MedtronicUtil.getGsonInstance().toJson(in5minback));
+
             return in5minback;
         }
     }
@@ -378,25 +426,6 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
     @Override
     public boolean isInHistoryExtendedBoluslInProgress() {
         return getExtendedBolusFromHistory(System.currentTimeMillis()) != null; //TODO:  crosscheck here
-    }
-
-    @Subscribe
-    public void onStatusEvent(final EventReloadTreatmentData ev) {
-        if (L.isEnabled(L.DATATREATMENTS))
-            log.debug("EventReloadTreatmentData");
-        initializeTreatmentData();
-        initializeExtendedBolusData();
-        updateTotalIOBTreatments();
-        MainApp.bus().post(ev.next);
-    }
-
-    @Subscribe
-    @SuppressWarnings("unused")
-    public void onStatusEvent(final EventReloadTempBasalData ev) {
-        if (L.isEnabled(L.DATATREATMENTS))
-            log.debug("EventReloadTempBasalData");
-        initializeTempBasalData();
-        updateTotalIOBTempBasals();
     }
 
     @Override
@@ -604,13 +633,6 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
         return oldestTime;
     }
 
-    // TempTargets
-    @Subscribe
-    @SuppressWarnings("unused")
-    public void onStatusEvent(final EventTempTargetChange ev) {
-        initializeTempTargetData();
-    }
-
     @Nullable
     @Override
     public TempTarget getTempTargetFromHistory() {
@@ -632,13 +654,6 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
         synchronized (tempTargets) {
             return new OverlappingIntervals<>(tempTargets);
         }
-    }
-
-    // Profile Switch
-    @Subscribe
-    @SuppressWarnings("unused")
-    public void onStatusEvent(final EventReloadProfileSwitchData ev) {
-        initializeProfileSwitchData();
     }
 
     @Override

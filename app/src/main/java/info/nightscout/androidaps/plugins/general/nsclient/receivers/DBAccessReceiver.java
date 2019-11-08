@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.db.DbRequest;
 import info.nightscout.androidaps.interfaces.PluginType;
@@ -118,7 +117,7 @@ public class DBAccessReceiver extends BroadcastReceiver {
     }
 
     public boolean shouldUpload() {
-        NSClientPlugin nsClientPlugin = MainApp.getSpecificPlugin(NSClientPlugin.class);
+        NSClientPlugin nsClientPlugin = NSClientPlugin.getPlugin();
         return nsClientPlugin.isEnabled(PluginType.GENERAL) && !SP.getBoolean(R.string.key_ns_noupload, false);
     }
 

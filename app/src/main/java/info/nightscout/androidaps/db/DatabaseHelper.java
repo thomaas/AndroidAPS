@@ -197,6 +197,32 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         return DatabaseUtils.queryNumEntries(getReadableDatabase(), database);
     }
 
+    // --------------------- DB resets ---------------------
+
+
+    //TODO: Replace
+
+    public void resetDatabases() {
+    }
+
+    public void resetTempTargets() {
+    }
+
+    public void resetTemporaryBasals() {
+    }
+
+    public void resetExtededBoluses() {
+    }
+
+    public void resetCareportalEvents() {
+    }
+
+    public void resetProfileSwitch() {
+    }
+
+    public void resetTDDs() {
+    }
+
     // ------------------ getDao -------------------------------------------
 
     private Dao<DanaRHistoryRecord, String> getDaoDanaRHistory() throws SQLException {
@@ -225,7 +251,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             public void run() {
                 if (L.isEnabled(L.DATABASE))
                     log.debug("Firing EventNewBg");
-                MainApp.bus().post(new EventNewBG());
                 RxBus.INSTANCE.send(new EventNewBG());
                 scheduledBgPost = null;
             }
@@ -358,7 +383,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             public void run() {
                 if (L.isEnabled(L.DATABASE))
                     log.debug("Firing EventTempTargetChange");
-                MainApp.bus().post(new EventTempTargetChange());
+                RxBus.INSTANCE.send(new EventTempTargetChange());
                 scheduledTemTargetPost = null;
             }
         }
@@ -454,10 +479,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             public void run() {
                 if (L.isEnabled(L.DATABASE))
                     log.debug("Firing EventTempBasalChange");
-                MainApp.bus().post(new EventReloadTempBasalData());
-                MainApp.bus().post(new EventTempBasalChange());
+                RxBus.INSTANCE.send(new EventReloadTempBasalData());
+                RxBus.INSTANCE.send(new EventTempBasalChange());
                 if (earliestDataChange != null)
-                    MainApp.bus().post(new EventNewHistoryData(earliestDataChange));
+                    RxBus.INSTANCE.send(new EventNewHistoryData(earliestDataChange));
                 earliestDataChange = null;
                 scheduledTemBasalsPost = null;
             }
@@ -493,9 +518,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             public void run() {
                 if (L.isEnabled(L.DATABASE))
                     log.debug("Firing EventExtendedBolusChange");
-                MainApp.bus().post(new EventReloadTreatmentData(new EventExtendedBolusChange()));
+                RxBus.INSTANCE.send(new EventReloadTreatmentData(new EventExtendedBolusChange()));
                 if (earliestDataChange != null)
-                    MainApp.bus().post(new EventNewHistoryData(earliestDataChange));
+                    RxBus.INSTANCE.send(new EventNewHistoryData(earliestDataChange));
                 earliestDataChange = null;
                 scheduledExtendedBolusPost = null;
             }
@@ -636,7 +661,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             public void run() {
                 if (L.isEnabled(L.DATABASE))
                     log.debug("Firing scheduleCareportalEventChange");
-                MainApp.bus().post(new EventCareportalEventChange());
+                RxBus.INSTANCE.send(new EventCareportalEventChange());
                 scheduledCareportalEventPost = null;
             }
         }
@@ -678,8 +703,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             public void run() {
                 if (L.isEnabled(L.DATABASE))
                     log.debug("Firing EventProfileNeedsUpdate");
-                MainApp.bus().post(new EventReloadProfileSwitchData());
-                MainApp.bus().post(new EventProfileNeedsUpdate());
+                RxBus.INSTANCE.send(new EventReloadProfileSwitchData());
+                RxBus.INSTANCE.send(new EventProfileNeedsUpdate());
                 scheduledProfileSwitchEventPost = null;
             }
         }

@@ -16,7 +16,7 @@ import info.nightscout.androidaps.Config;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.events.EventPreferenceChange;
-import info.nightscout.androidaps.events.EventRefreshGui;
+import info.nightscout.androidaps.events.EventRebuildTabs;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginType;
 import info.nightscout.androidaps.plugins.aps.loop.LoopPlugin;
@@ -47,7 +47,6 @@ import info.nightscout.androidaps.plugins.sensitivity.SensitivityOref0Plugin;
 import info.nightscout.androidaps.plugins.sensitivity.SensitivityOref1Plugin;
 import info.nightscout.androidaps.plugins.sensitivity.SensitivityWeightedAveragePlugin;
 import info.nightscout.androidaps.plugins.source.SourceDexcomPlugin;
-import info.nightscout.androidaps.utils.LocaleHelper;
 import info.nightscout.androidaps.utils.OKDialog;
 import info.nightscout.androidaps.utils.SP;
 
@@ -68,17 +67,14 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        MainApp.bus().post(new EventPreferenceChange(key));
         RxBus.INSTANCE.send(new EventPreferenceChange(key));
         if (key.equals("language")) {
-            String lang = sharedPreferences.getString("language", "en");
-            LocaleHelper.setLocale(getApplicationContext(), lang);
-            MainApp.bus().post(new EventRefreshGui(true));
+            RxBus.INSTANCE.send(new EventRebuildTabs(true));
             //recreate() does not update language so better close settings
             finish();
         }
         if (key.equals("short_tabtitles")) {
-            MainApp.bus().post(new EventRefreshGui());
+            RxBus.INSTANCE.send(new EventRebuildTabs());
         }
         if (key.equals(MainApp.gs(R.string.key_openapsama_useautosens)) && SP.getBoolean(R.string.key_openapsama_useautosens, false)) {
             OKDialog.show(this, MainApp.gs(R.string.configbuilder_sensitivity), MainApp.gs(R.string.sensitivity_warning), null);

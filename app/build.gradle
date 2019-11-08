@@ -109,7 +109,7 @@ android {
         targetSdkVersion 28
         multiDexEnabled true
         versionCode 1500
-        version "2.4-dev-h"
+        version "2.6-dev"
         buildConfigField "String", "VERSION", '"' + version + '"'
         buildConfigField "String", "BUILDVERSION", '"' + generateGitBuild() + '-' + generateDate() + '"'
         buildConfigField "String", "REMOTE", '"' + generateGitRemote() + '"'
@@ -144,6 +144,7 @@ android {
             testCoverageEnabled(project.hasProperty('coverage'))
         }
         firebaseDisable {
+            matchingFallbacks = ['debug', 'release']
             System.setProperty("disableFirebase", "true")
         }
     }
@@ -245,8 +246,6 @@ dependencies {
     implementation 'androidx.percentlayout:percentlayout:1.0.0'
     implementation "com.wdullaer:materialdatetimepicker:2.3.0"
 
-    // Otto bus will be replaced by rx
-    implementation "com.squareup:otto:1.3.7"
     implementation "com.j256.ormlite:ormlite-core:${ormLiteVersion}"
     implementation "com.j256.ormlite:ormlite-android:${ormLiteVersion}"
     implementation("com.github.tony19:logback-android-classic:1.1.1-6") {
@@ -287,9 +286,6 @@ dependencies {
     testImplementation "org.powermock:powermock-module-junit4:${powermockVersion}"
     testImplementation "joda-time:joda-time:2.9.9"
     testImplementation("com.google.truth:truth:0.39") {
-        exclude group: "com.google.guava", module: "guava"
-    }
-    testImplementation("org.robolectric:robolectric:4.2.1") {
         exclude group: "com.google.guava", module: "guava"
     }
     testImplementation "org.skyscreamer:jsonassert:1.5.0"

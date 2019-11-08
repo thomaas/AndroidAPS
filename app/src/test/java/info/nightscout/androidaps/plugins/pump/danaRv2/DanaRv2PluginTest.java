@@ -20,8 +20,6 @@ import info.nightscout.androidaps.plugins.pump.danaR.DanaRPump;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.utils.ToastUtils;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * Created by Rumen on 01.08.2018
  */
@@ -66,7 +64,6 @@ public class DanaRv2PluginTest {
     public void prepareMocks() throws Exception {
         AAPSMocker.mockMainApp();
         AAPSMocker.mockConfigBuilder();
-        AAPSMocker.mockBus();
         AAPSMocker.mockStrings();
         AAPSMocker.mockApplicationContext();
         AAPSMocker.mockSP();

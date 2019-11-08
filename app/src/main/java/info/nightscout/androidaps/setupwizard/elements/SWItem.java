@@ -98,9 +98,8 @@ public class SWItem {
             public void run() {
                 if (L.isEnabled(L.CORE))
                     log.debug("Firing EventPreferenceChange");
-                MainApp.bus().post(new EventPreferenceChange(preferenceId));
                 RxBus.INSTANCE.send(new EventPreferenceChange(preferenceId));
-                MainApp.bus().post(new EventSWUpdate());
+                RxBus.INSTANCE.send(new EventSWUpdate(false));
                 scheduledEventPost = null;
             }
         }

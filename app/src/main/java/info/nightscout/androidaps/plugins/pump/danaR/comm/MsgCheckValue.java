@@ -3,7 +3,6 @@ package info.nightscout.androidaps.plugins.pump.danaR.comm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.pump.danaR.DanaRPlugin;
 import info.nightscout.androidaps.plugins.pump.danaR.DanaRPump;
@@ -32,7 +31,7 @@ public class MsgCheckValue extends MessageBase {
         pump.protocol = intFromBuff(bytes, 1, 1);
         pump.productCode = intFromBuff(bytes, 2, 1);
         if (pump.model != DanaRPump.EXPORT_MODEL) {
-            MainApp.getSpecificPlugin(DanaRPlugin.class).disconnect("Wrong Model");
+            DanaRPlugin.getPlugin().disconnect("Wrong Model");
             log.debug("Wrong model selected");
         }
 

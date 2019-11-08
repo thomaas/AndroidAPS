@@ -2,8 +2,6 @@ package info.nightscout.androidaps.plugins.pump.virtual;
 
 import android.os.SystemClock;
 
-import com.squareup.otto.Subscribe;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -20,6 +18,7 @@ import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.Bolus;
+import info.nightscout.androidaps.database.exception.NoActiveEntryException;
 import info.nightscout.androidaps.database.transactions.CancelExtendedBolusTransaction;
 import info.nightscout.androidaps.database.transactions.CancelTemporaryBasalTransaction;
 import info.nightscout.androidaps.database.transactions.InsertExtendedBolusTransaction;
@@ -47,8 +46,11 @@ import info.nightscout.androidaps.plugins.pump.common.defs.PumpType;
 import info.nightscout.androidaps.plugins.pump.virtual.events.EventVirtualPumpUpdateGui;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
+import info.nightscout.androidaps.utils.FabricPrivacy;
 import info.nightscout.androidaps.utils.InstanceId;
 import info.nightscout.androidaps.utils.SP;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 
 
 /**
@@ -56,6 +58,7 @@ import info.nightscout.androidaps.utils.SP;
  */
 public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
     private Logger log = LoggerFactory.getLogger(L.PUMP);
+    private CompositeDisposable disposable = new CompositeDisposable();
 
     Integer batteryPercent = 50;
     Integer reservoirInUnits = 50;
@@ -128,20 +131,21 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
     @Override
     protected void onStart() {
         super.onStart();
-        MainApp.bus().register(this);
+        disposable.add(RxBus.INSTANCE
+                .toObservable(EventPreferenceChange.class)
+                .observeOn(Schedulers.io())
+                .subscribe(event -> {
+                    if (event.isChanged(R.string.key_virtualpump_type))
+                        refreshConfiguration();
+                }, FabricPrivacy::logException)
+        );
         refreshConfiguration();
     }
 
     @Override
     protected void onStop() {
-        MainApp.bus().unregister(this);
+        disposable.clear();
         super.onStop();
-    }
-
-    @Subscribe
-    public void onStatusEvent(final EventPreferenceChange s) {
-        if (s.isChanged(R.string.key_virtualpump_type))
-            refreshConfiguration();
     }
 
     @Override
@@ -274,21 +278,21 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
 
         while (delivering < detailedBolusInfo.insulin) {
             SystemClock.sleep(200);
-            EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
-            bolusingEvent.status = String.format(MainApp.gs(R.string.bolusdelivering), delivering);
-            bolusingEvent.percent = Math.min((int) (delivering / detailedBolusInfo.insulin * 100), 100);
-            MainApp.bus().post(bolusingEvent);
+            EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.INSTANCE;
+            bolusingEvent.setStatus(String.format(MainApp.gs(R.string.bolusdelivering), delivering));
+            bolusingEvent.setPercent(Math.min((int) (delivering / detailedBolusInfo.insulin * 100), 100));
+            RxBus.INSTANCE.send(bolusingEvent);
             delivering += 0.1d;
         }
         SystemClock.sleep(200);
-        EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
-        bolusingEvent.status = String.format(MainApp.gs(R.string.bolusdelivered), detailedBolusInfo.insulin);
-        bolusingEvent.percent = 100;
-        MainApp.bus().post(bolusingEvent);
+        EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.INSTANCE;
+        bolusingEvent.setStatus(String.format(MainApp.gs(R.string.bolusdelivered), detailedBolusInfo.insulin));
+        bolusingEvent.setPercent(100);
+        RxBus.INSTANCE.send(bolusingEvent);
         SystemClock.sleep(1000);
         if (L.isEnabled(L.PUMPCOMM))
             log.debug("Delivering treatment insulin: " + detailedBolusInfo.insulin + "U carbs: " + detailedBolusInfo.carbs + "g " + result);
-        MainApp.bus().post(new EventVirtualPumpUpdateGui());
+        RxBus.INSTANCE.send(new EventVirtualPumpUpdateGui());
         lastDataTime = System.currentTimeMillis();
         Bolus.Type type;
         if (!detailedBolusInfo.isValid) type = Bolus.Type.PRIMING;
@@ -317,8 +321,9 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
         lastDataTime = timestamp;
         BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryBasalTransaction(timestamp, durationInMinutes * 60000, true, absoluteRate));
         if (L.isEnabled(L.PUMPCOMM))
-            log.debug("Settings temp basal absolute: " + result);
-        MainApp.bus().post(new EventVirtualPumpUpdateGui());
+            log.debug("Setting temp basal absolute: " + result);
+        RxBus.INSTANCE.send(new EventVirtualPumpUpdateGui());
+        lastDataTime = System.currentTimeMillis();
         return result;
     }
 
@@ -337,7 +342,8 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
         BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryBasalTransaction(timestamp, durationInMinutes * 60000, false, percent));
         if (L.isEnabled(L.PUMPCOMM))
             log.debug("Settings temp basal percent: " + result);
-        MainApp.bus().post(new EventVirtualPumpUpdateGui());
+        RxBus.INSTANCE.send(new EventVirtualPumpUpdateGui());
+        lastDataTime = System.currentTimeMillis();
         return result;
     }
 
@@ -353,6 +359,10 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
         long timestamp = System.currentTimeMillis();
         lastDataTime = timestamp;
         BlockingAppRepository.INSTANCE.runTransaction(new InsertExtendedBolusTransaction(timestamp, durationInMinutes * 60000L, insulin));
+        if (L.isEnabled(L.PUMPCOMM))
+            log.debug("Setting extended bolus: " + result);
+        RxBus.INSTANCE.send(new EventVirtualPumpUpdateGui());
+        lastDataTime = System.currentTimeMillis();
         return result;
     }
 
@@ -361,15 +371,18 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
         PumpEnactResult result = new PumpEnactResult();
         result.isTempCancel = true;
         try {
-            BlockingAppRepository.INSTANCE.runTransaction(new CancelTemporaryBasalTransaction());
+            BlockingAppRepository.INSTANCE.runTransactionExComp(new CancelTemporaryBasalTransaction());
             result.success = true;
             result.comment = MainApp.gs(R.string.virtualpump_resultok);
-            MainApp.bus().post(new EventVirtualPumpUpdateGui());
-            lastDataTime = System.currentTimeMillis();
-        } catch (IllegalStateException e) {
+            if (L.isEnabled(L.PUMPCOMM))
+                log.debug("Canceling extended temp basal: " + result);
+            RxBus.INSTANCE.send(new EventVirtualPumpUpdateGui());
+        } catch (NoActiveEntryException e) {
             result.success = false;
             result.comment = "No TBR active";
+        } catch (Exception ignored) {
         }
+        lastDataTime = System.currentTimeMillis();
         return result;
     }
 
@@ -378,15 +391,20 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
         PumpEnactResult result = new PumpEnactResult();
         result.isTempCancel = true;
         try {
-            BlockingAppRepository.INSTANCE.runTransaction(new CancelExtendedBolusTransaction());
+            BlockingAppRepository.INSTANCE.runTransactionExComp(new CancelExtendedBolusTransaction());
             result.success = true;
             result.comment = MainApp.gs(R.string.virtualpump_resultok);
-            MainApp.bus().post(new EventVirtualPumpUpdateGui());
+            RxBus.INSTANCE.send(new EventVirtualPumpUpdateGui());
             lastDataTime = System.currentTimeMillis();
-        } catch (IllegalStateException e) {
+            if (L.isEnabled(L.PUMPCOMM))
+                log.debug("Canceling extended bolus: " + result);
+            RxBus.INSTANCE.send(new EventVirtualPumpUpdateGui());
+        } catch (NoActiveEntryException e) {
             result.success = false;
             result.comment = "No extended bolus active";
+        } catch (Exception ignored) {
         }
+        lastDataTime = System.currentTimeMillis();
         return result;
     }
 

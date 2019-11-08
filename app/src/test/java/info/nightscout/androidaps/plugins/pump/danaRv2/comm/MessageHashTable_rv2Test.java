@@ -11,7 +11,7 @@ import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.pump.danaR.comm.MessageBase;
 import info.nightscout.androidaps.utils.SP;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 /**
  * Created by Rumen Georgiev on 30.10.2018.
  */
@@ -25,7 +25,6 @@ public class MessageHashTable_rv2Test {
         AAPSMocker.mockApplicationContext();
         AAPSMocker.mockSP();
         AAPSMocker.mockL();
-        AAPSMocker.mockBus();
 
         MessageHashTableRv2 hashTableRv2 = MessageHashTableRv2.INSTANCE;
 

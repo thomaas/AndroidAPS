@@ -18,7 +18,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.Bolus;
 import info.nightscout.androidaps.database.transactions.MergedBolus;
@@ -28,8 +27,10 @@ import info.nightscout.androidaps.events.Event;
 import info.nightscout.androidaps.events.EventReloadTreatmentData;
 import info.nightscout.androidaps.events.EventTreatmentChange;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventNewHistoryData;
 import info.nightscout.androidaps.utils.BolusCalculatorResultUtilKt;
+import io.reactivex.disposables.CompositeDisposable;
 
 
 /**
@@ -38,23 +39,12 @@ import info.nightscout.androidaps.utils.BolusCalculatorResultUtilKt;
 
 public class TreatmentService extends OrmLiteBaseService<DatabaseHelper> {
     private static Logger log = LoggerFactory.getLogger(L.DATATREATMENTS);
+    private CompositeDisposable disposable = new CompositeDisposable();
 
     private static final ScheduledExecutorService treatmentEventWorker = Executors.newSingleThreadScheduledExecutor();
     private static ScheduledFuture<?> scheduledTreatmentEventPost = null;
 
     public TreatmentService() {
-        onCreate();
-        dbInitialize();
-        MainApp.bus().register(this);
-    }
-
-    /**
-     * This method is a simple re-implementation of the database create and up/downgrade functionality
-     * in SQLiteOpenHelper#getDatabaseLocked method.
-     * <p>
-     * It is implemented to be able to late initialize separate plugins of the application.
-     */
-    protected void dbInitialize() {
     }
 
     public void resetTreatments() {
@@ -82,11 +72,11 @@ public class TreatmentService extends OrmLiteBaseService<DatabaseHelper> {
             public void run() {
                 if (L.isEnabled(L.DATATREATMENTS))
                     log.debug("Firing EventReloadTreatmentData");
-                MainApp.bus().post(event);
+                RxBus.INSTANCE.send(event);
                 if (DatabaseHelper.earliestDataChange != null) {
                     if (L.isEnabled(L.DATATREATMENTS))
                         log.debug("Firing EventNewHistoryData");
-                    MainApp.bus().post(new EventNewHistoryData(DatabaseHelper.earliestDataChange));
+                    RxBus.INSTANCE.send(new EventNewHistoryData(DatabaseHelper.earliestDataChange));
                 }
                 DatabaseHelper.earliestDataChange = null;
                 callback.setPost(null);
@@ -106,7 +96,7 @@ public class TreatmentService extends OrmLiteBaseService<DatabaseHelper> {
      * Schedule a foodChange Event.
      */
     public static void scheduleTreatmentChange(@Nullable final Treatment treatment) {
-        scheduleEvent(new EventReloadTreatmentData(new EventTreatmentChange()), treatmentEventWorker, new ICallback() {
+        scheduleEvent(new EventReloadTreatmentData(new EventTreatmentChange(treatment)), treatmentEventWorker, new ICallback() {
             @Override
             public void setPost(ScheduledFuture<?> post) {
                 scheduledTreatmentEventPost = post;

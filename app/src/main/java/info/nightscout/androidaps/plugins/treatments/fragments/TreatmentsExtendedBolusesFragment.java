@@ -1,6 +1,5 @@
 package info.nightscout.androidaps.plugins.treatments.fragments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Paint;
@@ -13,10 +12,9 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.squareup.otto.Subscribe;
 
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
@@ -26,14 +24,19 @@ import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.transactions.InvalidateExtendedBolusTransaction;
 import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.events.EventExtendedBolusChange;
-import info.nightscout.androidaps.plugins.common.SubscriberFragment;
+import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventAutosensCalculationFinished;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.DecimalFormatter;
+import info.nightscout.androidaps.utils.FabricPrivacy;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 
 
-public class TreatmentsExtendedBolusesFragment extends SubscriberFragment {
+public class TreatmentsExtendedBolusesFragment extends Fragment {
+    private CompositeDisposable disposable = new CompositeDisposable();
+
     RecyclerView recyclerView;
     LinearLayoutManager llm;
 
@@ -167,30 +170,33 @@ public class TreatmentsExtendedBolusesFragment extends SubscriberFragment {
 
         context = getContext();
 
-        updateGUI();
         return view;
     }
 
-    @Subscribe
-    public void onStatusEvent(final EventExtendedBolusChange ev) {
-        updateGUI();
-    }
-
-    @Subscribe
-    public void onStatusEvent(final EventAutosensCalculationFinished ev) {
-        updateGUI();
+    @Override
+    public synchronized void onResume() {
+        super.onResume();
+        disposable.add(RxBus.INSTANCE
+                .toObservable(EventExtendedBolusChange.class)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(event -> updateGui(), FabricPrivacy::logException)
+        );
+        disposable.add(RxBus.INSTANCE
+                .toObservable(EventAutosensCalculationFinished.class)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(event -> updateGui(), FabricPrivacy::logException)
+        );
+        updateGui();
     }
 
     @Override
-    protected void updateGUI() {
-        Activity activity = getActivity();
-        if (activity != null && recyclerView != null)
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    recyclerView.swapAdapter(new RecyclerViewAdapter(TreatmentsPlugin.getPlugin().getExtendedBolusesFromHistory()), false);
-                }
-            });
+    public synchronized void onPause() {
+        super.onPause();
+        disposable.clear();
+    }
+
+    private void updateGui() {
+        recyclerView.swapAdapter(new RecyclerViewAdapter(TreatmentsPlugin.getPlugin().getExtendedBolusesFromHistory()), false);
     }
 
 }

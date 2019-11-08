@@ -23,6 +23,12 @@ object BlockingAppRepository {
 
     fun <T> runTransactionForResult(transaction: Transaction<T>): T = AppRepository.runTransactionForResult(transaction).blockingGet()
 
+    @Throws(Exception::class)
+    fun <T> runTransactionExComp(transaction: Transaction<T>) = AppRepository.runTransaction(transaction).blockingAwait()
+
+    @Throws(Exception::class)
+    fun <T> runTransactionForResultExComp(transaction: Transaction<T>): T = AppRepository.runTransactionForResult(transaction).blockingGet()
+
     fun getTemporaryBasalsInTimeRange(start: Long, end: Long): List<TemporaryBasal> = AppRepository.getTemporaryBasalsInTimeRange(start, end).blockingFirst()
 
     fun getExtendedBolusesInTimeRange(start: Long, end: Long): List<ExtendedBolus> = AppRepository.getExtendedBolusesInTimeRange(start, end).blockingFirst()
