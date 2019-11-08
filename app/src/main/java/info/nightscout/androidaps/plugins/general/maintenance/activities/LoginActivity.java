@@ -1,5 +1,6 @@
 package info.nightscout.androidaps.plugins.general.maintenance.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
@@ -42,21 +43,30 @@ public class LoginActivity extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
 
-        setContentView(R.layout.email_login);
-        buttonRegister = (Button) findViewById(R.id.buttonRegister);
-        buttonRegister.setOnClickListener(view1 -> {
-            // try to register account
-            registerUser();
-        });
-        emailText = (EditText) findViewById(R.id.loginEmail);
-        passwordText = (EditText) findViewById(R.id.loginPassword);
-        login = (TextView) findViewById(R.id.login);
-        login.setOnClickListener(view1 -> {
-            // Will open login activity
-        });;
+        if(firebaseAuth.getCurrentUser() != null){
+            // Do something
+            // Write sharedPreferences to database ot file
+            ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "ALREADY LOGGED IN!!!");
+            finish();
+
+        } else {
+            setContentView(R.layout.activity_login);
+            buttonRegister = (Button) findViewById(R.id.buttonRegister);
+            buttonRegister.setOnClickListener(view1 -> {
+                // try to register account
+                loginUser();
+            });
+            emailText = (EditText) findViewById(R.id.loginEmail);
+            passwordText = (EditText) findViewById(R.id.loginPassword);
+            login = (TextView) findViewById(R.id.login);
+            login.setOnClickListener(view1 -> {
+                // Will open signup activity
+                startActivity(new Intent(this, SignUpActivity.class));
+            });
+        }
     }
 
-    private void registerUser(){
+    private void loginUser(){
         String email = emailText.getText().toString().trim();
         String password = passwordText.getText().toString();
 
@@ -72,15 +82,15 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+        firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
-                    ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Registration complete!");
+                    ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Logged in successfully!");
 
                 } else {
-                    ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Registration FAILED!");
-                    log.debug("Error registering: "+task.getException());
+                    ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Login FAILED!");
+                    log.debug("Error logging in: "+task.getException());
                     log.debug("Name of app: " + FirebaseApp.getInstance().getOptions().getProjectId());
                 }
             }

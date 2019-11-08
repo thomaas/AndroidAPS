@@ -1,4 +1,4 @@
-package info.nightscout.androidaps.plugins.general.maintenance;
+package info.nightscout.androidaps.plugins.general.maintenance.activities;
 
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -18,7 +18,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
-public class LoginActivity extends AppCompatActivity {
+public class SignUpActivity extends AppCompatActivity {
     private Button buttonRegister;
     private EditText emailText;
     private EditText passwordText;
@@ -31,18 +31,19 @@ public class LoginActivity extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
 
-        setContentView(R.layout.email_login);
+        setContentView(R.layout.email_signup);
         buttonRegister = (Button) findViewById(R.id.buttonRegister);
         buttonRegister.setOnClickListener(view1 -> {
             // try to register account
             registerUser();
         });
-        emailText = (EditText) findViewById(R.id.loginEmail);
-        passwordText = (EditText) findViewById(R.id.loginPassword);
-        login = (TextView) findViewById(R.id.login);
+        emailText = (EditText) findViewById(R.id.signupEmail);
+        passwordText = (EditText) findViewById(R.id.signupPassword);
+        login = (TextView) findViewById(R.id.login_text);
         login.setOnClickListener(view1 -> {
-            // Will open login activity
-        });;
+            // Go back to login
+            finish();
+        });
     }
 
     private void registerUser(){
@@ -66,7 +67,9 @@ public class LoginActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
                     ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Registration complete!");
-
+                    // Go back to login
+                    // TODO save username and pass to SharedPreferences to be able to autofill them
+                    finish();
                 } else {
                     ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Registration FAILED!");
                 }
