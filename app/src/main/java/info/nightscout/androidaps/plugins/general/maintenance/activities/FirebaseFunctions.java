@@ -14,6 +14,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -26,6 +27,7 @@ import java.io.File;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.utils.ToastUtils;
 
 public class FirebaseFunctions extends AppCompatActivity {
     private static Logger log = LoggerFactory.getLogger(L.CORE);
@@ -61,18 +63,18 @@ public class FirebaseFunctions extends AppCompatActivity {
     }
 
     private void exportToFirebase(){
-        // Get SharedPreferences as a string
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String prefsString = prefs.getAll().toString();
-
+        if(!file.exists()) {
+            ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Preferences not exported!!!");
+            return;
+        }
         // save it to storage
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         // creates a file with name == userID and containing all the preferences
         reference.child(user.getUid()).putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                // Get a URL to the uploaded content
-                Uri downloadUrl = taskSnapshot.getUploadSessionUri();
+                ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Upload successful!");
+
             }
         })
                 .addOnFailureListener(new OnFailureListener() {
@@ -86,7 +88,22 @@ public class FirebaseFunctions extends AppCompatActivity {
     }
 
     private void importFromFirebase(){
-        
+        File localFile = new File(path, MainApp.gs(R.string.app_name) + "Preferences");
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        reference.child(user.getUid()).getFile(filePath)
+                .addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                        // Successfully downloaded data to local file
+                        ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), "Download successful!");
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle failed download
+                log.debug("Download error: "+exception.getMessage());
+            }
+        });
 
     }
 }
