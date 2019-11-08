@@ -1614,5 +1614,6 @@
     <string name="format_carbs">%1$dg</string>
     <string name="common_on">On</string>
     <string name="common_off">Off</string>
+    <string name="nav_firebase">Login to Firebase</string>
 
 </resources>
