@@ -558,6 +558,7 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
                         System.currentTimeMillis(),
                         insulin,
                         detailedBolusInfo.carbs,
+                        detailedBolusInfo.carbTime,
                         bolusID,
                         type,
                         detailedBolusInfo.bolusCalculatorResult

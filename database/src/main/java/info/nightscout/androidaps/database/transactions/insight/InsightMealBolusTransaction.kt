@@ -13,6 +13,7 @@ class InsightMealBolusTransaction(
         val timestamp: Long,
         val insulin: Double,
         val carbs: Double,
+        val carbTime: Long,
         bolusId: Int,
         val type: Bolus.Type,
         val bolusCalculatorResult: MealBolusTransaction.BolusCalculatorResult?
@@ -73,7 +74,7 @@ class InsightMealBolusTransaction(
         val carbsDBId = if (carbs > 0) {
             entries += 1
             database.carbsDao.insertNewEntry(Carbs(
-                    timestamp = timestamp,
+                    timestamp = timestamp + carbTime,
                     utcOffset = utcOffset,
                     amount = carbs,
                     duration = 0
