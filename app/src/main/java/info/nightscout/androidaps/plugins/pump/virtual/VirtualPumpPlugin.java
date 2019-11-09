@@ -380,6 +380,8 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
         } catch (NoActiveEntryException e) {
             result.success = false;
             result.comment = "No TBR active";
+            if (L.isEnabled(L.PUMPCOMM))
+                log.debug("No TBR active");
         } catch (Exception ignored) {
         }
         lastDataTime = System.currentTimeMillis();
@@ -402,6 +404,8 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
         } catch (NoActiveEntryException e) {
             result.success = false;
             result.comment = "No extended bolus active";
+            if (L.isEnabled(L.PUMPCOMM))
+                log.debug("No extended bolus active");
         } catch (Exception ignored) {
         }
         lastDataTime = System.currentTimeMillis();

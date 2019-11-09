@@ -58,6 +58,7 @@ import info.nightscout.androidaps.data.QuickWizardEntry;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
+import info.nightscout.androidaps.database.exception.NoActiveEntryException;
 import info.nightscout.androidaps.database.transactions.CancelTemporaryTargetTransaction;
 import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetAndCancelCurrentTransaction;
 import info.nightscout.androidaps.db.ExtendedBolus;
@@ -682,8 +683,11 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
             newTTDialog.show(getFragmentManager(), "NewNSTreatmentDialog");
         } else if (item.getTitle().equals(MainApp.gs(R.string.cancel))) {
             try {
-                BlockingAppRepository.INSTANCE.runTransaction(new CancelTemporaryTargetTransaction());
-            } catch (IllegalStateException ignored) {
+                BlockingAppRepository.INSTANCE.runTransactionExComp(new CancelTemporaryTargetTransaction());
+            } catch (NoActiveEntryException exception) {
+                if (L.isEnabled(L.OVERVIEW))
+                    log.debug("No TT active");
+            } catch (Exception ignored) {
             }
         }
 

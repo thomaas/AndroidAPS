@@ -45,10 +45,12 @@ import info.nightscout.androidaps.data.ProfileStore;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
+import info.nightscout.androidaps.database.exception.NoActiveEntryException;
 import info.nightscout.androidaps.database.transactions.CancelTemporaryTargetTransaction;
 import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetAndCancelCurrentTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.ProfileSwitch;
+import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
 import info.nightscout.androidaps.plugins.general.careportal.OptionsToShow;
@@ -746,8 +748,11 @@ public class NewNSTreatmentDialog extends DialogFragment implements View.OnClick
             }
             if (duration == 0) {
                 try {
-                    BlockingAppRepository.INSTANCE.runTransaction(new CancelTemporaryTargetTransaction());
-                } catch (IllegalStateException ignored) {
+                    BlockingAppRepository.INSTANCE.runTransactionExComp(new CancelTemporaryTargetTransaction());
+                } catch (NoActiveEntryException exception) {
+                    if (L.isEnabled(L.UI))
+                        log.debug("No TT active");
+                } catch (Exception igonored) {
                 }
             } else {
                 BlockingAppRepository.INSTANCE.runTransaction(new InsertTemporaryTargetAndCancelCurrentTransaction(
