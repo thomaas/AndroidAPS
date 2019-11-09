@@ -375,7 +375,7 @@ public class VirtualPumpPlugin extends PluginBase implements PumpInterface {
             result.success = true;
             result.comment = MainApp.gs(R.string.virtualpump_resultok);
             if (L.isEnabled(L.PUMPCOMM))
-                log.debug("Canceling extended temp basal: " + result);
+                log.debug("Canceling temp basal: " + result);
             RxBus.INSTANCE.send(new EventVirtualPumpUpdateGui());
         } catch (NoActiveEntryException e) {
             result.success = false;
