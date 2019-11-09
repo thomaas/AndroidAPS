@@ -79,7 +79,7 @@ class InsightHistoryProcessor(pumpSerial: String, private var timeOffset: Long, 
                 false,
                 event.eventPosition,
                 event.bolusType.toTransactionValue(),
-                event.adjustedTimestamp,
+                event.adjustedStartTimestamp,
                 event.bolusID,
                 event.immediateAmount,
                 event.duration.toLong() * 60000L,
@@ -107,7 +107,7 @@ class InsightHistoryProcessor(pumpSerial: String, private var timeOffset: Long, 
         transaction.temporaryBasals.add(InsightHistoryTransaction.TemporaryBasal(
                 false,
                 event.eventPosition,
-                event.adjustedTimestamp,
+                event.adjustedStartTimestamp,
                 event.duration.toLong() * 60000L,
                 event.amount
         ))
@@ -147,6 +147,8 @@ class InsightHistoryProcessor(pumpSerial: String, private var timeOffset: Long, 
 
     private val HistoryEvent.adjustedTimestamp: Long get() = parseDate(eventYear, eventMonth, eventDay, eventHour, eventMinute, eventSecond) + timeOffset
 
+    private val HistoryEventWithStart.adjustedStartTimestamp: Long get() = parseRelativeDate(eventYear, eventMonth, eventDay, eventHour, eventMinute, eventSecond, startHour, startMinute, startSecond) + timeOffset
+
     private fun parseDate(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, utc: Boolean = true): Long {
         val calendar = Calendar.getInstance(if (utc) TimeZone.getTimeZone("UTC") else TimeZone.getDefault())
         calendar.set(Calendar.YEAR, year)
@@ -155,6 +157,20 @@ class InsightHistoryProcessor(pumpSerial: String, private var timeOffset: Long, 
         calendar.set(Calendar.HOUR_OF_DAY, hour)
         calendar.set(Calendar.MINUTE, minute)
         calendar.set(Calendar.SECOND, second)
+        return calendar.timeInMillis
+    }
+
+    private fun parseRelativeDate(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, relativeHour: Int, relativeMinute: Int, relativeSecond: Int): Long {
+        var day = day
+        if (relativeHour * 60 * 60 + relativeMinute * 60 + relativeSecond >= hour * 60 * 60 * minute * 60 + second)
+            day--
+        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        calendar.set(Calendar.YEAR, year)
+        calendar.set(Calendar.MONTH, month - 1)
+        calendar.set(Calendar.DAY_OF_MONTH, day)
+        calendar.set(Calendar.HOUR_OF_DAY, relativeHour)
+        calendar.set(Calendar.MINUTE, relativeMinute)
+        calendar.set(Calendar.SECOND, relativeSecond)
         return calendar.timeInMillis
     }
 
