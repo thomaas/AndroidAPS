@@ -5,7 +5,6 @@ import info.nightscout.androidaps.database.entities.*
 import info.nightscout.androidaps.database.entities.links.MultiwaveBolusLink
 import info.nightscout.androidaps.database.transactions.Transaction
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
 
@@ -64,24 +63,34 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
         }
     }
 
-    private fun getDateStopped(eventId: Long): Long? {
-        val stopEvent = database.therapyEventDao.getOperatingModeEventForPumpWithSmallerPumpId(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, eventId)
-        if (stopEvent?.type == info.nightscout.androidaps.database.entities.TherapyEvent.Type.PUMP_STOPPED) {
-            val pauseEvent = database.therapyEventDao.getOperatingModeEventForPumpWithSmallerPumpId(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, stopEvent.interfaceIDs.pumpId!!)
-            if (pauseEvent?.type == info.nightscout.androidaps.database.entities.TherapyEvent.Type.PUMP_PAUSED
-                    && stopEvent.timestamp - pauseEvent.timestamp < TimeUnit.MINUTES.toMillis(20)) {
-                return pauseEvent.timestamp
-            }
-            return stopEvent.timestamp
-        }
-        return null
-    }
+    private fun getLastOperatingModeEventBefore(eventId: Long) = database.therapyEventDao.getOperatingModeEventForPumpWithSmallerPumpId(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, eventId)
 
     private fun saveSuspendTBR(startEvent: OperatingModeChange, lastStoppedEvent: OperatingModeChange?, lastPausedEvent: OperatingModeChange?) {
         val dateStopped = if (lastStoppedEvent == null) {
-            getDateStopped(startEvent.eventId)
+            val stopEvent = getLastOperatingModeEventBefore(startEvent.eventId)
+            if (stopEvent?.type == info.nightscout.androidaps.database.entities.TherapyEvent.Type.PUMP_STOPPED) {
+                val pauseEvent = database.therapyEventDao.getOperatingModeEventForPumpWithSmallerPumpId(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, stopEvent.interfaceIDs.pumpId!!)
+                if (pauseEvent?.type == info.nightscout.androidaps.database.entities.TherapyEvent.Type.PUMP_PAUSED) {
+                    pauseEvent.timestamp
+                } else {
+                    stopEvent.timestamp
+                }
+            } else {
+                null
+            }
         } else {
-            lastPausedEvent?.timestamp ?: lastStoppedEvent.timestamp
+            when {
+                lastStoppedEvent.from != OperatingModeChange.OperatingMode.PAUSED -> lastStoppedEvent.timestamp
+                lastPausedEvent != null -> lastPausedEvent.timestamp
+                else -> {
+                    val pauseEvent = database.therapyEventDao.getOperatingModeEventForPumpWithSmallerPumpId(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, lastStoppedEvent.eventId)
+                    if (pauseEvent?.type == info.nightscout.androidaps.database.entities.TherapyEvent.Type.PUMP_PAUSED) {
+                        pauseEvent.timestamp
+                    } else {
+                        lastStoppedEvent.timestamp
+                    }
+                }
+            }
         }
         if (dateStopped != null) {
             database.temporaryBasalDao.insertNewEntry(TemporaryBasal(
@@ -116,7 +125,6 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
                 }
                 OperatingModeChange.OperatingMode.STOPPED -> {
                     lastStoppedEvent = it
-                    if (it.from != OperatingModeChange.OperatingMode.PAUSED) lastPausedEvent = null
                     info.nightscout.androidaps.database.entities.TherapyEvent.Type.PUMP_STOPPED
                 }
             }

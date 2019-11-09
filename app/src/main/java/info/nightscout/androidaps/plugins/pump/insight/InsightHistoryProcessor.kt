@@ -14,7 +14,7 @@ class InsightHistoryProcessor(pumpSerial: String, private var timeOffset: Long, 
     private val transaction = InsightHistoryTransaction(pumpSerial)
 
     fun processHistoryEvents() {
-        if (run) throw IllegalStateException("InsightHistoryProcess cannot run twice.")
+        if (run) throw IllegalStateException("InsightHistoryProcessor cannot be run twice.")
         run = true
         historyEvents.reversed().forEach {
             when (it) {
