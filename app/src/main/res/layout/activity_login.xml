@@ -11,40 +11,62 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|center_vertical"
-        android:background="#000000"
+        android:background="@color/defaultbackground"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/loginText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="#000000"
-            android:backgroundTint="#9A000000"
-            android:text="@string/login_top"
-            android:textSize="30sp" />
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="10dp"
+            android:text="Login"
+            android:textColor="#FFFFFF"
+            android:textSize="32sp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
-        <EditText
-            android:id="@+id/loginEmail"
+        <LinearLayout
+            android:id="@+id/maintanance_login_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#000000"
-            android:backgroundTintMode="add"
-            android:hint="@string/email_hint"
-            android:inputType="textEmailAddress" />
+            android:orientation="horizontal"
+            style="@style/ButtonSmallFontStyle">
 
-        <EditText
-            android:id="@+id/loginPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#000000"
-            android:hint="@string/password_hint"
-            android:inputType="textPassword" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/loginEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:width="120dp"
+                android:padding="10dp"
+                android:hint="@string/email_hint"
+                android:textColor="@color/defaulttext"
+                android:textStyle="bold"  />
+        </LinearLayout>
+
+        <LinearLayout
+        android:id="@+id/maintanance_password_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/ButtonSmallFontStyle"
+        android:orientation="horizontal">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/loginPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:padding="10dp"
+                android:hint="@string/password_hint"
+                android:inputType="textPassword"
+                android:textStyle="bold"  />
+
+
+        </LinearLayout>
 
 
         <Button
             android:id="@+id/buttonRegister"
-            style="?android:attr/buttonStyle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
@@ -60,7 +82,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/signup_link" />
+            android:layout_margin="10dp"
+            android:text="@string/signup_link"
+            android:textAlignment="center" />
 
     </LinearLayout>
 

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,6 +37,7 @@ public class FirebaseFunctions extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private Button exportButton;
     private Button importButton;
+    private TextView back;
     private StorageReference reference;
     static File path = new File(Environment.getExternalStorageDirectory().toString());
     static public final File file = new File(path, MainApp.gs(R.string.app_name) + "Preferences");
@@ -48,6 +50,7 @@ public class FirebaseFunctions extends AppCompatActivity {
         setContentView(R.layout.activity_firebase_functions);
         exportButton = (Button) findViewById(R.id.firebase_export);
         importButton = (Button) findViewById(R.id.firebase_import);
+        back = (TextView) findViewById(R.id.login_back);
 
         firebaseAuth = FirebaseAuth.getInstance();
         if(firebaseAuth.getCurrentUser() != null){
@@ -59,6 +62,10 @@ public class FirebaseFunctions extends AppCompatActivity {
             importButton.setOnClickListener(view1 -> {
                 importFromFirebase(this.getBaseContext());
             });
+            back.setOnClickListener(view1 -> {
+                finish();
+            });
+
         }
     }
 
@@ -68,7 +75,6 @@ public class FirebaseFunctions extends AppCompatActivity {
             ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.preferences_file_missing));
             return;
         }
-        // save it to storage
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         // creates a file with name == userID and containing all the preferences
         reference.child(user.getUid()).putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {

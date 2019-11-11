@@ -1614,7 +1614,10 @@
     <string name="format_carbs">%1$dg</string>
     <string name="common_on">On</string>
     <string name="common_off">Off</string>
-    <string name="nav_firebase">Import/Export settings to the cloud</string>
+    <string name="nav_firebase">Import/Export settings to Firebase</string>
+    <string name="firebase_export">Export settings to Firebase</string>
+    <string name="firebase_import">Import settings from Firebase</string>
+    <string name="firebase_functions">Firebase import/export</string>
     <string name="firebase_logged">Already logged in!</string>
     <string name="enter_email">Enter email</string>
     <string name="email_hint">Enter your email</string>
@@ -1624,7 +1627,7 @@
     <string name="login">Log me in</string>
     <string name="login_top">Log in</string>
     <string name="login_failed">Login FAILED!</string>
-    <string name="login_link">Already have an acount? Sign in here</string>
+    <string name="login_link">Go back</string>
     <string name="preferences_file_missing">Preferences not exported!!!</string>
     <string name="upload_success">Upload successful!</string>
     <string name="download_success">Download successful!</string>
