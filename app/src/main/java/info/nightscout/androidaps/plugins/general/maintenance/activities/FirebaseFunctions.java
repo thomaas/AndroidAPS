@@ -1,8 +1,10 @@
 package info.nightscout.androidaps.plugins.general.maintenance.activities;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
@@ -25,6 +27,7 @@ import java.io.File;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.general.maintenance.ImportExportPrefs;
 import info.nightscout.androidaps.utils.ToastUtils;
 
 public class FirebaseFunctions extends AppCompatActivity {
@@ -40,6 +43,7 @@ public class FirebaseFunctions extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ImportExportPrefs.verifyStoragePermissions(FirebaseFunctions.this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_firebase_functions);
         exportButton = (Button) findViewById(R.id.firebase_export);
@@ -53,12 +57,13 @@ public class FirebaseFunctions extends AppCompatActivity {
                 exportToFirebase();
             });
             importButton.setOnClickListener(view1 -> {
-                importFromFirebase();
+                importFromFirebase(this.getBaseContext());
             });
         }
     }
 
     private void exportToFirebase(){
+        log.debug("Entering export!");
         if(!file.exists()) {
             ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.preferences_file_missing));
             return;
@@ -82,7 +87,9 @@ public class FirebaseFunctions extends AppCompatActivity {
                 });
     }
 
-    private void importFromFirebase(){
+    private void importFromFirebase(Context context){
+        log.debug("Entering import!");
+
         File localFile = new File(path, MainApp.gs(R.string.app_name) + "Preferences");
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         reference.child(user.getUid()).getFile(filePath)
@@ -91,6 +98,7 @@ public class FirebaseFunctions extends AppCompatActivity {
                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                         // Successfully downloaded data to local file
                         ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.download_success));
+                        ImportExportPrefs.importSharedPreferences(FirebaseFunctions.this);
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -101,4 +109,5 @@ public class FirebaseFunctions extends AppCompatActivity {
         });
 
     }
+
 }

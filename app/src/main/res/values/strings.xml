@@ -1627,7 +1627,7 @@
     <string name="login_link">Already have an acount? Sign in here</string>
     <string name="preferences_file_missing">Preferences not exported!!!</string>
     <string name="upload_success">Upload successful!</string>
-    <string name="download_success">Upload successful!</string>
+    <string name="download_success">Download successful!</string>
     <string name="signup_link">Don\'t have an account? Sign-up here</string>
     <string name="register_user">Register user</string>
 

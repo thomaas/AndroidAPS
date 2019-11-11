@@ -44,8 +44,7 @@ public class LoginActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
 
         if(firebaseAuth.getCurrentUser() != null){
-            // Do something
-            // Write sharedPreferences to database ot file
+            // User is already logged in
             ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.firebase_logged));
             startActivity(new Intent(this, FirebaseFunctions.class));
             finish();
@@ -88,7 +87,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
                     ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.login_successful));
-
+                    startActivity(new Intent(MainApp.instance().getApplicationContext(), FirebaseFunctions.class));
+                    finish();
                 } else {
                     ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.login_failed));
                     log.debug("Error logging in: "+task.getException());

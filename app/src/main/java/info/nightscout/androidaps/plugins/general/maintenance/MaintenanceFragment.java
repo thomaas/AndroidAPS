@@ -79,6 +79,7 @@ public class MaintenanceFragment extends Fragment {
 
         view.findViewById(R.id.nav_firebase).setOnClickListener(view1 -> {
             startActivity(new Intent(getActivity(), LoginActivity.class));
+            getActivity().onBackPressed();
         });
 
 
