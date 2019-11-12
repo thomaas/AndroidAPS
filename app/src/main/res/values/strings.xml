@@ -1064,12 +1064,12 @@
     <string name="virtualpump_pump_def_extended_note">* Only discrete values no ranges are supported as granularity for basal/bolus in virtual pump.</string>
     <string name="ns_autobackfill_title">Autobackfill BG</string>
     <string name="wear_wizard_settings">Wizard Settings</string>
-    <string name="key_wearwizard_bg" translatable="false">wearwizard_bg</string>
-    <string name="key_wearwizard_tt" translatable="false">wearwizard_tt</string>
-    <string name="key_wearwizard_trend" translatable="false">wearwizard_trend</string>
-    <string name="key_wearwizard_cob" translatable="false">wearwizard_cob</string>
-    <string name="key_wearwizard_bolusiob" translatable="false">wearwizard_bolusiob</string>
-    <string name="key_wearwizard_basaliob" translatable="false">wearwizard_basaliob</string>
+    <string translatable="false" name="key_wearwizard_bg">wearwizard_bg</string>
+    <string translatable="false" name="key_wearwizard_tt">wearwizard_tt</string>
+    <string translatable="false" name="key_wearwizard_trend">wearwizard_trend</string>
+    <string translatable="false" name="key_wearwizard_cob">wearwizard_cob</string>
+    <string translatable="false" name="key_wearwizard_bolusiob">wearwizard_bolusiob</string>
+    <string translatable="false" name="key_wearwizard_basaliob">wearwizard_basaliob</string>
     <string name="wear_wizard_settings_summary">Calculations included in the Wizard result:</string>
     <string name="wear_display_settings">Display Settings</string>
     <string name="wear_general_settings">General Settings</string>
@@ -1123,8 +1123,8 @@
     <string name="poctech">Poctech</string>
     <string name="description_source_poctech">Receive BG values from Poctech app</string>
     <string name="description_source_tomato">Receive BG values from Tomato app (MiaoMiao device)</string>
-    <string name="key_high_temptarget_raises_sensitivity" translatable="false">high_temptarget_raises_sensitivity</string>
-    <string name="key_low_temptarget_lowers_sensitivity" translatable="false">low_temptarget_lowers_sensitivity</string>
+    <string translatable="false" name="key_high_temptarget_raises_sensitivity">high_temptarget_raises_sensitivity</string>
+    <string translatable="false" name="key_low_temptarget_lowers_sensitivity">low_temptarget_lowers_sensitivity</string>
     <string name="high_temptarget_raises_sensitivity_title">High temptarget raises sensitivity</string>
     <string name="high_temptarget_raises_sensitivity_summary"><![CDATA[Raise sensitivity for temptargets >= 100]]></string>
     <string name="low_temptarget_lowers_sensitivity_title">Low temptarget lowers sensitivity</string>
@@ -1628,7 +1628,7 @@
     <string name="login_top">Log in</string>
     <string name="login_failed">Login FAILED!</string>
     <string name="login_link">Go back</string>
-    <string name="preferences_file_missing">Preferences not exported!!!</string>
+    <string name="preferences_file_missing">Export preferences locally and try to upload again!!!</string>
     <string name="upload_success">Upload successful!</string>
     <string name="download_success">Download successful!</string>
     <string name="signup_link">Don\'t have an account? Sign-up here</string>

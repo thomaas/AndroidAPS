@@ -29,6 +29,7 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.general.maintenance.ImportExportPrefs;
+import info.nightscout.androidaps.utils.OKDialog;
 import info.nightscout.androidaps.utils.ToastUtils;
 
 public class FirebaseFunctions extends AppCompatActivity {
@@ -72,7 +73,9 @@ public class FirebaseFunctions extends AppCompatActivity {
     private void exportToFirebase(){
         log.debug("Entering export!");
         if(!file.exists()) {
-            ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.gs(R.string.preferences_file_missing));
+            OKDialog.show(FirebaseFunctions.this, "Local export missing", MainApp.gs(R.string.preferences_file_missing), () -> {
+                ImportExportPrefs.exportSharedPreferences(FirebaseFunctions.this);
+            });
             return;
         }
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
