@@ -373,7 +373,8 @@ public class IobCobCalculatorPlugin extends PluginBase {
             if (Math.abs(elapsed_minutes) > 8) {
                 // interpolate missing data points
                 double lastbg = bgReadings.get(i - 1).value;
-                elapsed_minutes = Math.abs(elapsed_minutes);
+                // cap interpolation at a maximum of 4h
+                elapsed_minutes = Math.min(240,Math.abs(elapsed_minutes));
                 //console.error(elapsed_minutes);
                 long nextbgTime;
                 while (elapsed_minutes > 5) {

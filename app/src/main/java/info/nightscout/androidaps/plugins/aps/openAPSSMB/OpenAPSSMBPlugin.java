@@ -217,7 +217,8 @@ public class OpenAPSSMBPlugin extends PluginBase implements APSInterface, Constr
                     isTempTarget,
                     smbAllowed.value(),
                     uam.value(),
-                    advancedFiltering.value()
+                    advancedFiltering.value(),
+                    System.currentTimeMillis()
             );
         } catch (JSONException e) {
             FabricPrivacy.logException(e);

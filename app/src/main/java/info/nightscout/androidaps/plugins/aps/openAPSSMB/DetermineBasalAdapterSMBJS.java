@@ -23,15 +23,16 @@ import javax.annotation.Nullable;
 import info.nightscout.androidaps.Constants;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatus;
 import info.nightscout.androidaps.data.IobTotal;
 import info.nightscout.androidaps.data.MealData;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.logging.L;
-import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
 import info.nightscout.androidaps.plugins.aps.loop.ScriptReader;
 import info.nightscout.androidaps.plugins.aps.openAPSMA.LoggerCallback;
+import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.GlucoseStatus;
+import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.utils.SafeParse;
@@ -59,6 +60,7 @@ public class DetermineBasalAdapterSMBJS {
     private String storedAutosens_data = null;
     private String storedMicroBolusAllowed = null;
     private String storedSMBAlwaysAllowed = null;
+    private long currentTime;
 
     private String scriptDebug = "";
 
@@ -131,7 +133,8 @@ public class DetermineBasalAdapterSMBJS {
                         makeParam(mMealData, rhino, scope),
                         setTempBasalFunctionsObj,
                         new Boolean(mMicrobolusAllowed),
-                        makeParam(null, rhino, scope) // reservoir data as undefined
+                        makeParam(null, rhino, scope), // reservoir data as undefined
+                        new Long(currentTime)
                 };
 
 
@@ -216,7 +219,8 @@ public class DetermineBasalAdapterSMBJS {
                         boolean tempTargetSet,
                         boolean microBolusAllowed,
                         boolean uamAllowed,
-                        boolean advancedFiltering
+                        boolean advancedFiltering,
+                        long currentTime
     ) throws JSONException {
 
         String units = profile.getUnits();
@@ -267,7 +271,10 @@ public class DetermineBasalAdapterSMBJS {
         mProfile.put("enableSMB_always", smbEnabled && SP.getBoolean(R.string.key_enableSMB_always, false) && advancedFiltering);
         mProfile.put("enableSMB_after_carbs", smbEnabled && SP.getBoolean(R.string.key_enableSMB_after_carbs, false) && advancedFiltering);
         mProfile.put("maxSMBBasalMinutes", SP.getInt(R.string.key_smbmaxminutes, SMBDefaults.maxSMBBasalMinutes));
+        mProfile.put("maxUAMSMBBasalMinutes", SMBDefaults.maxUAMSMBBasalMinutes);
         mProfile.put("carbsReqThreshold", SMBDefaults.carbsReqThreshold);
+        mProfile.put("SMBInterval", SP.getInt(R.string.key_openapsama_smb_interval, 3));
+        mProfile.put("bolus_increment", ConfigBuilderPlugin.getPlugin().getActivePump().getPumpDescription().bolusStep);
 
         mProfile.put("current_basal", basalrate);
         mProfile.put("temptargetSet", tempTargetSet);
@@ -325,7 +332,7 @@ public class DetermineBasalAdapterSMBJS {
         }
         mMicrobolusAllowed = microBolusAllowed;
         mSMBAlwaysAllowed = advancedFiltering;
-
+        this.currentTime = currentTime;
     }
 
     private Object makeParam(JSONObject jsonObject, Context rhino, Scriptable scope) {
