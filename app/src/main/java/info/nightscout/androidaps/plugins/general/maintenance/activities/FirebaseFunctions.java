@@ -113,7 +113,9 @@ public class FirebaseFunctions extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle failed download
-                log.debug("Download error: "+exception.getMessage());
+                OKDialog.show(FirebaseFunctions.this, "Error", MainApp.gs(R.string.download_failed), () -> {
+                    log.debug("Download error: " + exception.getMessage());
+                } );
             }
         });
 

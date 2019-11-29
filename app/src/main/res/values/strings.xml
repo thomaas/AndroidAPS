@@ -1631,6 +1631,7 @@
     <string name="preferences_file_missing">Export preferences locally and try to upload again!!!</string>
     <string name="upload_success">Upload successful!</string>
     <string name="download_success">Download successful!</string>
+    <string name="download_failed">Download of preferences failed! Did you export them?</string>
     <string name="signup_link">Don\'t have an account? Sign-up here</string>
     <string name="register_user">Register user</string>
 
