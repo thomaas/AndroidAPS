@@ -306,6 +306,12 @@ dependencies {
     implementation "com.squareup.retrofit2:adapter-rxjava2:2.4.0"
     implementation "com.squareup.retrofit2:converter-gson:2.4.0"
 
+    // Sign in to Firebase
+    implementation 'com.google.android.gms:play-services-auth:17.0.0'
+    implementation 'com.google.firebase:firebase-auth:19.1.0'
+    implementation 'com.google.firebase:firebase-storage:19.1.0'
+
+
 }
 
 
@@ -343,4 +349,3 @@ printf('--------------\n')
 if (isMaster() && !allCommited()) {
     throw new GradleException('There are uncommitted changes or git system is not available. Clone sources again as described in wiki and do not allow gradle update')
 }
-
