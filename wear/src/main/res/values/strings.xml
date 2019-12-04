@@ -80,5 +80,7 @@
 
     <string name="msg_warning_sync">No data received since %1$s! Check if AAPS on the phone sends data to watch</string>
     <string name="msg_warning_old">AAPS data is %1$s old! Check your sensor, xDrip+, NS, AAPS config or other!</string>
+    <string name="noStatus">no status</string>
+    <string name="freeAmount">"Free amount"</string>
 
 </resources>
