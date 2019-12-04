@@ -57,7 +57,7 @@
     </string-array>
 
     <string-array name="complication_tap_action_values">
-        <item>default</item>
+        <item>@string/defaultString</item>
         <item>menu</item>
         <item>wizard</item>
         <item>bolus</item>
@@ -82,5 +82,7 @@
     <string name="msg_warning_old">AAPS data is %1$s old! Check your sensor, xDrip+, NS, AAPS config or other!</string>
     <string name="noStatus">no status</string>
     <string name="freeAmount">"Free amount"</string>
+
+    <string name="defaultString">default</string>
 
 </resources>
