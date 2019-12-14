@@ -661,6 +661,7 @@
     <string name="overview_newtempbasal_basaltype_label">Basal type</string>
     <string name="invalidprofile">Invalid profile !!!</string>
     <string name="profileswitch">ProfileSwitch</string>
+    <string name="doprofileswitch">Do Profile Switch</string>
     <string name="careportal_pbage_label">Pump battery age</string>
     <string name="careportal_pumpbatterychange">Pump Battery Change</string>
     <string name="ns_alarmoptions">Alarm options</string>
@@ -1380,7 +1381,7 @@
 
     <string name="old_version">old version</string>
     <string name="very_old_version">very old version</string>
-    <string name="new_version_warning">New version for at least %1$d days available! Fallback to LGS after 60 days, loop will be disabled after 90 days</string>
+    <string name="new_version_warning">New version for at least %1$d days available! Fallback to LGS after %2$d days, loop will be disabled after %3$d days</string>
     <string name="twohours">2h</string>
     <string name="formatinsulinunits">%1$.2fU</string>
 
@@ -1660,6 +1661,28 @@
     <string name="profilenamecontainsdot">Profile name contains dots.\nThis is not supported by NS.\nProfile is not uploaded to NS.</string>
     <string name="low_mark_comment">Lower value of in range area (display only)</string>
     <string name="high_mark_comment">Higher value of in range area (display only)</string>
+    <string name="reorder_label">Reorder</string>
+
+    <string name="age">Age:</string>
+    <string name="weight">Weight:</string>
+    <string name="id">ID:</string>
+    <string name="submit">Submit</string>
+    <string name="mostcommonprofile">Most common profile:</string>
+    <string name="survey_comment">Note: Only data visible on this screen will be anonymously uploaded. ID is assigned to this installation of AndroidAPS. You can submit data again if your main profile get changed but let it running at least for a week to make result visible in time in range. Your help is appreciated.</string>
+    <string name="nav_survey">Survey</string>
+    <string name="invalidage">Invalid age entry</string>
+    <string name="invalidweight">Invalid weight entry</string>
+    <string name="tddformat"><![CDATA[<b>%1$s:</b> ∑: <b>%2$.2f</b> Bol: <b>%3$.2f</b> Bas: <b>%4$.2f</b>]]></string>
+    <string name="tirformat"><![CDATA[<b>%1$s:</b> Low: <b>%2$02d%%</b> In: <b>%3$02d%%</b> High: <b>%4$02d%%</b>]]></string>
+    <string name="average">Average</string>
+    <string name="tdd">TDD</string>
+    <string name="tir">TIR</string>
+    <string name="activitymonitor">Activity monitor</string>
+    <string name="doyouwantresetstats">Do you want to reset activity stats?</string>
+    <string name="statistics">Statistics</string>
+    <string name="randombg">Random BG</string>
+    <string name="description_source_randombg">Generate random BG data (Demo mode only)</string>
+    <string name="randombg_short">BG</string>
 
     <string name="nav_firebase">Import/Export settings to Firebase</string>
     <string name="firebase_export">Export settings to Firebase</string>
