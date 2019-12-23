@@ -2,8 +2,10 @@ package info.nightscout.androidaps.plugins.insulin
 
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.interfaces.InsulinInterface
+import info.nightscout.androidaps.networking.nightscout.NightscoutService
 import info.nightscout.androidaps.utils.ResourceHelper
 import info.nightscout.androidaps.utils.sharedPreferences.SP
+import io.reactivex.disposables.Disposable
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,14 +15,24 @@ import javax.inject.Singleton
 @Singleton
 class InsulinOrefFreePeakPlugin @Inject constructor(
     private val sp: SP,
-    private val resourceHelper: ResourceHelper
+    private val resourceHelper: ResourceHelper,
+    private val nightscoutService: NightscoutService
 ) : InsulinOrefBasePlugin() {
 
     override fun getId(): Int {
         return InsulinInterface.OREF_FREE_PEAK
     }
 
+    var disposable: Disposable? = null
+
     override fun getFriendlyName(): String {
+        disposable = nightscoutService.status().subscribe(
+            {
+                println("success")
+            }, {
+            println("error")
+        }
+        ) // TODO remove this!!!
         return resourceHelper.gs(R.string.free_peak_oref)
     }
 

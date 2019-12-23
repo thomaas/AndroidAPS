@@ -6,6 +6,7 @@ import dagger.Component
 import dagger.android.AndroidInjectionModule
 import dagger.android.AndroidInjector
 import info.nightscout.androidaps.MainApp
+import info.nightscout.androidaps.dependencyInjection.networking.NetModule
 import javax.inject.Singleton
 
 @Singleton
@@ -14,6 +15,7 @@ import javax.inject.Singleton
         AndroidInjectionModule::class,
         ActivitiesModule::class,
         FragmentsModule::class,
+        NetModule::class,
         AppModule::class
     ]
 )
