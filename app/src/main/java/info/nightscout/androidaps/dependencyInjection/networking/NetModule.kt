@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import info.nightscout.androidaps.BuildConfig
+import info.nightscout.androidaps.R
 import info.nightscout.androidaps.networking.nightscout.NightscoutService
 import info.nightscout.androidaps.utils.sharedPreferences.SP
 import okhttp3.Cache
@@ -50,8 +51,7 @@ class NetModule {
 
     class NSAuthInterceptor(private val sp: SP) : Interceptor {
 
-        // TODO for testing hardcode to token?
-        private fun getAuthToken() = sp.getString(MAGIC_PASSWORD_KEY, "")
+        private fun getAuthToken() = sp.getString(R.string.key_nsclient2_token, "") // Test server: "testreadab-76eaff2418bfb7e0"
 
         override fun intercept(chain: Interceptor.Chain): Response {
             var request = chain.request()
@@ -93,10 +93,5 @@ class NetModule {
         private const val OK_HTTP_READ_TIMEOUT = 60L * 1000
         private const val OK_HTTP_WRITE_TIMEOUT = 60L * 1000
         const val NAME_NIGHTSCOUT = "network_nightscout"
-
-        // Preferences keys
-        const val MAGIC_PASSWORD_KEY = "magic_password_key"
-        const val NS_BASE_URL_KEY = "ns_base_url_key"
-
     }
 }

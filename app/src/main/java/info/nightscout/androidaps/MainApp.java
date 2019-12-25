@@ -52,6 +52,7 @@ import info.nightscout.androidaps.plugins.general.nsclient.NSClientPlugin;
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
 import info.nightscout.androidaps.plugins.general.nsclient.receivers.AckAlarmReceiver;
 import info.nightscout.androidaps.plugins.general.nsclient.receivers.DBAccessReceiver;
+import info.nightscout.androidaps.plugins.general.nsclient2.NSClient2Plugin;
 import info.nightscout.androidaps.plugins.general.overview.OverviewPlugin;
 import info.nightscout.androidaps.plugins.general.persistentNotification.PersistentNotificationPlugin;
 import info.nightscout.androidaps.plugins.general.smsCommunicator.SmsCommunicatorPlugin;
@@ -94,7 +95,6 @@ import info.nightscout.androidaps.services.Intents;
 import info.nightscout.androidaps.utils.ActivityMonitor;
 import info.nightscout.androidaps.utils.FabricPrivacy;
 import info.nightscout.androidaps.utils.LocaleHelper;
-import info.nightscout.androidaps.utils.sharedPreferences.SPImpl;
 import io.fabric.sdk.android.Fabric;
 
 import static info.nightscout.androidaps.plugins.constraints.versionChecker.VersionCheckerUtilsKt.triggerCheckVersion;
@@ -128,6 +128,9 @@ public class MainApp extends DaggerApplication {
     @Inject
     InsulinOrefFreePeakPlugin insulinOrefFreePeakPlugin;
 
+    @Inject
+    NSClient2Plugin nsClient2Plugin;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -144,8 +147,8 @@ public class MainApp extends DaggerApplication {
                 // usually the app trying to spawn a thread while being killed
                 return;
             }
-
             log.error("Uncaught exception crashing app", ex);
+            throw new RuntimeException(ex);
         });
 
         try {
@@ -237,6 +240,8 @@ public class MainApp extends DaggerApplication {
             pluginsList.add(ConfigBuilderPlugin.getPlugin());
 
             pluginsList.add(DstHelperPlugin.getPlugin());
+
+            pluginsList.add(nsClient2Plugin);
 
 
             ConfigBuilderPlugin.getPlugin().initialize();

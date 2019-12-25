@@ -1,6 +1,7 @@
 package info.nightscout.androidaps.dependencyInjection.networking
 
 import com.google.gson.Gson
+import info.nightscout.androidaps.R
 import info.nightscout.androidaps.dependencyInjection.networking.NetModule.Companion.NAME_NIGHTSCOUT
 import info.nightscout.androidaps.networking.nightscout.INightscoutService
 import info.nightscout.androidaps.utils.sharedPreferences.SP
@@ -31,8 +32,7 @@ class NSRetrofitProvider(
 ) {
 
     // TODO: handle empty string case
-    // TODO for testing hardcode to URL?
-    private fun getBaseURL() = "nsapiv3.herokuapp.com" //sp.getString(NS_BASE_URL_KEY, "")
+    private fun getBaseURL() = sp.getString(R.string.key_nsclient2_baseurl, "") // Test-Server: "nsapiv3.herokuapp.com"
 
     private fun getRetrofit(): Retrofit = Retrofit.Builder()
         .baseUrl("https://${getBaseURL()}/api/")
@@ -41,5 +41,5 @@ class NSRetrofitProvider(
         .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
         .build()
 
-    fun getNSService() = getRetrofit().create(INightscoutService::class.java)
+    fun getNSService(): INightscoutService = getRetrofit().create(INightscoutService::class.java)
 }

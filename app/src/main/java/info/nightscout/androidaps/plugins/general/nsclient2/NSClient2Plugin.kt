@@ -1,0 +1,39 @@
+package info.nightscout.androidaps.plugins.general.nsclient2
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import info.nightscout.androidaps.R
+import info.nightscout.androidaps.interfaces.PluginBase
+import info.nightscout.androidaps.interfaces.PluginDescription
+import info.nightscout.androidaps.interfaces.PluginType
+import info.nightscout.androidaps.networking.nightscout.NightscoutService
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.subscribeBy
+import javax.inject.Inject
+
+/**
+ * Created by adrian on 2019-12-24.
+ */
+
+class NSClient2Plugin @Inject constructor(
+    private val nightscoutService: NightscoutService
+) : PluginBase(PluginDescription()
+    .mainType(PluginType.GENERAL)
+    .fragmentClass(NSClient2Fragment::class.java.name)
+    .pluginName(R.string.nsclientinternal2)
+    .shortName(R.string.nsclientinternal2_shortname)
+    .preferencesId(R.xml.pref_nsclient2)
+    .description(R.string.description_ns_client)) {
+
+    private val _testResultLiveData: MutableLiveData<String> = MutableLiveData("")
+    val testResultLiveData: LiveData<String> = _testResultLiveData // Expose non-mutable form (avoid post from other classes)
+
+    val compositeDisposable = CompositeDisposable() //TODO: once transformed to VM, clear! (atm plugins live forever)
+
+    fun testConnection() = compositeDisposable.add(
+        nightscoutService.statusVerbose().subscribeBy(
+            onSuccess = { _testResultLiveData.postValue("success: $it") },
+            onError = { _testResultLiveData.postValue("failure: ${it.message}") })
+    )
+
+}

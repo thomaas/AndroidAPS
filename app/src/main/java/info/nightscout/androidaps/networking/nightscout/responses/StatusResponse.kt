@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName
 data class StatusResponse(
     @SerializedName("version") val version: String,
     @SerializedName("apiVersion") val apiVersion: String,
-    @SerializedName("srvDate") val srvDate: Int,
+    @SerializedName("srvDate") val srvDate: Long,
     @SerializedName("storage") val storage: Storage,
     @SerializedName("apiPermissions") val apiPermissions: ApiPermissions
 )

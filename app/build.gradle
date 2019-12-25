@@ -248,6 +248,7 @@ dependencies {
     implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
 
     implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
+    implementation "io.reactivex.rxjava2:rxkotlin:2.4.0"
 
     implementation "com.j256.ormlite:ormlite-core:${ormLiteVersion}"
     implementation "com.j256.ormlite:ormlite-android:${ormLiteVersion}"
@@ -309,9 +310,9 @@ dependencies {
     // new for tidepool
     implementation 'com.squareup.okhttp3:okhttp:4.2.2'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.2.2'
-    implementation "com.squareup.retrofit2:retrofit:2.6.2"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:2.6.2"
-    implementation "com.squareup.retrofit2:converter-gson:2.6.2"
+    implementation "com.squareup.retrofit2:retrofit:2.6.3"
+    implementation "com.squareup.retrofit2:adapter-rxjava2:2.6.3"
+    implementation "com.squareup.retrofit2:converter-gson:2.6.3"
 
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0-alpha03'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
@@ -330,6 +331,9 @@ dependencies {
     /* Dagger2 - default dependency */
     kapt 'com.google.dagger:dagger-compiler:2.25.2'
 
+
+    /* jetpack LiveData */
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0-rc03'
 }
 
 

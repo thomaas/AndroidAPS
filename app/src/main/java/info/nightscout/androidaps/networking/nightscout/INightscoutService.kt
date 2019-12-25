@@ -12,6 +12,10 @@ import retrofit2.http.GET
 interface INightscoutService {
 
     @GET("v3/status")
-    fun status(): Single<Response<StatusResponse>>
+    // used to get the raw response for more error checking. E.g. to give the user better feedback after new settings.
+    fun statusVerbose(): Single<Response<StatusResponse>>
+
+    @GET("v3/status")
+    fun statusSimple(): Single<StatusResponse>
 
 }

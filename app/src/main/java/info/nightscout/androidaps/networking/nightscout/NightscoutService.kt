@@ -10,12 +10,15 @@ import io.reactivex.Single
 
 class NightscoutService(private val provider: NSRetrofitProvider) {
 
-    fun status(): Single<StatusResponse> = provider.getNSService().status().map {
+    fun statusVerbose(): Single<StatusResponse> = provider.getNSService().statusVerbose().map {
         // TODO: write generic mapper for success/Failure?
+        //  map to something used for user-feedback after settings-change?
         when {
             it.isSuccessful -> it.body()
             else            -> TODO("not successful, bam, crash")
         }
     }
+
+    fun status() = provider.getNSService().statusSimple()
 
 }
