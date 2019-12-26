@@ -7,6 +7,7 @@ import info.nightscout.androidaps.interfaces.PluginBase
 import info.nightscout.androidaps.interfaces.PluginDescription
 import info.nightscout.androidaps.interfaces.PluginType
 import info.nightscout.androidaps.networking.nightscout.NightscoutService
+import info.nightscout.androidaps.networking.nightscout.data.SetupState
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.subscribeBy
 import javax.inject.Inject
@@ -31,7 +32,20 @@ class NSClient2Plugin @Inject constructor(
     val compositeDisposable = CompositeDisposable() //TODO: once transformed to VM, clear! (atm plugins live forever)
 
     fun testConnection() = compositeDisposable.add(
-        nightscoutService.statusVerbose().subscribeBy(
+        nightscoutService.testSetup().subscribeBy(
+            onSuccess = {
+                _testResultLiveData.postValue(
+                when (it) {
+                    SetupState.Success -> "SUCCESS!"
+                    is SetupState.Error -> it.message
+                }
+                )
+            },
+            onError = { _testResultLiveData.postValue("failure: ${it.message}") })
+    )
+
+    fun exampleStatusCall() = compositeDisposable.add(
+        nightscoutService.status().subscribeBy(
             onSuccess = { _testResultLiveData.postValue("success: $it") },
             onError = { _testResultLiveData.postValue("failure: ${it.message}") })
     )

@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
+import dagger.Reusable
 import info.nightscout.androidaps.BuildConfig
 import info.nightscout.androidaps.R
 import info.nightscout.androidaps.networking.nightscout.NightscoutService
@@ -23,8 +24,8 @@ class NetModule {
 
     @Provides
     @Singleton
-    internal fun providesNightscoutService(nsRetrofitProvider: NSRetrofitProvider): NightscoutService {
-        return NightscoutService(nsRetrofitProvider)
+    internal fun providesNightscoutService(nsRetrofitFactory: NSRetrofitFactory): NightscoutService {
+        return NightscoutService(nsRetrofitFactory)
     }
 
     @Provides
@@ -40,9 +41,9 @@ class NetModule {
     }
 
     @Provides
-    @Singleton
-    internal fun nsRetrofitProvider(sp: SP, @Named(NAME_NIGHTSCOUT) okHttpClient: OkHttpClient, gson: Gson): NSRetrofitProvider {
-        return NSRetrofitProvider(sp, okHttpClient, gson)
+    @Reusable
+    internal fun nsRetrofitProvider(sp: SP, @Named(NAME_NIGHTSCOUT) okHttpClient: OkHttpClient, gson: Gson): NSRetrofitFactory {
+        return NSRetrofitFactory(sp, okHttpClient, gson)
     }
 
     @Provides

@@ -20,10 +20,30 @@ data class Storage(
 )
 
 data class ApiPermissions(
-    @SerializedName("devicestatus") val devicestatus: String,
-    @SerializedName("entries") val entries: String,
-    @SerializedName("food") val food: String,
-    @SerializedName("profile") val profile: String,
-    @SerializedName("settings") val settings: String,
-    @SerializedName("treatments") val treatments: String
+    @SerializedName("devicestatus") internal val deviceStatus: ApiPermission,
+    @SerializedName("entries") val entries: ApiPermission,
+    @SerializedName("food") val food: ApiPermission,
+    @SerializedName("profile") val profile: ApiPermission,
+    @SerializedName("settings") val settings: ApiPermission,
+    @SerializedName("treatments") val treatments: ApiPermission
 )
+
+typealias ApiPermission = String
+
+val ApiPermission.create: Boolean
+    get() = this.contains('c')
+
+val ApiPermission.read: Boolean
+    get() = this.contains('r')
+
+val ApiPermission.update: Boolean
+    get() = this.contains('u')
+
+val ApiPermission.delete: Boolean
+    get() = this.contains('d')
+
+val ApiPermission.readCreate: Boolean
+    get() = this.read && this.create
+
+val ApiPermission.full: Boolean
+    get() = this.create && this.read && this.update && this.delete

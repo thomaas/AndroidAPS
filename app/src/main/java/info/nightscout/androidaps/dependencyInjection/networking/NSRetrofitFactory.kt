@@ -25,7 +25,7 @@ import javax.inject.Named
 *
 * */
 
-class NSRetrofitProvider(
+class NSRetrofitFactory(
     private val sp: SP,
     @Named(NAME_NIGHTSCOUT) private val okHttpClient: OkHttpClient,
     private val gson: Gson
