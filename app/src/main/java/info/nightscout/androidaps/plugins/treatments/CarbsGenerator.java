@@ -9,7 +9,7 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.Bolus;
-import info.nightscout.androidaps.database.transactions.MealBolusTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.MealBolusTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;

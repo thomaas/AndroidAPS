@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.Bolus;
-import info.nightscout.androidaps.database.transactions.MergedBolus;
+import info.nightscout.androidaps.database.transactions.treatments.MergedBolus;
 import info.nightscout.androidaps.db.DatabaseHelper;
 import info.nightscout.androidaps.db.ICallback;
 import info.nightscout.androidaps.events.Event;

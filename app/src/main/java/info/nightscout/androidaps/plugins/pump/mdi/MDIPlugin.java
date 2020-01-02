@@ -15,7 +15,7 @@ import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.Bolus;
-import info.nightscout.androidaps.database.transactions.MealBolusTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.MealBolusTransaction;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginDescription;
 import info.nightscout.androidaps.interfaces.PluginType;

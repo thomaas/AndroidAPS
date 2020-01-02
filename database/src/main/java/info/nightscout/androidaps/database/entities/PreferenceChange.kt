@@ -2,16 +2,16 @@ package info.nightscout.androidaps.database.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
 import info.nightscout.androidaps.database.TABLE_PREFERENCE_CHANGES
+import info.nightscout.androidaps.database.interfaces.DBEntry
+import info.nightscout.androidaps.database.interfaces.DBEntryWithTime
 
 @Entity(tableName = TABLE_PREFERENCE_CHANGES)
 data class PreferenceChange(
-        @PrimaryKey
-        val id: Long = 0L,
-        var timestamp: Long,
-        var utcOffset: Long,
+        @PrimaryKey(autoGenerate = true)
+        override var id: Long = 0L,
+        override var timestamp: Long,
+        override var utcOffset: Long,
         var key: String,
-        @TypeConverters
-        var value: Any
-)
+        var value: Any?
+) : DBEntry, DBEntryWithTime

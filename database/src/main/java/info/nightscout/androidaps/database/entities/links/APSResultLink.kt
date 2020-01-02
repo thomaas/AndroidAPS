@@ -6,7 +6,7 @@ import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.APSResult
 import info.nightscout.androidaps.database.entities.Bolus
 import info.nightscout.androidaps.database.entities.TemporaryBasal
-import info.nightscout.androidaps.database.interfaces.DBEntry
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 
 @Entity(tableName = TABLE_APS_RESULT_LINKS,
         foreignKeys = [ForeignKey(
@@ -39,7 +39,7 @@ data class APSResultLink(
         var apsResultId: Long,
         var smbId: Long? = null,
         var tbrId: Long? = null
-) : DBEntry {
+) : TraceableDBEntry {
     override val foreignKeysValid: Boolean
         get() = super.foreignKeysValid && apsResultId != 0L && smbId != 0L && tbrId != 0L
 }

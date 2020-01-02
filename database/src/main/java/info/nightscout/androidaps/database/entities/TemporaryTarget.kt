@@ -3,8 +3,8 @@ package info.nightscout.androidaps.database.entities
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_TEMPORARY_TARGETS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
-import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTimeAndDuration
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 
 @Entity(tableName = TABLE_TEMPORARY_TARGETS,
         foreignKeys = [ForeignKey(
@@ -26,7 +26,7 @@ data class TemporaryTarget(
         var reason: Reason,
         var target: Double,
         override var duration: Long
-) : DBEntry, DBEntryWithTimeAndDuration {
+) : TraceableDBEntry, DBEntryWithTimeAndDuration {
     enum class Reason {
         CUSTOM,
         HYPOGLYCEMIA,

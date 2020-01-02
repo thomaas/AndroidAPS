@@ -3,8 +3,8 @@ package info.nightscout.androidaps.database.entities
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_TOTAL_DAILY_DOSES
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
-import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTime
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 
 @Entity(tableName = TABLE_TOTAL_DAILY_DOSES,
         foreignKeys = [ForeignKey(
@@ -26,4 +26,4 @@ data class TotalDailyDose(
         var basalAmount: Double?,
         var bolusAmount: Double?,
         var totalAmount: Double?
-) : DBEntry, DBEntryWithTime
+) : TraceableDBEntry, DBEntryWithTime

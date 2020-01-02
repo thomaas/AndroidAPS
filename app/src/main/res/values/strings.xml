@@ -1615,5 +1615,62 @@
     <string name="format_carbs">%1$dg</string>
     <string name="common_on">On</string>
     <string name="common_off">Off</string>
+    <string name="open_humans">Open Humans</string>
+    <string name="data_uploader">Data Uploader</string>
+    <string name="click_next_to_continue">Click \"Next\" to continue.</string>
+    <string name="log_in">Log in</string>
+    <string name="how_it_works">How it works</string>
+    <string name="this_takes_you_to_open_humans">This takes you to Open Humans.</string>
+    <string name="your_data_will_be_uploaded">Your data will be uploaded to this account after authorization.</string>
+    <string name="this_connects_the_app_to_your">This connects the app to your Open Humans account.</string>
+    <string name="setup_is_done">Setup is done; your data will be uploaded.</string>
+    <string name="what_data_will_be_uploaded">What data will be uploaded?</string>
+    <string name="authorize_the_app">Authorize the app.</string>
+    <string name="login_with_your_open_humans_account">Log in with your Open Humans account.</string>
+    <string name="click_log_in">Click \"Log in\"</string>
+    <string name="thats_it">That\'s it!</string>
+    <string name="information_about_the_application">Information about the application including</string>
+    <string name="version">Version</string>
+    <string name="commit_hash">Commit Hash</string>
+    <string name="application_id">Application ID</string>
+    <string name="information_about_your_phone">Information about your phone including</string>
+    <string name="manufacturer">Manufacturer</string>
+    <string name="android_version">Android version</string>
+    <string name="device_model">Device model</string>
+    <string name="display_size">Display size</string>
+    <string name="your_settings">Your settings including</string>
+    <string name="selected_language">Language</string>
+    <string name="enabled_plugins_and_features">Enabled plugins and features</string>
+    <string name="safety_settings">Safety settings</string>
+    <string name="appearance">Appearance</string>
+    <string name="glucose_values_and_sensor_type">Glucose values and the type of sensor you are using</string>
+    <string name="information_about_insulin_delivery">Information about your insulin delivery</string>
+    <string name="boluses">Boluses</string>
+    <string name="your_profile">Your profile (Basal Rate, IC, ISF, BG Target)</string>
+    <string name="temporary_basal_rates">Temporary Basal Rates</string>
+    <string name="total_daily_doses">Total Daily Doses</string>
+    <string name="carb_entries">Carbohydrate entries</string>
+    <string name="algorithm_reasoning">Algorithm reasoning</string>
+    <string name="private_information_not_uploaded">Secret or private information such as your Nightscout URL or API secret will not be uploaded.</string>
+    <string name="more_information">More information</string>
+    <string name="about_open_humans">About Open Humans</string>
+    <string name="androidaps_uploader_on_open_humans">AndroidAPS Uploader on Open Humans</string>
+    <string name="contact_open_humans">Contact Open Humans</string>
+    <string name="finishing_setup">Finishing setup</string>
+    <string name="setup_done">Setup is done</string>
+    <string name="thanks_for_uploading_your_data">Thanks for uploading your data! Don\'t forget to join projects on Open Humans that make use of it.</string>
+    <string name="donate_your_data_for_science">Donate your data for science</string>
+    <string name="open_humans_short">OH</string>
+    <string name="only_upload_if_connected_to_wifi">Only upload if connected to Wifi</string>
+    <string name="only_upload_if_charging">Only upload if charging</string>
+    <string translatable="false" name="key_oh_wifi_only">oh_wifi_only</string>
+    <string translatable="false" name="key_oh_charging_only">oh_wifi_only</string>
+    <string name="sign_in_to_open_humans">Sign in to Open Humans</string>
+    <string name="sign_out">Sign out</string>
+    <string name="do_you_really_want_to_sign_out">Do you really want to sign out? No data will be uploaded until signing in again.</string>
+    <string name="member_id">Member ID: %1$s</string>
+    <string name="key_oh_setup" translatable="false">key_oh_setup</string>
+    <string name="error">Error</string>
+    <string name="an_error_has_occurred">An error has occurred</string>
 
 </resources>

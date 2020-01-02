@@ -21,7 +21,7 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.Intervals;
 import info.nightscout.androidaps.database.BlockingAppRepository;
-import info.nightscout.androidaps.database.transactions.InvalidateTemporaryTargetTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.InvalidateTemporaryTargetTransaction;
 import info.nightscout.androidaps.db.TempTarget;
 import info.nightscout.androidaps.events.EventTempTargetChange;
 import info.nightscout.androidaps.plugins.bus.RxBus;

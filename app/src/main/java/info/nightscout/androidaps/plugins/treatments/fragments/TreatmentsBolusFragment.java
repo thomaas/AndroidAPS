@@ -26,7 +26,7 @@ import info.nightscout.androidaps.data.Iob;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.embedments.InterfaceIDs;
-import info.nightscout.androidaps.database.transactions.InvalidateMergedBolusTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.InvalidateMergedBolusTransaction;
 import info.nightscout.androidaps.events.EventTreatmentChange;
 import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;

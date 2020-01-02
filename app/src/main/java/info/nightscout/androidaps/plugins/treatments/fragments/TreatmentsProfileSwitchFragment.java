@@ -27,7 +27,7 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
-import info.nightscout.androidaps.database.transactions.InvalidateProfileSwitchTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.InvalidateProfileSwitchTransaction;
 import info.nightscout.androidaps.db.ProfileSwitch;
 import info.nightscout.androidaps.events.EventProfileNeedsUpdate;
 import info.nightscout.androidaps.logging.L;

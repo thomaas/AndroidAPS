@@ -50,4 +50,6 @@ internal abstract class AppDatabase : RoomDatabase() {
 
     abstract val versionChangeDao: VersionChangeDao
 
+    abstract val preferenceChangeDao: PreferenceChangeDao
+
 }

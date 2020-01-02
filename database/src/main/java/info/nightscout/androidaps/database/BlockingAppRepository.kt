@@ -2,8 +2,8 @@ package info.nightscout.androidaps.database
 
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.*
-import info.nightscout.androidaps.database.transactions.MergedBolus
 import info.nightscout.androidaps.database.transactions.Transaction
+import info.nightscout.androidaps.database.transactions.treatments.MergedBolus
 
 @Deprecated(
         message = "This class only adds support for blocking calls while migrating to reactive application design. Avoid using it.",

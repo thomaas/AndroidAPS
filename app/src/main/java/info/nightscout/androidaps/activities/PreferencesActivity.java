@@ -2,6 +2,7 @@ package info.nightscout.androidaps.activities;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -28,6 +29,8 @@ import info.nightscout.androidaps.plugins.constraints.safety.SafetyPlugin;
 import info.nightscout.androidaps.plugins.general.automation.AutomationPlugin;
 import info.nightscout.androidaps.plugins.general.careportal.CareportalPlugin;
 import info.nightscout.androidaps.plugins.general.nsclient.NSClientPlugin;
+import info.nightscout.androidaps.plugins.general.open_humans.OpenHumansUploader;
+import info.nightscout.androidaps.plugins.general.open_humans.views.OpenHumansPreference;
 import info.nightscout.androidaps.plugins.general.smsCommunicator.SmsCommunicatorPlugin;
 import info.nightscout.androidaps.plugins.general.tidepool.TidepoolPlugin;
 import info.nightscout.androidaps.plugins.general.tidepool.comm.TidepoolUploader;
@@ -49,6 +52,8 @@ import info.nightscout.androidaps.plugins.sensitivity.SensitivityWeightedAverage
 import info.nightscout.androidaps.plugins.source.SourceDexcomPlugin;
 import info.nightscout.androidaps.utils.OKDialog;
 import info.nightscout.androidaps.utils.SP;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 
 public class PreferencesActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     MyPreferenceFragment myPreferenceFragment;
@@ -113,8 +118,9 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         }
     }
 
-    public static class MyPreferenceFragment extends PreferenceFragment {
+    public static class MyPreferenceFragment extends PreferenceFragment implements Function0<Unit> {
         private Integer id;
+        private OpenHumansPreference openHumansPreference;
 
         @Override
         public void setArguments(Bundle args) {
@@ -217,6 +223,23 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
                     TidepoolUploader.INSTANCE.testLogin(getActivity());
                     return false;
                 });
+
+            openHumansPreference = (OpenHumansPreference) findPreference(getString(R.string.key_oh_setup));
+        }
+
+        @Override
+        public void onStart() {
+            super.onStart();
+            if (openHumansPreference != null) {
+                OpenHumansUploader.INSTANCE.registerLoginStateListener(this);
+                openHumansPreference.update();
+            }
+        }
+
+        @Override
+        public void onStop() {
+            OpenHumansUploader.INSTANCE.unregisterLoginStateListener(this);
+            super.onStop();
         }
 
         @Override
@@ -227,6 +250,14 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
         public Preference getPreference(String key) {
             return findPreference(key);
+        }
+
+        @Override
+        public Unit invoke() {
+            new Handler().post(() -> {
+                openHumansPreference.update();
+            });
+            return Unit.INSTANCE;
         }
     }
 }

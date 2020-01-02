@@ -3,8 +3,8 @@ package info.nightscout.androidaps.database.entities
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_APS_RESULTS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
-import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTime
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 
 @Entity(tableName = TABLE_APS_RESULTS,
         foreignKeys = [ForeignKey(
@@ -32,7 +32,7 @@ data class APSResult(
         var mealDataJson: String,
         var isMicroBolusAllowed: Boolean?,
         var resultJson: String
-) : DBEntry, DBEntryWithTime {
+) : TraceableDBEntry, DBEntryWithTime {
     enum class Algorithm {
         MA,
         AMA,

@@ -2,12 +2,12 @@ package info.nightscout.androidaps.database.daos.workaround;
 
 import androidx.room.Transaction;
 
-import info.nightscout.androidaps.database.daos.BaseDao;
 import info.nightscout.androidaps.database.daos.ProfileSwitchDao;
 import info.nightscout.androidaps.database.daos.ProfileSwitchDaoKt;
+import info.nightscout.androidaps.database.daos.TraceableDao;
 import info.nightscout.androidaps.database.entities.ProfileSwitch;
 
-public interface ProfileSwitchDaoWorkaround extends BaseDao<ProfileSwitch> {
+public interface ProfileSwitchDaoWorkaround extends TraceableDao<ProfileSwitch> {
 
     @Override
     @Transaction

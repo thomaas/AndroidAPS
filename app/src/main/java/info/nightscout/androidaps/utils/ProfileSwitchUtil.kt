@@ -5,7 +5,7 @@ import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.TargetBlock
 import info.nightscout.androidaps.database.embedments.InsulinConfiguration
 import info.nightscout.androidaps.database.entities.ProfileSwitch
-import info.nightscout.androidaps.database.transactions.InsertProfileSwitchTransaction
+import info.nightscout.androidaps.database.transactions.treatments.InsertProfileSwitchTransaction
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.SimpleDateFormat

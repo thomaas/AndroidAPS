@@ -7,9 +7,10 @@ import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.TherapyEvent
 import io.reactivex.Flowable
 import io.reactivex.Maybe
+import io.reactivex.Single
 
 @Dao
-internal interface TherapyEventDao : BaseDao<TherapyEvent> {
+internal interface TherapyEventDao : TraceableDao<TherapyEvent> {
 
     @Query("SELECT * FROM $TABLE_THERAPY_EVENTS WHERE id = :id")
     override fun findById(id: Long): TherapyEvent?
@@ -37,5 +38,8 @@ internal interface TherapyEventDao : BaseDao<TherapyEvent> {
 
     @Query("SELECT * FROM $TABLE_THERAPY_EVENTS WHERE referenceId IS NULL AND isValid = 1 ORDER BY timestamp ASC")
     fun getAllTherapyEvents(): Flowable<List<TherapyEvent>>
+
+    @Query("SELECT * FROM $TABLE_THERAPY_EVENTS WHERE id >= :id")
+    override fun getAllStartingFrom(id: Long): Single<List<TherapyEvent>>
 
 }

@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.os.SystemClock;
 
 import androidx.annotation.PluralsRes;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.crashlytics.android.Crashlytics;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import info.nightscout.androidaps.data.ConstraintChecker;
 import info.nightscout.androidaps.database.AppRepository;
@@ -60,6 +62,7 @@ import info.nightscout.androidaps.plugins.general.maintenance.LoggerUtils;
 import info.nightscout.androidaps.plugins.general.maintenance.MaintenancePlugin;
 import info.nightscout.androidaps.plugins.general.nsclient.NSClientPlugin;
 import info.nightscout.androidaps.plugins.general.nsclient.receivers.DBAccessReceiver;
+import info.nightscout.androidaps.plugins.general.open_humans.OpenHumansUploader;
 import info.nightscout.androidaps.plugins.general.overview.OverviewPlugin;
 import info.nightscout.androidaps.plugins.general.persistentNotification.PersistentNotificationPlugin;
 import info.nightscout.androidaps.plugins.general.smsCommunicator.SmsCommunicatorPlugin;
@@ -102,8 +105,8 @@ import info.nightscout.androidaps.receivers.TimeDateOrTZChangeReceiver;
 import info.nightscout.androidaps.services.Intents;
 import info.nightscout.androidaps.utils.FabricPrivacy;
 import info.nightscout.androidaps.utils.LocaleHelper;
+import info.nightscout.androidaps.utils.SP;
 import io.fabric.sdk.android.Fabric;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 import static info.nightscout.androidaps.plugins.constraints.versionChecker.VersionCheckerUtilsKt.triggerCheckVersion;
@@ -115,6 +118,7 @@ public class MainApp extends Application {
 
     private static MainApp sInstance;
     public static Resources sResources;
+    private static UUID applicationId;
 
     private static FirebaseAnalytics mFirebaseAnalytics;
 
@@ -137,6 +141,8 @@ public class MainApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        sInstance = this;
         AppRepository.INSTANCE.initialize(this);
         String gitRemote = BuildConfig.REMOTE;
         String commitHash = BuildConfig.HEAD;
@@ -144,7 +150,8 @@ public class MainApp extends Application {
             gitRemote = null;
             commitHash = null;
         }
-        AppRepository.INSTANCE.runTransaction(new SaveVersionChangeIfNeededTransaction(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE, gitRemote, commitHash));
+        AppRepository.INSTANCE.runTransaction(new SaveVersionChangeIfNeededTransaction(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE, gitRemote, commitHash)).subscribe();
+        SP.copyMissingValuesToDatabase();
         AppRepository.INSTANCE.getChangeObservable()
                 .observeOn(Schedulers.io())
                 .subscribe(changes -> {
@@ -184,7 +191,6 @@ public class MainApp extends Application {
                     if (profileSwitchesChanged) DatabaseHelper.scheduleProfileSwitchChange();
                 });
         log.debug("onCreate");
-        sInstance = this;
         sResources = getResources();
         LocaleHelper.INSTANCE.update(this);
         sConstraintsChecker = new ConstraintChecker();
@@ -280,6 +286,8 @@ public class MainApp extends Application {
 
             pluginsList.add(DstHelperPlugin.getPlugin());
 
+            if (Config.APS) pluginsList.add(OpenHumansUploader.INSTANCE);
+
 
             ConfigBuilderPlugin.getPlugin().initialize();
         }
@@ -294,6 +302,19 @@ public class MainApp extends Application {
                 startKeepAliveService();
             }).start();
         }
+    }
+
+    public static UUID getApplicationId() {
+        if (applicationId == null) {
+            String string = SP.getString("applicationId", null);
+            if (string == null) {
+                applicationId = UUID.randomUUID();
+                SP.putString("applicationId", applicationId.toString());
+            } else {
+                applicationId = UUID.fromString(string);
+            }
+        }
+        return applicationId;
     }
 
     private void registerLocalBroadcastReceiver() {

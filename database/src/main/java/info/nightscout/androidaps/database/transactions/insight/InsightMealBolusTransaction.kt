@@ -4,8 +4,8 @@ import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.Bolus
 import info.nightscout.androidaps.database.entities.Carbs
 import info.nightscout.androidaps.database.entities.links.MealLink
-import info.nightscout.androidaps.database.transactions.MealBolusTransaction
 import info.nightscout.androidaps.database.transactions.Transaction
+import info.nightscout.androidaps.database.transactions.treatments.MealBolusTransaction
 import java.util.*
 
 class InsightMealBolusTransaction(

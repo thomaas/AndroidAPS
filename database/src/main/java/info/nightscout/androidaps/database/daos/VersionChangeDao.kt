@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import info.nightscout.androidaps.database.TABLE_VERSION_CHANGES
 import info.nightscout.androidaps.database.entities.VersionChange
+import io.reactivex.Single
 
 @Dao
 interface VersionChangeDao {
@@ -14,5 +15,8 @@ interface VersionChangeDao {
 
     @Insert
     fun insert(versionChange: VersionChange)
+
+    @Query("SELECT * FROM $TABLE_VERSION_CHANGES WHERE id >= :id")
+    fun getAllStartingFrom(id: Long): Single<List<VersionChange>>
 
 }

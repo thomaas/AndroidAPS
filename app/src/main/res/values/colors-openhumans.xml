@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="openHumansGreen">#4bc0c7</color>
+    <color name="openHumansOrange">#ff9161</color>
+    <color name="openHumansSurface">#f5f5f5</color>
+    <color name="openHumansError">#a94442</color>
+</resources>

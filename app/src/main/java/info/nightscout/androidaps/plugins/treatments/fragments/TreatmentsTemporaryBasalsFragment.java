@@ -22,7 +22,7 @@ import info.nightscout.androidaps.data.Intervals;
 import info.nightscout.androidaps.data.IobTotal;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
-import info.nightscout.androidaps.database.transactions.InvalidateTemporaryBasalTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.InvalidateTemporaryBasalTransaction;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.events.EventTempBasalChange;
 import info.nightscout.androidaps.plugins.bus.RxBus;

@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="80dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_weight="1"
+                    android:text="@string/how_it_works"
+                    android:textAppearance="?textAppearanceHeadline5"
+                    android:textColor="?colorPrimary" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHTutorialItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:description="@string/this_takes_you_to_open_humans"
+                    app:index="1."
+                    app:title="@string/click_log_in" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHTutorialItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:description="@string/your_data_will_be_uploaded"
+                    app:index="2."
+                    app:title="@string/login_with_your_open_humans_account" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHTutorialItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:description="@string/this_connects_the_app_to_your"
+                    app:index="3."
+                    app:title="@string/authorize_the_app" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHTutorialItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:description="@string/setup_is_done"
+                    app:index="4."
+                    app:title="@string/thats_it" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="80dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_weight="1"
+                    android:text="@string/what_data_will_be_uploaded"
+                    android:textAppearance="?textAppearanceHeadline5"
+                    android:textColor="?colorPrimary" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:text="@string/information_about_the_application" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/version" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/commit_hash" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/application_id" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:text="@string/information_about_your_phone" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/manufacturer" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/device_model" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/android_version" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/display_size" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:text="@string/your_settings" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/selected_language" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/enabled_plugins_and_features" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/safety_settings" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/appearance" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:text="@string/glucose_values_and_sensor_type" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:text="@string/information_about_insulin_delivery" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/boluses" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/your_profile" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/temporary_basal_rates" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/total_daily_doses" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/carb_entries" />
+
+                <info.nightscout.androidaps.plugins.general.open_humans.views.OHListItem
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:indent="true"
+                    app:text="@string/algorithm_reasoning" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="8dp"
+                    android:paddingStart="80dp"
+                    android:paddingEnd="16dp"
+                    android:text="@string/private_information_not_uploaded"
+                    android:textAppearance="?textAppearanceBody1"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="80dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_weight="1"
+                    android:text="@string/more_information"
+                    android:textAppearance="?textAppearanceHeadline5"
+                    android:textColor="?colorPrimary" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_marginStart="28dp"
+                        android:background="@drawable/dot" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="44dp"
+                        android:layout_weight="1"
+                        android:text="@string/about_open_humans"
+                        android:textAppearance="?textAppearanceBody1"
+                        android:textColor="?colorPrimary" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_marginStart="28dp"
+                        android:background="@drawable/dot" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="44dp"
+                        android:layout_weight="1"
+                        android:text="@string/androidaps_uploader_on_open_humans"
+                        android:textAppearance="?textAppearanceBody1"
+                        android:textColor="?colorPrimary" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_marginStart="28dp"
+                        android:background="@drawable/dot" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="44dp"
+                        android:layout_weight="1"
+                        android:text="@string/contact_open_humans"
+                        android:textAppearance="?textAppearanceBody1"
+                        android:textColor="?colorPrimary" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/login"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="16dp"
+                    android:text="@string/log_in"
+                    app:backgroundTint="?colorSecondary" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:background="?android:colorBackground"
+            android:fitsSystemWindows="true"
+            app:liftOnScroll="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/back"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="32dp"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:padding="4dp"
+                    android:tint="?colorOnBackground"
+                    android:tintMode="src_in"
+                    app:srcCompat="@drawable/ic_back" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/open_humans"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
+            </LinearLayout>
+        </com.google.android.material.appbar.AppBarLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

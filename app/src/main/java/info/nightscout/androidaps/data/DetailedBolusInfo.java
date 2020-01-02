@@ -6,7 +6,7 @@ import org.json.JSONObject;
 
 import java.util.Date;
 
-import info.nightscout.androidaps.database.transactions.MealBolusTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.MealBolusTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.Source;
 

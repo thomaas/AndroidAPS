@@ -10,7 +10,7 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
-import info.nightscout.androidaps.database.transactions.CancelTemporaryTargetTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.CancelTemporaryTargetTransaction;
 import info.nightscout.androidaps.queue.Callback;
 import info.nightscout.androidaps.utils.JsonHelper;
 

@@ -3,8 +3,8 @@ package info.nightscout.androidaps.database.entities
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_TEMPORARY_BASALS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
-import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTimeAndDuration
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 
 @Entity(tableName = TABLE_TEMPORARY_BASALS,
         foreignKeys = [ForeignKey(
@@ -27,7 +27,7 @@ data class TemporaryBasal(
         var isAbsolute: Boolean,
         var rate: Double,
         override var duration: Long
-) : DBEntry, DBEntryWithTimeAndDuration {
+) : TraceableDBEntry, DBEntryWithTimeAndDuration {
     enum class Type {
         NORMAL,
         EMULATED_PUMP_SUSPEND,

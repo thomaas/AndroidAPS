@@ -1,15 +1,15 @@
 package info.nightscout.androidaps.database.daos
 
 import info.nightscout.androidaps.database.AbstractDatabaseTest
-import info.nightscout.androidaps.database.interfaces.DBEntry
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 import org.junit.Assert
 import org.junit.Test
 
-abstract class AbstractDaoTest<T : DBEntry> : AbstractDatabaseTest() {
+abstract class AbstractDaoTest<T : TraceableDBEntry> : AbstractDatabaseTest() {
 
     abstract fun generateTestEntry() : T
 
-    abstract fun getDao() : BaseDao<T>
+    abstract fun getDao() : TraceableDao<T>
 
     abstract fun copy(entry: T): T
 

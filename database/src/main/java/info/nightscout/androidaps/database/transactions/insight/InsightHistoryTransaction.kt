@@ -141,7 +141,7 @@ class InsightHistoryTransaction(val pumpSerial: String) : Transaction<Unit>() {
     }
 
     private fun updateExistingTemporaryBasal(temporaryBasal: TemporaryBasal) {
-        var dbTBR = database.temporaryBasalDao.getWithSmallerStartId_WithPumpSerial_PumpAndEndIdAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, temporaryBasal.timestamp, temporaryBasal.eventId)
+        var dbTBR = database.temporaryBasalDao.getWithSmallerStartId_WithPumpSerial_PumpAndEndIdAreNull(InterfaceIDs.PumpType.ACCU_CHEK_INSIGHT, pumpSerial, temporaryBasal.eventId)
         if (dbTBR != null) {
             dbTBR.duration = temporaryBasal.duration
             dbTBR.interfaceIDs.endId = temporaryBasal.eventId

@@ -5,10 +5,11 @@ import androidx.room.Query
 import info.nightscout.androidaps.database.TABLE_BOLUSES
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.Bolus
+import io.reactivex.Single
 
 @Suppress("FunctionName")
 @Dao
-internal interface BolusDao : BaseDao<Bolus> {
+internal interface BolusDao : TraceableDao<Bolus> {
 
     @Query("SELECT * FROM $TABLE_BOLUSES WHERE id = :id")
     override fun findById(id: Long): Bolus?
@@ -27,4 +28,7 @@ internal interface BolusDao : BaseDao<Bolus> {
 
     @Query("SELECT * FROM $TABLE_BOLUSES WHERE timestamp >= :start AND timestamp <= :end AND referenceId IS NULL AND isValid = 1 ORDER BY timestamp ASC")
     fun getBolusesInTimeRange(start: Long, end: Long): List<Bolus>
+
+    @Query("SELECT * FROM $TABLE_BOLUSES WHERE id >= :id")
+    override fun getAllStartingFrom(id: Long): Single<List<Bolus>>
 }

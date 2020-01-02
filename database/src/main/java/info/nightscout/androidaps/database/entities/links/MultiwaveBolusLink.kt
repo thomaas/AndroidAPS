@@ -5,7 +5,7 @@ import info.nightscout.androidaps.database.TABLE_MULTIWAVE_BOLUS_LINKS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.Bolus
 import info.nightscout.androidaps.database.entities.ExtendedBolus
-import info.nightscout.androidaps.database.interfaces.DBEntry
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 
 @Entity(tableName = TABLE_MULTIWAVE_BOLUS_LINKS,
         foreignKeys = [ForeignKey(
@@ -33,7 +33,7 @@ data class MultiwaveBolusLink(
         override var interfaceIDs_backing: InterfaceIDs? = null,
         var bolusId: Long,
         var extendedBolusId: Long
-) : DBEntry {
+) : TraceableDBEntry {
     override val foreignKeysValid: Boolean
         get() = super.foreignKeysValid && bolusId != 0L && bolusId != 0L && extendedBolusId != 0L
 }

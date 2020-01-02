@@ -24,7 +24,7 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
-import info.nightscout.androidaps.database.transactions.InvalidateGlucoseValueTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.InvalidateGlucoseValueTransaction;
 import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;

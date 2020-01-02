@@ -4,8 +4,8 @@ import androidx.room.*
 import info.nightscout.androidaps.database.Block
 import info.nightscout.androidaps.database.TABLE_EFFECTIVE_PROFILE_SWITCHES
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
-import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTimeAndDuration
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 
 @Entity(tableName = TABLE_EFFECTIVE_PROFILE_SWITCHES,
         foreignKeys = [ForeignKey(
@@ -26,4 +26,4 @@ data class EffectiveProfileSwitch(
         override var utcOffset: Long,
         override var duration: Long,
         var basalBlocks: List<Block>
-) : DBEntry, DBEntryWithTimeAndDuration
+) : TraceableDBEntry, DBEntryWithTimeAndDuration

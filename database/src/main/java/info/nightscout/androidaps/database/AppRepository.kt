@@ -4,9 +4,13 @@ import android.content.Context
 import androidx.room.Room
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
 import info.nightscout.androidaps.database.entities.*
+import info.nightscout.androidaps.database.entities.links.APSResultLink
+import info.nightscout.androidaps.database.entities.links.MealLink
+import info.nightscout.androidaps.database.entities.links.MultiwaveBolusLink
 import info.nightscout.androidaps.database.interfaces.DBEntry
-import info.nightscout.androidaps.database.transactions.MergedBolus
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 import info.nightscout.androidaps.database.transactions.Transaction
+import info.nightscout.androidaps.database.transactions.treatments.MergedBolus
 import io.reactivex.*
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
@@ -87,6 +91,67 @@ object AppRepository {
 
     fun getTemporaryBasalActiveAtIncludingInvalidMaybe(timestamp: Long, pumpType: InterfaceIDs.PumpType): Maybe<TemporaryBasal> = database.temporaryBasalDao.getTemporaryBasalActiveAtIncludingInvalidMaybe(timestamp, pumpType).subscribeOn(Schedulers.io())
 
+    private fun <T : TraceableDBEntry> List<T>.loadReferences(findById: (id: Long) -> T?): List<T> {
+        val historicEntries = filter { it.historic }
+        val referenceEntries = filter { !it.historic }.toMutableList()
+        historicEntries.forEach { historic ->
+            if (referenceEntries.firstOrNull { it.id == historic.referenceId } == null) {
+                referenceEntries.add(findById(historic.referenceId!!)!!)
+            }
+        }
+        referenceEntries.addAll(referenceEntries)
+        return referenceEntries
+    }
+
+    fun getAllChangedAPSResultsStartingFrom(id: Long): Single<List<APSResult>> =
+            database.apsResultDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.apsResultDao::findById) }
+
+    fun getAllChangedAPSResultLinksStartingFrom(id: Long): Single<List<APSResultLink>> =
+            database.apsResultLinkDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.apsResultLinkDao::findById) }
+
+    fun getAllChangedBolusCalculatorResultsStartingFrom(id: Long): Single<List<BolusCalculatorResult>> =
+            database.bolusCalculatorResultDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.bolusCalculatorResultDao::findById) }
+
+    fun getAllChangedBolusesStartingFrom(id: Long): Single<List<Bolus>> =
+            database.bolusDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.bolusDao::findById) }
+
+    fun getAllChangedCarbsStartingFrom(id: Long): Single<List<Carbs>> =
+            database.carbsDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.carbsDao::findById) }
+
+    fun getAllChangedEffectiveProfileSwitchesStartingFrom(id: Long): Single<List<EffectiveProfileSwitch>> =
+            database.effectiveProfileSwitchDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.effectiveProfileSwitchDao::findById) }
+
+    fun getAllChangedExtendedBolusesStartingFrom(id: Long): Single<List<ExtendedBolus>> =
+            database.extendedBolusDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.extendedBolusDao::findById) }
+
+    fun getAllChangedGlucoseValuesStartingFrom(id: Long): Single<List<GlucoseValue>> =
+            database.glucoseValueDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.glucoseValueDao::findById) }
+
+    fun getAllChangedMealLinksStartingFrom(id: Long): Single<List<MealLink>> =
+            database.mealLinkDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.mealLinkDao::findById) }
+
+    fun getAllChangedMultiwaveBolusLinksStartingFrom(id: Long): Single<List<MultiwaveBolusLink>> =
+            database.multiwaveBolusLinkDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.multiwaveBolusLinkDao::findById) }
+
+    fun getAllPreferenceChangesStartingFrom(id: Long): Single<List<PreferenceChange>> = database.preferenceChangeDao.getAllStartingFrom(id).subscribeOn(Schedulers.io())
+
+    fun getAllChangedProfileSwitchesStartingFrom(id: Long): Single<List<ProfileSwitch>> =
+            database.profileSwitchDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.profileSwitchDao::findById) }
+
+    fun getAllChangedTemporaryBasalsStartingFrom(id: Long): Single<List<TemporaryBasal>> =
+            database.temporaryBasalDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.temporaryBasalDao::findById) }
+
+    fun getAllChangedTemporaryTargetsStartingFrom(id: Long): Single<List<TemporaryTarget>> =
+            database.temporaryTargetDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.temporaryTargetDao::findById) }
+
+    fun getAllChangedTherapyEventsStartingFrom(id: Long): Single<List<TherapyEvent>> =
+            database.therapyEventDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.therapyEventDao::findById) }
+
+    fun getAllChangedTotalDailyDosesStartingFrom(id: Long): Single<List<TotalDailyDose>> =
+            database.totalDailyDoseDao.getAllStartingFrom(id).subscribeOn(Schedulers.io()).map { it.loadReferences(database.totalDailyDoseDao::findById) }
+
+    fun getAllVersionChangesStartingFrom(id: Long): Single<List<VersionChange>> = database.versionChangeDao.getAllStartingFrom(id).subscribeOn(Schedulers.io())
+
     fun getMergedBolusData(start: Long, end: Long) = Single.fromCallable {
         val boluses = database.bolusDao.getBolusesInTimeRange(start, end)
         val carbs = database.carbsDao.getCarbsInTimeRange(start, end).toMutableList()
@@ -95,7 +160,8 @@ object AppRepository {
             val mealLink = database.mealLinkDao.findByBolusId(it.id)
             if (mealLink != null) {
                 var carbEntry = mealLink.carbsId?.run {
-                    carbs.find { it.id == this } ?: AppRepository.database.carbsDao.findById(this)
+                    carbs.find { it.id == this }
+                            ?: AppRepository.database.carbsDao.findById(this)
                 }
                 if (carbEntry != null) {
                     carbs.remove(carbEntry)

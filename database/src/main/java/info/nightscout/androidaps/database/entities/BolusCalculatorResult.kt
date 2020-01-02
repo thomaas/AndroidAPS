@@ -3,8 +3,8 @@ package info.nightscout.androidaps.database.entities
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_BOLUS_CALCULATOR_RESULTS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
-import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTime
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 
 @Entity(tableName = TABLE_BOLUS_CALCULATOR_RESULTS,
         foreignKeys = [ForeignKey(
@@ -49,4 +49,4 @@ data class BolusCalculatorResult(
         var superbolusInsulin: Double,
         var wasTempTargetUsed: Boolean,
         var totalInsulin: Double
-) : DBEntry, DBEntryWithTime
+) : TraceableDBEntry, DBEntryWithTime

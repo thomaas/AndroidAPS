@@ -3,10 +3,10 @@ package info.nightscout.androidaps.utils
 import info.nightscout.androidaps.database.BlockingAppRepository
 import info.nightscout.androidaps.database.entities.Bolus
 import info.nightscout.androidaps.database.entities.TherapyEvent
-import info.nightscout.androidaps.database.transactions.CancelTemporaryBasalTransaction
-import info.nightscout.androidaps.database.transactions.InsertTemporaryBasalAndCancelCurrentTransaction
-import info.nightscout.androidaps.database.transactions.MealBolusTransaction
-import info.nightscout.androidaps.database.transactions.TherapyEventTransaction
+import info.nightscout.androidaps.database.transactions.treatments.CancelTemporaryBasalTransaction
+import info.nightscout.androidaps.database.transactions.treatments.InsertTemporaryBasalAndCancelCurrentTransaction
+import info.nightscout.androidaps.database.transactions.treatments.MealBolusTransaction
+import info.nightscout.androidaps.database.transactions.treatments.TherapyEventTransaction
 import info.nightscout.androidaps.db.CareportalEvent
 import org.json.JSONObject
 
@@ -118,6 +118,6 @@ fun saveCareportalJSON(json: JSONObject) {
         }
     }
     if (type != null) {
-        BlockingAppRepository.runTransaction(TherapyEventTransaction(timestamp, type, amount,note, duration))
+        BlockingAppRepository.runTransaction(TherapyEventTransaction(timestamp, type, amount, note, duration))
     }
 }

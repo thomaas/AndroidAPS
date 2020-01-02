@@ -6,8 +6,8 @@ import info.nightscout.androidaps.database.TABLE_PROFILE_SWITCHES
 import info.nightscout.androidaps.database.TargetBlock
 import info.nightscout.androidaps.database.embedments.InsulinConfiguration
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
-import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTimeAndDuration
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 
 @Entity(tableName = TABLE_PROFILE_SWITCHES,
         foreignKeys = [ForeignKey(
@@ -37,7 +37,7 @@ data class ProfileSwitch(
         var timeshift: Int,
         var percentage: Int,
         override var duration: Long
-) : DBEntry, DBEntryWithTimeAndDuration {
+) : TraceableDBEntry, DBEntryWithTimeAndDuration {
     enum class GlucoseUnit {
         MGDL,
         MMOL

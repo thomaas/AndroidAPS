@@ -21,7 +21,7 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.Intervals;
 import info.nightscout.androidaps.data.IobTotal;
 import info.nightscout.androidaps.database.BlockingAppRepository;
-import info.nightscout.androidaps.database.transactions.InvalidateExtendedBolusTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.InvalidateExtendedBolusTransaction;
 import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.events.EventExtendedBolusChange;
 import info.nightscout.androidaps.plugins.bus.RxBus;

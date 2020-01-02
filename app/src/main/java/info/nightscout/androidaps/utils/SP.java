@@ -4,6 +4,9 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import info.nightscout.androidaps.MainApp;
+import info.nightscout.androidaps.database.AppRepository;
+import info.nightscout.androidaps.database.transactions.preferences.CopyMissingPreferencesToDatabaseTransaction;
+import info.nightscout.androidaps.database.transactions.preferences.SafePreferenceChangeTransaction;
 
 /**
  * Created by mike on 17.02.2017.
@@ -11,6 +14,18 @@ import info.nightscout.androidaps.MainApp;
 
 public class SP {
     static SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainApp.instance().getApplicationContext());
+
+    private static SharedPreferences.OnSharedPreferenceChangeListener listener = (sharedPreferences, key) -> {
+        AppRepository.INSTANCE.runTransaction(new SafePreferenceChangeTransaction(key, sharedPreferences.getAll().get(key))).subscribe();
+    };
+
+    static {
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+    }
+
+    public static void copyMissingValuesToDatabase() {
+        AppRepository.INSTANCE.runTransaction(new CopyMissingPreferencesToDatabaseTransaction(sharedPreferences.getAll())).subscribe();
+    }
 
     static public boolean contains(String key) {
         return sharedPreferences.contains(key);

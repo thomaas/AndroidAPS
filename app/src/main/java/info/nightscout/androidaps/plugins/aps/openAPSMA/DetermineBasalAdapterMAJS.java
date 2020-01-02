@@ -25,7 +25,7 @@ import info.nightscout.androidaps.data.MealData;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.APSResult;
-import info.nightscout.androidaps.database.transactions.InsertAPSResultTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.InsertAPSResultTransaction;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.aps.loop.ScriptReader;

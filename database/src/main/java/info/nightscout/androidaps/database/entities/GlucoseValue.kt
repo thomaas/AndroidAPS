@@ -3,8 +3,8 @@ package info.nightscout.androidaps.database.entities
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_GLUCOSE_VALUES
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
-import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTime
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 
 @Entity(tableName = TABLE_GLUCOSE_VALUES,
         foreignKeys = [ForeignKey(
@@ -28,7 +28,7 @@ data class GlucoseValue(
         var trendArrow: TrendArrow,
         var noise: Double?,
         var sourceSensor: SourceSensor
-) : DBEntry, DBEntryWithTime {
+) : TraceableDBEntry, DBEntryWithTime {
 
     fun contentEqualsTo(other: GlucoseValue): Boolean {
         return timestamp == other.timestamp &&

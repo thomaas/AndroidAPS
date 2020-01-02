@@ -3,8 +3,8 @@ package info.nightscout.androidaps.database.entities
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_EXTENDED_BOLUSES
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
-import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTimeAndDuration
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 
 @Entity(tableName = TABLE_EXTENDED_BOLUSES,
         foreignKeys = [ForeignKey(
@@ -26,4 +26,4 @@ data class ExtendedBolus(
         override var duration: Long,
         var amount: Double,
         var isEmulatingTempBasal: Boolean
-) : DBEntry, DBEntryWithTimeAndDuration
+) : TraceableDBEntry, DBEntryWithTimeAndDuration

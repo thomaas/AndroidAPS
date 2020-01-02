@@ -3,8 +3,8 @@ package info.nightscout.androidaps.database.entities
 import androidx.room.*
 import info.nightscout.androidaps.database.TABLE_THERAPY_EVENTS
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
-import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.database.interfaces.DBEntryWithTimeAndDuration
+import info.nightscout.androidaps.database.interfaces.TraceableDBEntry
 
 @Entity(tableName = TABLE_THERAPY_EVENTS,
         foreignKeys = [ForeignKey(
@@ -27,7 +27,7 @@ data class TherapyEvent(
         var type: Type,
         var note: String? = null,
         var amount: Double? = null
-) : DBEntry, DBEntryWithTimeAndDuration {
+) : TraceableDBEntry, DBEntryWithTimeAndDuration {
     enum class Type {
         CANNULA_CHANGED,
         TUBE_CHANGED,

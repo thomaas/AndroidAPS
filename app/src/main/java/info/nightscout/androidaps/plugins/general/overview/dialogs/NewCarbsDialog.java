@@ -1,7 +1,6 @@
 package info.nightscout.androidaps.plugins.general.overview.dialogs;
 
 import android.os.Bundle;
-import android.os.HandlerThread;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
@@ -36,7 +35,7 @@ import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.database.BlockingAppRepository;
 import info.nightscout.androidaps.database.entities.GlucoseValue;
 import info.nightscout.androidaps.database.entities.TemporaryTarget;
-import info.nightscout.androidaps.database.transactions.InsertTemporaryTargetAndCancelCurrentTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.InsertTemporaryTargetAndCancelCurrentTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.interfaces.Constraint;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;

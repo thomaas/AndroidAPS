@@ -21,7 +21,7 @@ import java.util.List;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.database.BlockingAppRepository;
-import info.nightscout.androidaps.database.transactions.InvalidateTherapyEventTransaction;
+import info.nightscout.androidaps.database.transactions.treatments.InvalidateTherapyEventTransaction;
 import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.events.EventCareportalEventChange;
 import info.nightscout.androidaps.plugins.bus.RxBus;

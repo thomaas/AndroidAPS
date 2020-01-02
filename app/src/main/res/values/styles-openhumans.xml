@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.OpenHumans" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/openHumansGreen</item>
+        <item name="android:statusBarColor">?android:colorBackground</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="colorSecondary">@color/openHumansOrange</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+        <item name="colorOnError">@android:color/white</item>
+        <item name="textAppearanceHeadline1">@style/TextAppearance.OpenHumans.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.OpenHumans.Headline2</item>
+        <item name="textAppearanceHeadline3">@style/TextAppearance.OpenHumans.Headline3</item>
+        <item name="textAppearanceHeadline4">@style/TextAppearance.OpenHumans.Headline4</item>
+        <item name="textAppearanceHeadline5">@style/TextAppearance.OpenHumans.Headline5</item>
+        <item name="textAppearanceHeadline6">@style/TextAppearance.OpenHumans.Headline6</item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.OpenHumans.Subtitle1</item>
+        <item name="textAppearanceSubtitle2">@style/TextAppearance.OpenHumans.Subtitle2</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.OpenHumans.Body1</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.OpenHumans.Body2</item>
+        <item name="textAppearanceCaption">@style/TextAppearance.OpenHumans.Caption</item>
+        <item name="textAppearanceButton">@style/TextAppearance.OpenHumans.Button</item>
+        <item name="textAppearanceOverline">@style/TextAppearance.OpenHumans.Overline</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Headline1" parent="TextAppearance.MaterialComponents.Headline1">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Headline2" parent="TextAppearance.MaterialComponents.Headline2">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Headline3" parent="TextAppearance.MaterialComponents.Headline3">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Headline4" parent="TextAppearance.MaterialComponents.Headline4">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Headline5" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Headline6" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Subtitle1" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Subtitle2" parent="TextAppearance.MaterialComponents.Subtitle2">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Body1" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Body2" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Caption" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Button" parent="TextAppearance.MaterialComponents.Button">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+
+    <style name="TextAppearance.OpenHumans.Overline" parent="TextAppearance.MaterialComponents.Overline">
+        <item name="fontFamily">@font/montserrat</item>
+    </style>
+</resources>
