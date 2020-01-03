@@ -56,15 +56,10 @@ object OpenHumansUploader : PluginBase(PluginDescription()
     var uploadCounter by UploadCounterProperty(sharedPreferences, this::projectMemberId)
     var loginStateListeners = mutableListOf<() -> Unit>()
 
-    private fun getUploadOffsetForTable(tableName: String) = sharedPreferences.getLong("Offset_{$projectMemberId!!}_$tableName", 0)
-
-    private fun SharedPreferences.Editor.setUploadOffsetForTable(tableName: String, offset: Long): SharedPreferences.Editor {
-        putLong("Offset_${projectMemberId!!}}_$tableName", offset)
-        return this
-    }
+    private fun getUploadOffsetForTable(tableName: String) = sharedPreferences.getLong("Offset_${projectMemberId!!}_$tableName", 0)
 
     private fun SharedPreferences.Editor.setUploadOffsetToHighest(tableName: String, entries: List<DBEntry>): SharedPreferences.Editor {
-        entries.maxBy { it.id }?.id?.let { setUploadOffsetForTable(tableName, it + 1) }
+        entries.maxBy { it.id }?.id?.let { putLong("Offset_${projectMemberId!!}}_$tableName", it + 1) }
         return this
     }
 
@@ -165,6 +160,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
 
     private fun gatherData() = Single.defer {
         Single.zipArray({
+            val test = getUploadOffsetForTable("GlucoseValues")
             val hasGitInfo = !BuildConfig.HEAD.endsWith("NoGitSystemAvailable", true)
             val customRemote = !BuildConfig.REMOTE.equals("https://github.com/MilosKozak/AndroidAPS.git", true)
             @Suppress("UNCHECKED_CAST")

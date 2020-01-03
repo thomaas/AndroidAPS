@@ -16,6 +16,6 @@ internal interface APSResultDao : TraceableDao<APSResult> {
     @Query("DELETE FROM $TABLE_APS_RESULTS")
     override fun deleteAllEntries()
 
-    @Query("SELECT * FROM $TABLE_APS_RESULTS WHERE id >= :id OR id = referenceId")
+    @Query("SELECT * FROM $TABLE_APS_RESULTS WHERE id >= :id")
     override fun getAllStartingFrom(id: Long): Single<List<APSResult>>
 }

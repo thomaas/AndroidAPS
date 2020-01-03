@@ -233,7 +233,6 @@ public class MainApp extends Application {
             pluginsList.add(OverviewPlugin.INSTANCE);
             pluginsList.add(IobCobCalculatorPlugin.getPlugin());
             if (!Config.NSCLIENT) pluginsList.add(ActionsPlugin.INSTANCE);
-            if (Config.APS) pluginsList.add(OpenHumansUploader.INSTANCE);
             pluginsList.add(InsulinOrefRapidActingPlugin.getPlugin());
             pluginsList.add(InsulinOrefUltraRapidActingPlugin.getPlugin());
             pluginsList.add(InsulinOrefFreePeakPlugin.getPlugin());
@@ -279,6 +278,7 @@ public class MainApp extends Application {
             pluginsList.add(StatuslinePlugin.initPlugin(this));
             pluginsList.add(PersistentNotificationPlugin.getPlugin());
             pluginsList.add(NSClientPlugin.getPlugin());
+            if (Config.APS) pluginsList.add(OpenHumansUploader.INSTANCE);
             //if (engineeringMode) pluginsList.add(TidepoolPlugin.INSTANCE);
             pluginsList.add(MaintenancePlugin.initPlugin(this));
             pluginsList.add(AutomationPlugin.INSTANCE);
