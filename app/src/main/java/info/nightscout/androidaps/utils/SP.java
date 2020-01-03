@@ -13,7 +13,7 @@ import info.nightscout.androidaps.database.transactions.preferences.SafePreferen
  */
 
 public class SP {
-    static SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainApp.instance().getApplicationContext());
+    public static SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainApp.instance().getApplicationContext());
 
     private static SharedPreferences.OnSharedPreferenceChangeListener listener = (sharedPreferences, key) -> {
         AppRepository.INSTANCE.runTransaction(new SafePreferenceChangeTransaction(key, sharedPreferences.getAll().get(key))).subscribe();

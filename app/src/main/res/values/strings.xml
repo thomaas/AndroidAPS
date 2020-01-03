@@ -1664,7 +1664,7 @@
     <string name="only_upload_if_connected_to_wifi">Only upload if connected to Wifi</string>
     <string name="only_upload_if_charging">Only upload if charging</string>
     <string translatable="false" name="key_oh_wifi_only">oh_wifi_only</string>
-    <string translatable="false" name="key_oh_charging_only">oh_wifi_only</string>
+    <string translatable="false" name="key_oh_charging_only">oh_charging_only</string>
     <string name="sign_in_to_open_humans">Sign in to Open Humans</string>
     <string name="sign_out">Sign out</string>
     <string name="do_you_really_want_to_sign_out">Do you really want to sign out? No data will be uploaded until signing in again.</string>

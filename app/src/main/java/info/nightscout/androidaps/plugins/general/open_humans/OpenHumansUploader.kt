@@ -37,7 +37,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
         .description(R.string.donate_your_data_for_science)
         .shortName(R.string.open_humans_short)
         .preferencesId(R.xml.pref_open_humans)
-        .mainType(PluginType.GENERAL)) {
+        .mainType(PluginType.GENERAL)), SharedPreferences.OnSharedPreferenceChangeListener {
 
     const val PREFERENCES_FILE = "OpenHumans"
     const val OPEN_HUMANS_URL = "https://www.openhumans.org"
@@ -87,10 +87,12 @@ object OpenHumansUploader : PluginBase(PluginDescription()
     override fun onStart() {
         if (projectMemberId != null) scheduleWorker()
         setupNotificationChannel()
+        SP.sharedPreferences.registerOnSharedPreferenceChangeListener(this)
     }
 
     override fun onStop() {
         cancelWorker()
+        SP.sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
     }
 
     fun registerLoginStateListener(listener: () -> Unit) {
@@ -294,5 +296,9 @@ object OpenHumansUploader : PluginBase(PluginDescription()
                 ))
                 .build()
         NotificationManagerCompat.from(MainApp.instance()).notify(3123, notification)
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        if (key == MainApp.gs(R.string.key_oh_charging_only) && projectMemberId != null) scheduleWorker()
     }
 }
