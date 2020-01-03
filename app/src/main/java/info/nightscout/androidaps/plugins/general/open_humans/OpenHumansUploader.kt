@@ -159,7 +159,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
                     .flatMapCompletable { openHumansAPI.completeFileUpload(oAuthTokens!!.accessToken, it) }
 
     private fun refreshAccessTokenIfNeeded() = Completable.defer {
-        if (oAuthTokens!!.expiresAt <= System.currentTimeMillis()) openHumansAPI.refreshToken(oAuthTokens!!.refreshToken).doOnSuccess { oAuthTokens = it }.ignoreElement()
+        if (oAuthTokens!!.expiresAt <= System.currentTimeMillis() - TimeUnit.HOURS.toMillis(1)) openHumansAPI.refreshToken(oAuthTokens!!.refreshToken).doOnSuccess { oAuthTokens = it }.ignoreElement()
         else Completable.complete()
     }
 
