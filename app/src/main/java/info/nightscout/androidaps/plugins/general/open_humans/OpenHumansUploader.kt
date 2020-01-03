@@ -1,8 +1,15 @@
 package info.nightscout.androidaps.plugins.general.open_humans
 
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.work.*
 import info.nightscout.androidaps.BuildConfig
 import info.nightscout.androidaps.MainApp
@@ -16,6 +23,7 @@ import info.nightscout.androidaps.database.interfaces.DBEntry
 import info.nightscout.androidaps.interfaces.PluginBase
 import info.nightscout.androidaps.interfaces.PluginDescription
 import info.nightscout.androidaps.interfaces.PluginType
+import info.nightscout.androidaps.plugins.general.open_humans.activities.OHWelcomeActivity
 import info.nightscout.androidaps.plugins.general.open_humans.properties.OAuthTokenProperty
 import info.nightscout.androidaps.plugins.general.open_humans.properties.ProjectMemberIdProperty
 import info.nightscout.androidaps.plugins.general.open_humans.properties.UploadCounterProperty
@@ -78,6 +86,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
 
     override fun onStart() {
         if (projectMemberId != null) scheduleWorker()
+        setupNotificationChannel()
     }
 
     override fun onStop() {
@@ -235,4 +244,55 @@ object OpenHumansUploader : PluginBase(PluginDescription()
     fun uploadData() = gatherData()
             .flatMap { uploadFile(it).andThen(Single.just(it)) }
             .flatMapCompletable(this::adjustCounters)
+            .doOnError {
+                if (it is OpenHumansAPI.OHErrorneousResultException && it.code == 401) {
+                    when (it.detail) {
+                        "Expired token." -> oAuthTokens = oAuthTokens!!.copy(expiresAt = -1)
+                        "Invalid token." -> handleSignOut()
+                    }
+
+                }
+            }
+
+    private fun setupNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationManagerCompat = NotificationManagerCompat.from(MainApp.instance())
+            notificationManagerCompat.createNotificationChannel(NotificationChannel(
+                    "OpenHumans",
+                    MainApp.gs(R.string.open_humans),
+                    NotificationManager.IMPORTANCE_DEFAULT
+            ))
+        }
+    }
+
+    private fun handleSignOut() {
+        oAuthTokens = null
+        projectMemberId = null
+        synchronized(loginStateListeners) {
+            loginStateListeners.forEach {
+                try {
+                    it()
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+            }
+        }
+        cancelWorker()
+        val notification = NotificationCompat.Builder(MainApp.instance(), "OpenHumans")
+                .setContentTitle(MainApp.gs(R.string.you_have_been_signed_out_of_open_humans))
+                .setContentText(MainApp.gs(R.string.click_here_to_sign_in_again_if_this_was_a_mistake))
+                .setStyle(NotificationCompat.BigTextStyle())
+                .setSmallIcon(R.drawable.notif_icon)
+                .setAutoCancel(true)
+                .setContentIntent(PendingIntent.getActivity(
+                        MainApp.instance(),
+                        0,
+                        Intent(MainApp.instance(), OHWelcomeActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        },
+                        0
+                ))
+                .build()
+        NotificationManagerCompat.from(MainApp.instance()).notify(3123, notification)
+    }
 }

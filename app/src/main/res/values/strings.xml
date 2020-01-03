@@ -1672,5 +1672,7 @@
     <string name="key_oh_setup" translatable="false">key_oh_setup</string>
     <string name="error">Error</string>
     <string name="an_error_has_occurred">An error has occurred</string>
+    <string name="you_have_been_signed_out_of_open_humans">You have been signed out of Open Humans</string>
+    <string name="click_here_to_sign_in_again_if_this_was_a_mistake">Click here to sign in again if this was a mistake.</string>
 
 </resources>

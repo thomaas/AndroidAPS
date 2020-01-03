@@ -43,7 +43,7 @@ class OpenHumansAPI(
                 it.use {
                     val body = it.body()
                     val jsonObject = if (body != null) JSONObject(body.string()) else null
-                    if (!it.isSuccessful) throw OHErrornousResultException(it.code(), it.message(), jsonObject?.getString("error"))
+                    if (!it.isSuccessful) throw OHErrorneousResultException(it.code(), it.message(), jsonObject?.getString("error"))
                     OAuthTokens(
                             jsonObject!!.getString("access_token"),
                             jsonObject.getString("refresh_token"),
@@ -81,7 +81,7 @@ class OpenHumansAPI(
             .toSingle()
             .doOnSuccess {
                 it.use {
-                    if (!it.isSuccessful) throw OHErrornousResultException(it.code(), it.message(), null)
+                    if (!it.isSuccessful) throw OHErrorneousResultException(it.code(), it.message(), null)
                 }
             }
             .ignoreElement()
@@ -99,7 +99,7 @@ class OpenHumansAPI(
     private fun Response.getJSONBody() = use {
         val body = body()
         val jsonObject = if (body != null) JSONObject(body.string()) else null
-        if (!isSuccessful) throw OHErrornousResultException(code(), message(), jsonObject?.getString("detail"))
+        if (!isSuccessful) throw OHErrorneousResultException(code(), message(), jsonObject?.getString("detail"))
         jsonObject!!
     }
 
@@ -117,7 +117,7 @@ class OpenHumansAPI(
         it.setDisposable(Disposables.fromRunnable { call.cancel() })
     }
 
-    class OHErrornousResultException(val code: Int, val meaning: String, val detail: String?) : Exception("""$code ($meaning)${if (detail != null) ": $detail" else ""}""")
+    class OHErrorneousResultException(val code: Int, val meaning: String, val detail: String?) : Exception("""$code ($meaning)${if (detail != null) ": $detail" else ""}""")
 
     data class OAuthTokens(
             val accessToken: String,
