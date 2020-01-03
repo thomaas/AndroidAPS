@@ -109,7 +109,7 @@ data class UploadData(
         }
     }
 
-    val fileName by lazy { "upload-n$uploadCounter-v$fileFormatVersion-dev$applicationId.zip" }
+    val fileName by lazy { "upload-num${String.format("%05d", uploadCounter)}-ver$fileFormatVersion-dev$applicationId.zip" }
 
     val zip by lazy {
         val baos = ByteArrayOutputStream()
