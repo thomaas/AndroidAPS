@@ -59,7 +59,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
     private fun getUploadOffsetForTable(tableName: String) = sharedPreferences.getLong("Offset_${projectMemberId!!}_$tableName", 0)
 
     private fun SharedPreferences.Editor.setUploadOffsetToHighest(tableName: String, entries: List<DBEntry>): SharedPreferences.Editor {
-        entries.maxBy { it.id }?.id?.let { putLong("Offset_${projectMemberId!!}}_$tableName", it + 1) }
+        entries.maxBy { it.id }?.id?.let { putLong("Offset_${projectMemberId!!}_$tableName", it + 1) }
         return this
     }
 
