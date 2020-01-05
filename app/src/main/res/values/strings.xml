@@ -1662,7 +1662,7 @@
     <string name="thanks_for_uploading_your_data">Thanks for uploading your data! Don\'t forget to join projects on Open Humans that make use of it.</string>
     <string name="donate_your_data_for_science">Donate your data for science</string>
     <string name="open_humans_short">OH</string>
-    <string name="only_upload_if_connected_to_wifi">Only upload if connected to Wifi</string>
+    <string name="only_upload_if_connected_to_wifi">Only upload if connected to WiFi</string>
     <string name="only_upload_if_charging">Only upload if charging</string>
     <string translatable="false" name="key_oh_wifi_only">oh_wifi_only</string>
     <string translatable="false" name="key_oh_charging_only">oh_charging_only</string>
