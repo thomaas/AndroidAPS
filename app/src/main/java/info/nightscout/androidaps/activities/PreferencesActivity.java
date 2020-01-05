@@ -3,6 +3,7 @@ package info.nightscout.androidaps.activities;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -254,7 +255,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
         @Override
         public Unit invoke() {
-            new Handler().post(() -> {
+            new Handler(Looper.getMainLooper()).post(() -> {
                 openHumansPreference.update();
             });
             return Unit.INSTANCE;

@@ -140,18 +140,17 @@ object OpenHumansUploader : PluginBase(PluginDescription()
                     }
                     .ignoreElement()
 
-    private fun uploadFile(uploadData: UploadData) =
-            refreshAccessTokenIfNeeded()
-                    .andThen(openHumansAPI.prepareFileUpload(oAuthTokens!!.accessToken, uploadData.fileName, OpenHumansAPI.FileMetadata(
-                            tags = uploadData.tags,
-                            description = "AndroidAPS Database Upload",
-                            md5 = uploadData.zipMd5,
-                            creationDate = uploadData.timestamp,
-                            startDate = uploadData.lowestTimestamp,
-                            endDate = uploadData.highestTimestamp
-                    )))
-                    .flatMap { openHumansAPI.uploadFile(it.uploadURL, uploadData.zip).andThen(Single.just(it.fileId)) }
-                    .flatMapCompletable { openHumansAPI.completeFileUpload(oAuthTokens!!.accessToken, it) }
+    private fun uploadFile(uploadData: UploadData) = Completable.defer {
+        openHumansAPI.prepareFileUpload(oAuthTokens!!.accessToken, uploadData.fileName, OpenHumansAPI.FileMetadata(
+                tags = uploadData.tags,
+                description = "AndroidAPS Database Upload",
+                md5 = uploadData.zipMd5,
+                creationDate = uploadData.timestamp,
+                startDate = uploadData.lowestTimestamp,
+                endDate = uploadData.highestTimestamp
+        )).flatMap { openHumansAPI.uploadFile(it.uploadURL, uploadData.zip).andThen(Single.just(it.fileId)) }
+                .flatMapCompletable { openHumansAPI.completeFileUpload(oAuthTokens!!.accessToken, it) }
+    }
 
     private fun refreshAccessTokenIfNeeded() = Completable.defer {
         if (oAuthTokens!!.expiresAt <= System.currentTimeMillis() - TimeUnit.HOURS.toMillis(1)) openHumansAPI.refreshToken(oAuthTokens!!.refreshToken).doOnSuccess { oAuthTokens = it }.ignoreElement()
@@ -160,7 +159,6 @@ object OpenHumansUploader : PluginBase(PluginDescription()
 
     private fun gatherData() = Single.defer {
         Single.zipArray({
-            val test = getUploadOffsetForTable("GlucoseValues")
             val hasGitInfo = !BuildConfig.HEAD.endsWith("NoGitSystemAvailable", true)
             val customRemote = !BuildConfig.REMOTE.equals("https://github.com/MilosKozak/AndroidAPS.git", true)
             @Suppress("UNCHECKED_CAST")
@@ -240,6 +238,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
     }
 
     fun uploadData() = gatherData()
+            .flatMap { refreshAccessTokenIfNeeded().andThen(Single.just(it)) }
             .flatMap { uploadFile(it).andThen(Single.just(it)) }
             .flatMapCompletable(this::adjustCounters)
             .doOnError {
@@ -278,7 +277,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
         cancelWorker()
         val notification = NotificationCompat.Builder(MainApp.instance(), "OpenHumans")
                 .setContentTitle(MainApp.gs(R.string.you_have_been_signed_out_of_open_humans))
-                .setContentText(MainApp.gs(R.string.click_here_to_sign_in_again_if_this_was_a_mistake))
+                .setContentText(MainApp.gs(R.string.click_here_to_sign_in_again_if_this_wasnt_on_purpose))
                 .setStyle(NotificationCompat.BigTextStyle())
                 .setSmallIcon(R.drawable.notif_icon)
                 .setAutoCancel(true)
