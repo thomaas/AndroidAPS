@@ -6,6 +6,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.*
 import androidx.fragment.app.DialogFragment
@@ -18,8 +19,9 @@ import io.reactivex.schedulers.Schedulers
 
 class OHLoginActivity : AppCompatActivity() {
 
-    private lateinit var customTabsClient: CustomTabsClient;
+    private lateinit var customTabsClient: CustomTabsClient
     private lateinit var customTabsSession: CustomTabsSession
+    private lateinit var binding: Openhumans2Binding
 
     private val connection = object : CustomTabsServiceConnection() {
         override fun onCustomTabsServiceConnected(name: ComponentName, client: CustomTabsClient) {
@@ -40,12 +42,32 @@ class OHLoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         CustomTabsClient.bindCustomTabsService(this, "com.android.chrome", connection)
-        val binding = Openhumans2Binding.inflate(layoutInflater)
+        binding = Openhumans2Binding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.back.setOnClickListener { finish() }
         binding.login.setOnClickListener {
-            CustomTabsIntent.Builder().setSession(customTabsSession).build().launchUrl(this@OHLoginActivity, Uri.parse(OpenHumansUploader.AUTH_URL))
+            if (binding.acceptTerms.isChecked) {
+                CustomTabsIntent.Builder().setSession(customTabsSession).build().launchUrl(this@OHLoginActivity, Uri.parse(OpenHumansUploader.AUTH_URL))
+            } else {
+                binding.termsOfUseError.visibility = View.VISIBLE
+            }
         }
+        binding.acceptTerms.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) binding.termsOfUseError.visibility = View.GONE
+        }
+        binding.aboutOpenHumans.setOnClickListener { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openhumans.org/about/"))) }
+        binding.uploadOnOpenHumans.setOnClickListener { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openhumans.org/activity/androidaps-uploader/"))) }
+        binding.contactOpenHumans.setOnClickListener { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openhumans.org/contact-us/"))) }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("touErrorVisible", binding.termsOfUseError.visibility == View.VISIBLE)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        binding.termsOfUseError.visibility = if (savedInstanceState.getBoolean("touErrorVisible")) View.VISIBLE else View.GONE
+        super.onRestoreInstanceState(savedInstanceState)
     }
 
     override fun onDestroy() {

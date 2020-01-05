@@ -1652,6 +1652,7 @@
     <string name="carb_entries">Carbohydrate entries</string>
     <string name="algorithm_reasoning">Algorithm reasoning</string>
     <string name="private_information_not_uploaded">Secret or private information such as your Nightscout URL or API secret will not be uploaded.</string>
+    <string name="data_deletion_at_any_time">You can stop uploading and delete your upload data at any time via www.openhumans.org. Beware that some projects that receive data may not support this.</string>
     <string name="more_information">More information</string>
     <string name="about_open_humans">About Open Humans</string>
     <string name="androidaps_uploader_on_open_humans">AndroidAPS Uploader on Open Humans</string>
@@ -1674,5 +1675,8 @@
     <string name="an_error_has_occurred">An error has occurred</string>
     <string name="you_have_been_signed_out_of_open_humans">You have been signed out of Open Humans</string>
     <string name="click_here_to_sign_in_again_if_this_wasnt_on_purpose">Click here to sign in again if this wasn\'t on purpose.</string>
-
+    <string name="terms_of_use">Terms of Use</string>
+    <string name="oh_terms_of_use">This is an open source tool that will copy your data to Open Humans. We retain no rights to share your data with third parties without your explicit authorization. The data the project and app receive are identified via a random user ID, and will only be securely transmitted to an Open Humans account with your authorization of that process.</string>
+    <string name="i_understand_and_agree">I understand and agree.</string>
+    <string name="you_need_to_accept_the_terms_of_use">You need to accept the terms of use first.</string>
 </resources>

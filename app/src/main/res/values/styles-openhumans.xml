@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.OpenHumans" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Base.OpenHumans" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/openHumansGreen</item>
-        <item name="android:statusBarColor">?android:colorBackground</item>
-        <item name="android:windowLightStatusBar">false</item>
         <item name="colorSecondary">@color/openHumansOrange</item>
         <item name="colorOnPrimary">@android:color/white</item>
         <item name="colorOnSecondary">@android:color/white</item>
@@ -21,6 +19,11 @@
         <item name="textAppearanceCaption">@style/TextAppearance.OpenHumans.Caption</item>
         <item name="textAppearanceButton">@style/TextAppearance.OpenHumans.Button</item>
         <item name="textAppearanceOverline">@style/TextAppearance.OpenHumans.Overline</item>
+    </style>
+
+    <style name="Theme.OpenHumans" parent="Base.OpenHumans">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">?android:attr/windowBackground</item>
     </style>
 
     <style name="TextAppearance.OpenHumans.Headline1" parent="TextAppearance.MaterialComponents.Headline1">

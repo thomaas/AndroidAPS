@@ -14,6 +14,11 @@ class OHWelcomeActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.back.setOnClickListener { finish() }
         binding.next.setOnClickListener { startActivityForResult(Intent(this@OHWelcomeActivity, OHLoginActivity::class.java), REQUEST_CODE) }
+        binding.actionBar.setOnApplyWindowInsetsListener { v, insets ->
+            v.setPadding(v.paddingLeft, v.paddingTop + insets.systemWindowInsetTop, v.paddingRight, v.paddingBottom)
+            v.layoutParams = v.layoutParams.apply { height += insets.systemWindowInsetTop }
+            insets.consumeSystemWindowInsets()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

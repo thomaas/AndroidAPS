@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <androidx.core.widget.NestedScrollView
+            android:id="@+id/scroll_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -218,7 +220,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="16dp"
                     android:paddingStart="80dp"
                     android:paddingEnd="16dp"
                     android:text="@string/private_information_not_uploaded"
@@ -232,15 +234,69 @@
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="8dp"
                     android:layout_weight="1"
+                    android:text="@string/terms_of_use"
+                    android:textAppearance="?textAppearanceHeadline5"
+                    android:textColor="?colorPrimary" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingStart="80dp"
+                    android:paddingEnd="16dp"
+                    android:text="@string/oh_terms_of_use"
+                    android:textAppearance="?textAppearanceBody1" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="8dp"
+                    android:paddingStart="80dp"
+                    android:paddingEnd="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/data_deletion_at_any_time"
+                    android:textAppearance="?textAppearanceBody1" />
+
+                <CheckBox
+                    android:id="@+id/accept_terms"
+                    android:layout_marginTop="-5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="75dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="-10dp"
+                    android:paddingStart="12dp"
+                    android:text="@string/i_understand_and_agree" />
+
+                <TextView
+                    android:id="@+id/terms_of_use_error"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingStart="80dp"
+                    android:paddingEnd="16dp"
+                    android:text="@string/you_need_to_accept_the_terms_of_use"
+                    android:textAppearance="?textAppearanceBody1"
+                    android:textColor="?colorError"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="80dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_weight="1"
                     android:text="@string/more_information"
                     android:textAppearance="?textAppearanceHeadline5"
                     android:textColor="?colorPrimary" />
 
                 <LinearLayout
+                    android:id="@+id/about_open_humans"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <View
                         android:layout_width="8dp"
@@ -259,11 +315,13 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/upload_on_open_humans"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <View
                         android:layout_width="8dp"
@@ -282,11 +340,13 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/contact_open_humans"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <View
                         android:layout_width="8dp"
@@ -317,14 +377,14 @@
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
+            android:layout_height="wrap_content"
             android:background="?android:colorBackground"
             android:fitsSystemWindows="true"
             app:liftOnScroll="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="?actionBarSize"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
