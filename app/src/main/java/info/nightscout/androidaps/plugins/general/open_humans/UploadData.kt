@@ -232,7 +232,7 @@ data class UploadData(
         it.put("amount", amount)
         it.put("type", type.name)
         it.put("isBasalInsulin", isBasalInsulin)
-        it.put("insulinConfiguration", insulinConfiguration)
+        it.put("insulinConfiguration", insulinConfiguration?.serializeToJSON())
     }
 
     private fun BolusCalculatorResult.serializeToJSON() = serializeDBEntry().let {
@@ -305,7 +305,7 @@ data class UploadData(
             jsonObject
         }.forEach { targetBlock -> targetBlockArray.put(targetBlock) }
         it.put("targetBlocks", targetBlockArray)
-        it.put("insulinConfiguration", insulinConfiguration)
+        it.put("insulinConfiguration", insulinConfiguration.serializeToJSON())
         it.put("timeshift", timeshift)
         it.put("percentage", percentage)
     }
@@ -338,7 +338,7 @@ data class UploadData(
 
     private fun List<Block>.serializeToJSON(): JSONArray {
         val jsonArray = JSONArray()
-        map { serializeToJSON() }.forEach { jsonArray.put(it) }
+        forEach { jsonArray.put(it.serializeToJSON()) }
         return jsonArray
     }
 
