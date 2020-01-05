@@ -66,7 +66,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
         return this
     }
 
-    private fun scheduleWorker() {
+    private fun scheduleWorker(replace: Boolean) {
         val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .setRequiresCharging(SP.getBoolean(R.string.key_oh_charging_only, false))
@@ -75,7 +75,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
                 .setConstraints(constraints)
                 .setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.HOURS)
                 .build()
-        WorkManager.getInstance(MainApp.instance()).enqueueUniquePeriodicWork(WORK_NAME, ExistingPeriodicWorkPolicy.REPLACE, workRequest)
+        WorkManager.getInstance(MainApp.instance()).enqueueUniquePeriodicWork(WORK_NAME, if (replace) ExistingPeriodicWorkPolicy.REPLACE else ExistingPeriodicWorkPolicy.KEEP, workRequest)
     }
 
     private fun cancelWorker() {
@@ -83,7 +83,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
     }
 
     override fun onStart() {
-        if (projectMemberId != null) scheduleWorker()
+        if (projectMemberId != null) scheduleWorker(false)
         setupNotificationChannel()
         SP.sharedPreferences.registerOnSharedPreferenceChangeListener(this)
     }
@@ -128,7 +128,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
                     }.doOnSuccess {
                         projectMemberId = it
                         dismissReAuthNotification()
-                        scheduleWorker()
+                        scheduleWorker(false)
                         synchronized(loginStateListeners) {
                             loginStateListeners.forEach {
                                 try {
@@ -317,6 +317,6 @@ object OpenHumansUploader : PluginBase(PluginDescription()
     private fun dismissReAuthNotification() = NotificationManagerCompat.from(MainApp.instance()).cancel(NOTIFICATION_ID)
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        if (key == MainApp.gs(R.string.key_oh_charging_only) && projectMemberId != null) scheduleWorker()
+        if (key == MainApp.gs(R.string.key_oh_charging_only) && projectMemberId != null) scheduleWorker(true)
     }
 }
