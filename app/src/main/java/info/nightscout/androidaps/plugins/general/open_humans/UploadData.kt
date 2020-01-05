@@ -1,5 +1,6 @@
 package info.nightscout.androidaps.plugins.general.open_humans
 
+import android.annotation.SuppressLint
 import info.nightscout.androidaps.database.Block
 import info.nightscout.androidaps.database.embedments.InsulinConfiguration
 import info.nightscout.androidaps.database.embedments.InterfaceIDs
@@ -15,9 +16,13 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+
+@SuppressLint("SimpleDateFormat")
+private val FILE_NAME_DATE_FORMAT = SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.US).apply { timeZone = TimeZone.getTimeZone("UTC") }
 
 data class UploadData(
         val timestamp: Long,
@@ -126,7 +131,12 @@ data class UploadData(
         }
     }
 
-    val fileName by lazy { "upload-num${String.format("%05d", uploadCounter)}-ver$fileFormatVersion-dev$applicationId.zip" }
+    val fileName by lazy { "upload" +
+            "-num${String.format("%05d", uploadCounter)}" +
+            "-ver$fileFormatVersion" +
+            "-date${FILE_NAME_DATE_FORMAT.format(Date(timestamp))}" +
+            "-id${applicationId.toString().replace("-", "")}" +
+            ".zip" }
 
     val zip by lazy {
         val baos = ByteArrayOutputStream()
