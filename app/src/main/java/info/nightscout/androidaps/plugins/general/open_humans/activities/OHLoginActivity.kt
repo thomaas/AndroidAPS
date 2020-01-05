@@ -77,8 +77,9 @@ class OHLoginActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (supportFragmentManager.fragments.size == 0) {
-            ExchangeAuthTokenDialog(intent.data!!.getQueryParameter("code")!!).show(supportFragmentManager, "ExchangeAuthTokenDialog")
+        val code = intent.data?.getQueryParameter("code")
+        if (supportFragmentManager.fragments.size == 0 && code != null) {
+            ExchangeAuthTokenDialog(code).show(supportFragmentManager, "ExchangeAuthTokenDialog")
         }
     }
 
