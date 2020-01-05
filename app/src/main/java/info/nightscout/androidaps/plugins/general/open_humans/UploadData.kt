@@ -32,6 +32,19 @@ data class UploadData(
         val customRemote: Boolean,
         val applicationId: UUID,
 
+        val brand: String,
+        val device: String,
+        val manufacturer: String,
+        val model: String,
+        val product: String,
+
+        val height: Int,
+        val width: Int,
+        val density: Float,
+        val scaledDensity: Float,
+        val xDpi: Float,
+        val yDpi: Float,
+
         val apsResultLinks: List<APSResultLink>,
         val mealLinks: List<MealLink>,
         val multiwaveBolusLinks: List<MultiwaveBolusLink>,
@@ -105,6 +118,10 @@ data class UploadData(
             if (totalDailyDoses.isNotEmpty()) add("TotalDailyDoses")
             if (versionChanges.isNotEmpty()) add("VersionChanges")
             if (preferenceChanges.isNotEmpty()) add("PreferenceChanges")
+            add("ApplicationInfo")
+            add("DeviceInfo")
+            add("DisplayInfo")
+            add("UploadInfo")
             toList()
         }
     }
@@ -133,6 +150,8 @@ data class UploadData(
         if (preferenceChanges.isNotEmpty()) zos.writeFile("preferenceChanges.json", preferenceChanges.map { it.serializeToJSON() }.toByteArray())
         zos.writeFile("applicationInfo.json", serializeApplicationInfoToJSON().toString().toByteArray())
         zos.writeFile("uploadInfo.json", serializeUploadInfoToJSON().toString().toByteArray())
+        zos.writeFile("deviceInfo.json", serializeDeviceInfoToJSON().toString().toByteArray())
+        zos.writeFile("displayInfo.json", serializeDisplayInfoToJSON().toString().toByteArray())
         zos.close()
         baos.toByteArray()
     }
@@ -143,6 +162,27 @@ data class UploadData(
         putNextEntry(ZipEntry(name))
         write(bytes)
         closeEntry()
+    }
+
+    private fun serializeDisplayInfoToJSON(): JSONObject {
+        val jsonObject = JSONObject()
+        jsonObject.put("height", brand)
+        jsonObject.put("width", height)
+        jsonObject.put("density", density)
+        jsonObject.put("scaledDensity", scaledDensity)
+        jsonObject.put("xDpi", xDpi)
+        jsonObject.put("yDpi", yDpi)
+        return jsonObject
+    }
+
+    private fun serializeDeviceInfoToJSON(): JSONObject {
+        val jsonObject = JSONObject()
+        jsonObject.put("brand", brand)
+        jsonObject.put("device", device)
+        jsonObject.put("manufacturer", manufacturer)
+        jsonObject.put("model", model)
+        jsonObject.put("product", product)
+        return jsonObject
     }
 
     private fun serializeUploadInfoToJSON(): JSONObject {

@@ -8,6 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
+import android.util.DisplayMetrics
+import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.*
@@ -163,11 +165,14 @@ object OpenHumansUploader : PluginBase(PluginDescription()
         Single.zipArray({
             val hasGitInfo = !BuildConfig.HEAD.endsWith("NoGitSystemAvailable", true)
             val customRemote = !BuildConfig.REMOTE.equals("https://github.com/MilosKozak/AndroidAPS.git", true)
+            val displayMetrics = DisplayMetrics()
+            (MainApp.instance().getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getMetrics(displayMetrics)
             @Suppress("UNCHECKED_CAST")
             (UploadData(
                     timestamp = System.currentTimeMillis(),
                     uploadCounter = uploadCounter,
                     fileFormatVersion = FILE_FORMAT_VERSION,
+
                     versionName = BuildConfig.VERSION_NAME,
                     versionCode = BuildConfig.VERSION_CODE,
                     databaseVersion = AppRepository.databaseVersion,
@@ -175,6 +180,20 @@ object OpenHumansUploader : PluginBase(PluginDescription()
                     commitHash = if (hasGitInfo && !customRemote) BuildConfig.HEAD else null,
                     customRemote = customRemote && hasGitInfo,
                     applicationId = MainApp.getApplicationId(),
+
+                    brand = Build.BRAND,
+                    device = Build.DEVICE,
+                    manufacturer = Build.MANUFACTURER,
+                    model = Build.MODEL,
+                    product = Build.PRODUCT,
+
+                    height = displayMetrics.heightPixels,
+                    width = displayMetrics.widthPixels,
+                    density = displayMetrics.density,
+                    scaledDensity = displayMetrics.scaledDensity,
+                    xDpi = displayMetrics.xdpi,
+                    yDpi = displayMetrics.ydpi,
+
                     apsResultLinks = it[0] as List<APSResultLink>,
                     mealLinks = it[1] as List<MealLink>,
                     multiwaveBolusLinks = it[2] as List<MultiwaveBolusLink>,
