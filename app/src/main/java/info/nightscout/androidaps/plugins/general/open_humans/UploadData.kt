@@ -176,8 +176,8 @@ data class UploadData(
 
     private fun serializeDisplayInfoToJSON(): JSONObject {
         val jsonObject = JSONObject()
-        jsonObject.put("height", brand)
-        jsonObject.put("width", height)
+        jsonObject.put("height", height)
+        jsonObject.put("width", width)
         jsonObject.put("density", density)
         jsonObject.put("scaledDensity", scaledDensity)
         jsonObject.put("xDpi", xDpi)
