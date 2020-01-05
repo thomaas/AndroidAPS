@@ -292,10 +292,10 @@ object OpenHumansUploader : PluginBase(PluginDescription()
                         0
                 ))
                 .build()
-        NotificationManagerCompat.from(MainApp.instance()).notify(3123, notification)
+        NotificationManagerCompat.from(MainApp.instance()).notify(NOTIFICATION_ID, notification)
     }
 
-    private fun dismissReAuthNotification() = NotificationManagerCompat.from(MainApp.instance()).cancel(3123)
+    private fun dismissReAuthNotification() = NotificationManagerCompat.from(MainApp.instance()).cancel(NOTIFICATION_ID)
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (key == MainApp.gs(R.string.key_oh_charging_only) && projectMemberId != null) scheduleWorker()
