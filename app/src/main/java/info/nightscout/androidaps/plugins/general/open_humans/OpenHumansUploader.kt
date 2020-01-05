@@ -47,6 +47,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
     const val AUTH_URL = "https://www.openhumans.org/direct-sharing/projects/oauth2/authorize/?client_id=$CLIENT_ID&response_type=code"
     const val FILE_FORMAT_VERSION = 1
     const val WORK_NAME = "Open Humans"
+    const val NOTIFICATION_ID = 3123
 
     private val sharedPreferences = MainApp.instance().getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE)
     private val openHumansAPI = OpenHumansAPI(OPEN_HUMANS_URL, CLIENT_ID, CLIENT_SECRET, REDIRECT_URL)
@@ -124,6 +125,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
                         openHumansAPI.getProjectMemberId(it.accessToken)
                     }.doOnSuccess {
                         projectMemberId = it
+                        dismissReAuthNotification()
                         scheduleWorker()
                         synchronized(loginStateListeners) {
                             loginStateListeners.forEach {
@@ -189,7 +191,7 @@ object OpenHumansUploader : PluginBase(PluginDescription()
                     therapyEvents = it[13] as List<TherapyEvent>,
                     totalDailyDoses = it[14] as List<TotalDailyDose>,
                     versionChanges = it[15] as List<VersionChange>,
-                    preferenceChanges = it[16] as List<PreferenceChange>
+                    preferenceChanges = (it[16] as List<PreferenceChange>).filter { it.key.isAllowedKey() }
             ))
         }, arrayOf(
                 AppRepository.getAllChangedAPSResultLinksStartingFrom(getUploadOffsetForTable("APSResultLinks")),
@@ -292,6 +294,8 @@ object OpenHumansUploader : PluginBase(PluginDescription()
                 .build()
         NotificationManagerCompat.from(MainApp.instance()).notify(3123, notification)
     }
+
+    private fun dismissReAuthNotification() = NotificationManagerCompat.from(MainApp.instance()).cancel(3123)
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (key == MainApp.gs(R.string.key_oh_charging_only) && projectMemberId != null) scheduleWorker()
