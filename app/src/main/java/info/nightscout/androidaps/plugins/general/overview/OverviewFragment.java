@@ -25,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.widget.PopupMenu;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -148,7 +149,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
     TextView openapsDeviceStatusView;
     TextView uploaderDeviceStatusView;
     TextView iobCalculationProgressView;
-    LinearLayout loopStatusLayout;
+    ConstraintLayout loopStatusLayout;
     LinearLayout pumpStatusLayout;
     GraphView bgGraph;
     GraphView iobGraph;
@@ -222,9 +223,9 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
             view = inflater.inflate(R.layout.overview_fragment_nsclient, container, false);
             shorttextmode = true;
         } else if (smallHeight || landscape) {
-            view = inflater.inflate(R.layout.overview_fragment_smallheight, container, false);
+            view = inflater.inflate(R.layout.overview_fragment_1, container, false);
         } else {
-            view = inflater.inflate(R.layout.overview_fragment, container, false);
+            view = inflater.inflate(R.layout.overview_fragment_1, container, false);
         }
 
         timeView = (TextView) view.findViewById(R.id.overview_time);
@@ -248,7 +249,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
         openapsDeviceStatusView = (TextView) view.findViewById(R.id.overview_openaps);
         uploaderDeviceStatusView = (TextView) view.findViewById(R.id.overview_uploader);
         iobCalculationProgressView = (TextView) view.findViewById(R.id.overview_iobcalculationprogess);
-        loopStatusLayout = (LinearLayout) view.findViewById(R.id.overview_looplayout);
+        loopStatusLayout = view.findViewById(R.id.overview_looplayout);
         pumpStatusLayout = (LinearLayout) view.findViewById(R.id.overview_pumpstatuslayout);
 
         pumpStatusView.setBackgroundColor(MainApp.gc(R.color.colorInitializingBorder));
