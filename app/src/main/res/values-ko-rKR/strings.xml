@@ -878,7 +878,7 @@
     <string name="readstatusfailed">상태를 읽지 못했습니다.</string>
     <string name="record_pump_site_change">펌프 위치 변경 기록</string>
     <string name="record_insulin_cartridge_change">인슐린 카트리지 변경 기록</string>
-    <string name="smbalwaysdisabled">선택한 BG 소스가 고급 필터링을 지원하지 않기 때문에 SMB가 항상 비활성화됩니다.</string>
+    <string name="smbalwaysdisabled">선택한 혈당 소스가 고급 필터링을 지원하지 않기 때문에 SMB가 항상 비활성화됩니다.</string>
     <string name="smbnotallowedinopenloopmode">Open Loop모드에선 SMB가 허용되지 않습니다.</string>
     <string name="food_short">Food</string>
     <string name="reset">재설정</string>
