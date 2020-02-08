@@ -328,7 +328,7 @@
     <string name="smscommunicator_remotecommandnotallowed">원격 명령이 허가되지 않았습니다</string>
     <string name="smscommunicator_remotebolusnotallowed">원격 주입이 불가능합니다. 나중에 다시 시도해주세요.</string>
     <string name="smscommunicator_basalreplywithcode">%2$d분 동안 Basal %1$.2fU/h 주입하려면 %3$s 를 입력하고 답장하세요</string>
-    <string name="smscommunicator_profilereplywithcode">프로파일을 %1$s %2$d%%로 변경하려면 %3$s 를 입력하고 답장하세요</string>
+    <string name="smscommunicator_profilereplywithcode">프로파일 %1$s %2$d%%로 변경하려면 %3$s 를 입력하고 답장하세요</string>
     <string name="smscommunicator_extendedreplywithcode">%2$d분 동안 확장 Bolus %1$.2fU 주입하려면 %3$s 를 입력하고 답장하세요</string>
     <string name="smscommunicator_carbsreplywithcode">%2$s에 %1$dg을 입력하려면 %3$s를 입력하고 답장하세요</string>
     <string name="smscommunicator_basalpctreplywithcode">%2$d 분 동안 Basal %1$d%% 주입하려면 %3$s을 입력하고 답장하세요</string>
