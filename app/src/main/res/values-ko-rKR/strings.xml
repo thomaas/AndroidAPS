@@ -155,7 +155,7 @@
     <string name="sms_basal">Basal:</string>
     <string name="carbs">탄수화물</string>
     <string name="changeyourinput">입력값을 변경하세요!</string>
-    <string name="configbuilder_bgsource">혈당 소스</string>
+    <string name="configbuilder_bgsource">혈당 출처</string>
     <string name="configbuilder_bgsource_description">AndroidAPS가 어디에서 데이터를 가져옵니까?</string>
     <string name="xdrip">xDrip</string>
     <string name="apsmode_title">APS 모드</string>
@@ -360,7 +360,7 @@
     <string name="actions">실행</string>
     <string name="androidaps_start">AndroidAPS 시작</string>
     <string name="ns_upload_only">NS에 업로드만 하기(동기화 안됨)</string>
-    <string name="ns_upload_only_summary">NS에 업로드만 하기. 로컬소스(xDrip)가 선택되지 않으면 SGV에는 효력이 없습니다. NS프로파일이 사용중이라면 프로파일에는 효력이 없습니다.</string>
+    <string name="ns_upload_only_summary">NS에 업로드만 하기. xDrip같은 로컬 혈당 출처가 선택되지 않다면 SGV에는 효력이 없습니다. NS프로파일이 사용중이라면 프로파일에는 효력이 없습니다.</string>
     <string name="pumpNotInitialized">펌프가 초기화 되지 않았습니다!</string>
     <string name="pumpNotInitializedProfileNotSet">펌프가 초기화와 프로파일 설정이 되지 않았습니다!</string>
     <string name="primefill">교체/채움</string>
