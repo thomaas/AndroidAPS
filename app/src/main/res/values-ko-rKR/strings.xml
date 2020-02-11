@@ -784,9 +784,9 @@
     <string name="format_hours">%1$.2f 시간</string>
     <string name="format_mins">%1$d 분</string>
     <string name="enablesmbalways">항상 SMB 사용하기</string>
-    <string name="enablesmbalways_summary">Bolus와 독립적으로 항상 SMB를 사용합니다. G5처럼 잘 필터된 혈당소스와만 사용이 가능합니다.</string>
+    <string name="enablesmbalways_summary">Bolus와 독립적으로 항상 SMB를 사용합니다. G5처럼 잘 필터된 혈당출처와만 사용이 가능합니다.</string>
     <string name="enablesmbaftercarbs">탄수화물 이후 SMB를 사용합니다.</string>
-    <string name="enablesmbaftercarbs_summary">탄수화물 이후 6시간동안 SMB를 사용합니다, 0 COB이라도 적용됩니다. G5처럼 잘 필터된 혈당소스와만 사용이 가능합니다.</string>
+    <string name="enablesmbaftercarbs_summary">탄수화물 이후 6시간동안 SMB를 사용합니다, 0 COB이라도 적용됩니다. G5처럼 잘 필터된 혈당출처와만 사용이 가능합니다.</string>
     <string name="enablesmbwithcob">COB와 SMB를 사용합니다.</string>
     <string name="enablesmbwithcob_summary">활성화된 COB가 있으면 SMB를 사용합니다.</string>
     <string name="enablesmbwithtemptarget">임시 목표에서 SMB 사용하기</string>
@@ -878,7 +878,7 @@
     <string name="readstatusfailed">상태를 읽지 못했습니다.</string>
     <string name="record_pump_site_change">펌프 위치 변경 기록</string>
     <string name="record_insulin_cartridge_change">인슐린 카트리지 변경 기록</string>
-    <string name="smbalwaysdisabled">선택한 혈당 소스가 고급 필터링을 지원하지 않기 때문에 SMB가 항상 비활성화됩니다.</string>
+    <string name="smbalwaysdisabled">선택한 혈당 출처가 고급 필터링을 지원하지 않기 때문에 SMB가 항상 비활성화됩니다.</string>
     <string name="smbnotallowedinopenloopmode">Open Loop모드에선 SMB가 허용되지 않습니다.</string>
     <string name="food_short">Food</string>
     <string name="reset">재설정</string>
@@ -940,7 +940,7 @@
     <string name="setupwizard_sensitivity_url">https://github.com/MilosKozak/AndroidAPS/wiki/Sensitivity-detection-and-COB</string>
     <string name="nsclientinfotext">NSClient는 Nightscout와의 연결을 처리합니다. 이 부분을 건너뛸 수 있지만 설정하기 전엔 목적을 수행할 수 없습니다.</string>
     <string name="diawarning">새로운 인슐린 프로파일은 최소 5시간의 DIA가 요구됩니다. 새로운 프로파일의 DIA 5-6시간은 구식 인슐린 프로파일의 DIA 3시간과 동일합니다.</string>
-    <string name="bgsourcesetup">혈당소스 설정하기</string>
+    <string name="bgsourcesetup">혈당 출처 설정하기</string>
     <string name="setupwizard_profile_description">프로파일 소스를 선택해주세요. 당뇨인이 어린이라면 NS 프로파일을 선택하여야 합니다. Nightscout으로 관리해줄 사람이 없다면 당신은 로컬 프로파일을 선호할 수도 있습니다. 여기선 프로파일의 소스를 선택할 뿐이라는 것을 명심하세요. 그 프로파일을 실제 사용하려면 \"프로파일 변경\"을 실행하여 프로파일을 활성화 시켜야합니다.</string>
     <string name="setupwizard_aps_description">사용 가능한 알고리즘 중 하나를 선택하세요. 과거부터 최신의 순으로 정렬이 되어 있습니다. 일반적으로 새로운 알고리즘은 보다 강력하고 공격적입니다. 따라서 당신이 신규 사용자라면 최신의 알고리즘보단 AMA로 시작하는것이 나을 수 있습니다. 사용 전에 OpenAPS 문서를 읽어보고 설정하는 것을 잊지마세요.</string>
     <string name="startobjective">첫번째 목표를 시작하세요.</string>
